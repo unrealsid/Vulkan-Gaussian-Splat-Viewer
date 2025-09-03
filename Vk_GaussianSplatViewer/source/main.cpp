@@ -1,4 +1,4 @@
-﻿// Vk_GaussianSplatViewer.cpp : Defines the entry point for the application.
+// Vk_GaussianSplatViewer.cpp : Defines the entry point for the application.
 //
 
 #include "Vk_GaussianSplatViewer.h"
