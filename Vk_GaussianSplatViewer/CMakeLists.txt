@@ -40,28 +40,4 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE Vulkan::Vulkan)
-
-#----------------------------------------------
-# Configure VK Bootstrapper from github
-# Library used to streamline Vulkan setup
-#----------------------------------------------
-
-# Try to find an installed vk-bootstrap first
-find_package(vk-bootstrap QUIET)
-
-message(STATUS "vk-bootstrap initializing....")
-
-include(FetchContent)
-
-set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE ALWAYS)
-
-FetchContent_Declare(
-	fetch_vk_bootstrap
-	GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap
-	GIT_TAG        v1.4.320 #Might need to change this version number 
-)
-FetchContent_MakeAvailable(fetch_vk_bootstrap)
-
-# Link to it (works in both cases)
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE vk-bootstrap::vk-bootstrap)
+target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE Vulkan::Vulkan vk-bootstrap::vk-bootstrap)
