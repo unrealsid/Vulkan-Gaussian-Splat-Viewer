@@ -19,7 +19,7 @@ if(NOT vk-bootstrap_FOUND)
 	FetchContent_MakeAvailable(vk_bootstrap)
 endif()
 
-find_package(SDL3 CONFIG REQUIRED)
+find_package(SDL3 CONFIG QUIET)
 if(SDL3_FOUND)
     message(STATUS "Using SDL3 via find_package")
 endif()
