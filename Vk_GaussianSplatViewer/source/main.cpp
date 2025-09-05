@@ -1,7 +1,7 @@
 // Vk_GaussianSplatViewer.cpp : Defines the entry point for the application.
 //
 
-#include "Vk_GaussianSplatViewer.h"
+#include "Vk_GaussianSplatViewer.hpp"
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,8 +9,6 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
-
-using namespace std;
 
 int main()
 {

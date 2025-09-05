@@ -1,6 +1,7 @@
 ﻿set(
     Header_Files
 	"include/Vk_GaussianSplatViewer.hpp"
+	"include/DeviceManager.h"
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -11,6 +12,7 @@ source_group(
 set(
     Source_Files
 	"source/main.cpp"
+	"source/DeviceManager.cpp"
 )
 
 source_group(
@@ -38,31 +40,26 @@ target_include_directories(
 
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE )
 
-# ------------------------------------------------------
-# 2. Add Vulkan and related libraries (vma/glm etc) from Vulkan SDK 
-#  I'm assuming we're using GLM, vma etc from the SDK installer
-# ------------------------------------------------------
-if (NOT "${VULKAN_SDK_PATH}" STREQUAL "")
-    message(STATUS "Using Vulkan SDK from: ${VULKAN_SDK_PATH}")
+#----------------------------------------------
+# Configure VK Bootstrapper from github
+# Library used to streamline Vulkan setup
+#----------------------------------------------
 
-    # Add include directories
-    target_include_directories(Vk_GaussianSplatViewer PUBLIC
-        "${VULKAN_SDK_PATH}/Include" # Main Vulkan headers
-        "${VULKAN_SDK_PATH}/Include/vma" 
-        "${VULKAN_SDK_PATH}/Include/glm"
-        # If vk_hpp is in a specific subdir like Include/vk_hpp, add it here:
-        "${VULKAN_SDK_PATH}/Include/vulkan"
-    )
+# Try to find an installed vk-bootstrap first
+find_package(vk-bootstrap QUIET)
 
-    # Add library directories and link libraries
-    # Assuming Windows library structure with .lib files
-    set(VULKAN_SDK_LIB_DIR "${VULKAN_SDK_PATH}/lib")
+message(STATUS "vk-bootstrap initializing....")
 
-    target_link_libraries(Vk_GaussianSplatViewer
-        # Vulkan main library (for Vulkan-1.dll)
-        "${VULKAN_SDK_LIB_DIR}/vulkan-1.lib"
-    )
+include(FetchContent)
 
-else()
-    message(FATAL_ERROR "VULKAN_SDK_PATH is not set. Please set it in the CMake configuration to point to your Vulkan SDK installation.")
-endif()
+set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE ALWAYS)
+
+FetchContent_Declare(
+	fetch_vk_bootstrap
+	GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap
+	GIT_TAG        v1.4.320 #Might need to change this version number 
+)
+FetchContent_MakeAvailable(fetch_vk_bootstrap)
+
+# Link to it (works in both cases)
+target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE vk-bootstrap::vk-bootstrap)

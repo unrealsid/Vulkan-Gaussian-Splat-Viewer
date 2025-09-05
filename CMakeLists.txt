@@ -3,18 +3,18 @@
 	FATAL_ERROR
 )
 project(
-	RedditEngine
+    RVkGaussEngine
 	LANGUAGES CXX
     VERSION 0.0.1
 )
 
-include(GNUInstallDirs)
-
-add_subdirectory(Vk_GaussianSplatViewer)
-
 # Allow users to specify Vulkan SDK path via CMake UI
 # Set a cache variable for the Vulkan SDK path, defaulting to an empty string
 set(VULKAN_SDK_PATH "" CACHE PATH "Path to the Vulkan SDK installation directory")
+
+include(GNUInstallDirs)
+
+add_subdirectory(Vk_GaussianSplatViewer)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -22,25 +22,9 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("Vk_GaussianSplatViewer")
 
 # Define the source directory using the correct folder name 'Vk_GaussianSplatViewer'
-set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Vk_GaussianSplatViewer) # Updated source directory
-
-# Automatically get all .cpp and .h files from the src directory
-file(GLOB_RECURSE SRC_FILES
-    "${SRC_DIR}/*.cpp"
-    "${SRC_DIR}/*.h"
-	"${SRC_DIR}/*.hpp"
-	"${SRC_DIR}/*.glsl"
-    "${SRC_DIR}/*.slang"
-    "${SRC_DIR}/*.inl"
-)
-
-# ------------------------------------------------------
-# 1. Build the main executable FIRST
-# ------------------------------------------------------
-add_executable(Vk_GaussianSplatViewer ${SRC_FILES})
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Vk_GaussianSplatViewer)
 
 # Make the "Vk_GaussianSplatViewer" source folder an include root
 target_include_directories(Vk_GaussianSplatViewer PUBLIC
@@ -52,7 +36,6 @@ include_directories(${CMAKE_BINARY_DIR})
 
 # Define EXT_DIR for libraries kept in the external folder
 set(EXT_DIR ${CMAKE_SOURCE_DIR}/ext)
-
 
 # ------------------------------------------------------
 # 2. Add Vulkan and related libraries (vma/glm etc) from Vulkan SDK 
@@ -66,7 +49,6 @@ if (NOT "${VULKAN_SDK_PATH}" STREQUAL "")
         "${VULKAN_SDK_PATH}/Include" # Main Vulkan headers
         "${VULKAN_SDK_PATH}/Include/vma" 
         "${VULKAN_SDK_PATH}/Include/glm"
-        # If vk_hpp is in a specific subdir like Include/vk_hpp, add it here:
         "${VULKAN_SDK_PATH}/Include/vulkan"
     )
 
@@ -75,6 +57,7 @@ if (NOT "${VULKAN_SDK_PATH}" STREQUAL "")
     set(VULKAN_SDK_LIB_DIR "${VULKAN_SDK_PATH}/lib")
 
     target_link_libraries(Vk_GaussianSplatViewer
+		PUBLIC
         # Vulkan main library (for Vulkan-1.dll)
         "${VULKAN_SDK_LIB_DIR}/vulkan-1.lib"
     )
