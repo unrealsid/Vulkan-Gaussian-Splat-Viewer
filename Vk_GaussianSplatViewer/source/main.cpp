@@ -9,9 +9,13 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
+#include "DeviceManager.h"
 
 int main()
 {
+    vulkan_app::DeviceManager device_manager;
+    device_manager.device_init();
+    
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Vulkan Test";
