@@ -27,6 +27,8 @@ set(
     ${Source_Files}
 )
 
+find_package(Vulkan REQUIRED
+
 set(ENGINE_PROJECT_NAME "Vk_GaussianSplatViewer")
 
 add_executable(
@@ -38,7 +40,7 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE )
+target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE Vulkan::Vulkan)
 
 #----------------------------------------------
 # Configure VK Bootstrapper from github
