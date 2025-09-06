@@ -27,7 +27,7 @@ set(
     ${Source_Files}
 )
 
-find_package(Vulkan REQUIRED
+find_package(Vulkan REQUIRED)
 
 set(ENGINE_PROJECT_NAME "Vk_GaussianSplatViewer")
 

@@ -1,9 +1,7 @@
 #include "DeviceManager.h"
 
 #include <iostream>
-#include <vulkan.h>
-
-#include "VkBootstrap.h"
+#include <vulkan/vulkan.h>
 
 vulkan_app::DeviceManager::DeviceManager(): surface(nullptr), graphics_queue(nullptr),
                                         present_queue(nullptr),

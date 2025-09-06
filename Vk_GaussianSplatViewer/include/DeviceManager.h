@@ -1,6 +1,7 @@
 #pragma once
-#include <vk_mem_alloc.h>
-#include "VkBootstrap.h"
+#include <vulkan/vulkan.h>
+#include <vma/vk_mem_alloc.h>
+#include <VkBootstrap.h>
 
 namespace window
 {
