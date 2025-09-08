@@ -1,7 +1,13 @@
 ﻿set(
     Header_Files
-	"include/Vk_GaussianSplatViewer.hpp"
-	"include/DeviceManager.h"
+	"include/vulkanapp/DeviceManager.h"
+	"include/vulkanapp/SwapchainManager.h"
+	"include/vulkanapp/VulkanCleanupQueue.h"
+	"include/vulkanapp/feature_activator/VulkanFeatureActivator.h"
+	"include/structs/EngineContext.h"
+	"include/platform/WindowManager.h"
+	"include/core/Engine.h"
+	"include/config/Config.inl"
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -12,7 +18,12 @@ source_group(
 set(
     Source_Files
 	"source/main.cpp"
-	"source/DeviceManager.cpp"
+	"source/vulkanapp/DeviceManager.cpp"
+	"source/vulkanapp/SwapchainManager.cpp"
+	"source/vulkanapp/VulkanCleanupQueue.cpp"
+	"source/vulkanapp/feature_activator/VulkanFeatureActivator.cpp"
+	"source/platform/WindowManager.cpp"
+	"source/core/Engine.cpp"
 )
 
 source_group(
@@ -40,4 +51,6 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE Vulkan::Vulkan vk-bootstrap::vk-bootstrap)
+target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE Vulkan::Vulkan 
+													vk-bootstrap::vk-bootstrap 
+													SDL3::SDL3)
