@@ -20,7 +20,7 @@ VkPhysicalDeviceShaderObjectFeaturesEXT vulkanapp::VulkanFeatureActivator::creat
     return shader_object_features;
 }
 
-VkPhysicalDeviceBufferDeviceAddressFeatures vulkanapp::VulkanFeatureActivator::create_physica_device_buffer_address()
+VkPhysicalDeviceBufferDeviceAddressFeatures vulkanapp::VulkanFeatureActivator::create_physics_device_buffer_address()
 {
     VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures = 
     {

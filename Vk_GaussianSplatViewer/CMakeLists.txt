@@ -4,7 +4,21 @@
 	"include/vulkanapp/SwapchainManager.h"
 	"include/vulkanapp/VulkanCleanupQueue.h"
 	"include/vulkanapp/feature_activator/VulkanFeatureActivator.h"
+	
+	"include/vulkanapp/utils/DescriptorUtils.h"
+	"include/vulkanapp/utils/FileUtils.h"
+	"include/vulkanapp/utils/ImageUtils.h"
+	"include/vulkanapp/utils/MemoryUtils.h"
+	"include/vulkanapp/utils/RenderUtils.h"
+	"include/vulkanapp/utils/Vk_Utils.h"
+	
 	"include/structs/EngineContext.h"
+	"include/structs/GPU_Buffer.h"
+	"include/structs/LoadedImageData.h"
+	"include/structs/PushConstantBlock.h"
+	"include/structs/Vertex.h"
+	"include/structs/Vk_Image.h"
+	
 	"include/platform/WindowManager.h"
 	"include/core/Engine.h"
 	"include/config/Config.inl"
@@ -24,6 +38,13 @@ set(
 	"source/vulkanapp/feature_activator/VulkanFeatureActivator.cpp"
 	"source/platform/WindowManager.cpp"
 	"source/core/Engine.cpp"
+	
+	"source/vulkanapp/utils/DescriptorUtils.cpp"
+	"source/vulkanapp/utils/FileUtils.cpp"
+	"source/vulkanapp/utils/ImageUtils.cpp"
+	"source/vulkanapp/utils/MemoryUtils.cpp"
+	"source/vulkanapp/utils/RenderUtils.cpp"
+	"source/vulkanapp/utils/Vk_Utils.cpp"
 )
 
 source_group(
@@ -53,4 +74,5 @@ target_include_directories(
 
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE Vulkan::Vulkan 
 													vk-bootstrap::vk-bootstrap 
-													SDL3::SDL3)
+													SDL3::SDL3
+													STB-image::STB-image)
