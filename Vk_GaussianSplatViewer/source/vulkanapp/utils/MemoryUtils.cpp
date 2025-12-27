@@ -6,8 +6,9 @@
 
 #include "vulkanapp/utils/DescriptorUtils.h"
 #include "vulkanapp/utils/Vk_Utils.h"
-#include "structs/EngineContext.h"
-#include "structs/GPU_Buffer.h"
+#include "structs/engine/RenderContext.h"
+#include "structs/vulkan/GPU_Buffer.h"
+#include "structs/vulkan/Vertex2D.h"
 #include "vulkanapp/DeviceManager.h"
 
 void utils::MemoryUtils::create_vma_allocator(vulkanapp::DeviceManager& device_manager)
@@ -134,47 +135,48 @@ void utils::MemoryUtils::copy_buffer(vkb::DispatchTable disp, VkQueue queue, VkC
     disp.freeCommandBuffers(command_pool, 1, &commandBuffer);
 }
 
+template<typename V>
 void utils::MemoryUtils::create_vertex_and_index_buffers(
-    EngineContext& engine_context, const std::vector<Vertex>& vertices,
+    RenderContext& render_context, const std::vector<V>& vertices,
     const std::vector<uint32_t>& indices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer, GPU_Buffer&
     out_index_buffer)
 {
-    auto device_manager = engine_context.device_manager.get();
-    
-    VkDeviceSize vertexBufferSize = sizeof(Vertex) * vertices.size();
+    auto device_manager = render_context.device_manager.get();
+
+    VkDeviceSize vertexBufferSize = sizeof(V) * vertices.size();
     VkDeviceSize indexBufferSize = sizeof(uint32_t) * indices.size();
 
     // Create Staging Buffer for Vertices using VMA
     GPU_Buffer staging_vertex_buffer;
-    create_buffer(engine_context.dispatch_table, device_manager->get_allocator(),
+    create_buffer(render_context.dispatch_table, device_manager->get_allocator(),
                   vertexBufferSize,
-                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                  VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT,
                   VMA_MEMORY_USAGE_AUTO,
                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |  VMA_ALLOCATION_CREATE_MAPPED_BIT, staging_vertex_buffer);
 
     // Copy Vertex Data to Staging Buffer using VMA mapping
-    assert(vertices.size() != 0, "Vertex Data is empty!");
-    
+    assert(vertices.size() != 0);
+
     void* data;
     vmaMapMemory(device_manager->get_allocator(), staging_vertex_buffer.allocation, &data);
     memcpy(data, vertices.data(),  vertexBufferSize);
-    vmaUnmapMemory(engine_context.device_manager->get_allocator(), staging_vertex_buffer.allocation);
+    vmaUnmapMemory(render_context.device_manager->get_allocator(), staging_vertex_buffer.allocation);
 
     // Create Vertex Buffer (Device Local) using VMA
-    create_buffer(engine_context.dispatch_table, device_manager->get_allocator(), vertexBufferSize,
+    create_buffer(render_context.dispatch_table, device_manager->get_allocator(), vertexBufferSize,
                   VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                   VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO,VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, out_vertex_buffer);
 
     // Copy from Staging Vertex Buffer to Device Local Vertex Buffer
-    copy_buffer(engine_context.dispatch_table, device_manager->get_graphics_queue(), command_pool, staging_vertex_buffer.buffer, out_vertex_buffer.buffer, vertexBufferSize);
-    set_vulkan_object_Name(engine_context.dispatch_table, (uint64_t) out_vertex_buffer.buffer, VK_OBJECT_TYPE_BUFFER, "Vertex Buffer");
+    copy_buffer(render_context.dispatch_table, device_manager->get_graphics_queue(), command_pool, staging_vertex_buffer.buffer, out_vertex_buffer.buffer, vertexBufferSize);
+    set_vulkan_object_Name(render_context.dispatch_table, (uint64_t) out_vertex_buffer.buffer, VK_OBJECT_TYPE_BUFFER, "Vertex Buffer");
 
     // Clean up Staging Vertex Buffer using VMA
     vmaDestroyBuffer(device_manager->get_allocator(), staging_vertex_buffer.buffer, staging_vertex_buffer.allocation);
 
     // Create Staging Buffer for Indices using VMA
     GPU_Buffer staging_index_buffer;
-    create_buffer(engine_context.dispatch_table, device_manager->get_allocator(), indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+    create_buffer(render_context.dispatch_table, device_manager->get_allocator(), indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT,
                   VMA_MEMORY_USAGE_AUTO,
                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |  VMA_ALLOCATION_CREATE_MAPPED_BIT, staging_index_buffer);
 
@@ -184,18 +186,30 @@ void utils::MemoryUtils::create_vertex_and_index_buffers(
     vmaUnmapMemory(device_manager->get_allocator(), staging_index_buffer.allocation);
 
     // Create Index Buffer (Device Local) using VMA
-    create_buffer(engine_context.dispatch_table, device_manager->get_allocator(), indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+    create_buffer(render_context.dispatch_table, device_manager->get_allocator(), indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                   VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                   VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, out_index_buffer);
-    
-    utils::set_vulkan_object_Name(engine_context.dispatch_table, (uint64_t) out_index_buffer.buffer, VK_OBJECT_TYPE_BUFFER, "Index Buffer");
+
+    utils::set_vulkan_object_Name(render_context.dispatch_table, (uint64_t) out_index_buffer.buffer, VK_OBJECT_TYPE_BUFFER, "Index Buffer");
 
     // Copy from Staging Index Buffer to Device Local Index Buffer
-    copy_buffer(engine_context.dispatch_table, device_manager->get_graphics_queue(), command_pool, staging_index_buffer.buffer, out_index_buffer.buffer, indexBufferSize);
+    copy_buffer(render_context.dispatch_table, device_manager->get_graphics_queue(), command_pool, staging_index_buffer.buffer, out_index_buffer.buffer, indexBufferSize);
 
     // Clean up Staging Index Buffer using VMA
     vmaDestroyBuffer(device_manager->get_allocator(), staging_index_buffer.buffer, staging_index_buffer.allocation);
 }
+
+//Instantiations
+template void utils::MemoryUtils::create_vertex_and_index_buffers<Vertex>(
+    RenderContext& engine_context, const std::vector<Vertex>& vertices,
+    const std::vector<uint32_t>& indices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer, GPU_Buffer&
+    out_index_buffer);
+
+template void utils::MemoryUtils::create_vertex_and_index_buffers<Vertex2D>(
+    RenderContext& engine_context, const std::vector<Vertex2D>& vertices,
+    const std::vector<uint32_t>& indices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer, GPU_Buffer&
+    out_index_buffer);
+
 
 void utils::MemoryUtils::allocate_buffer_with_mapped_access(const vkb::DispatchTable& dispatch_table, VmaAllocator allocator, VkDeviceSize size, GPU_Buffer& buffer)
 {

@@ -1,21 +1,18 @@
 #include "vulkanapp/DeviceManager.h"
 
 #include <iostream>
+#include <utility>
 #include <vulkan/vulkan.h>
 
-#include "structs/EngineContext.h"
+#include "structs/engine/RenderContext.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/feature_activator/VulkanFeatureActivator.h"
 
-vulkanapp::DeviceManager::DeviceManager(EngineContext& engine_context): surface(nullptr), compute_queue(nullptr),
-                                                                        graphics_queue(nullptr), present_queue(nullptr),
-                                                                        vmaAllocator(nullptr), engine_context(engine_context)
-{
-}
-
-vulkanapp::DeviceManager::~DeviceManager()
-{
-}
+vulkanapp::DeviceManager::DeviceManager(RenderContext& p_render_context, std::shared_ptr<EngineContext> p_engine_context): surface(nullptr), compute_queue(nullptr),
+                                                                                                       graphics_queue(nullptr), present_queue(nullptr),
+                                                                                                       vma_allocator(nullptr), render_context(p_render_context),
+                                                                                                        engine_context(std::move(p_engine_context)){ }
+vulkanapp::DeviceManager::~DeviceManager()= default;
 
 bool vulkanapp::DeviceManager::device_init()
 {
@@ -44,14 +41,14 @@ bool vulkanapp::DeviceManager::device_init()
         return false;
     }
     instance = instance_ret.value();
-    engine_context.instance_dispatch_table = instance.make_table();
+    render_context.instance_dispatch_table = instance.make_table();
 
     //Activate device features
     VkPhysicalDeviceFeatures features = {};
     features.geometryShader = VK_FALSE;
     features.tessellationShader = VK_FALSE;
 
-    surface = engine_context.window_manager->create_surface_sdl3(instance_ret.value().instance, nullptr);
+    surface = engine_context->window_manager->create_surface_glfw(instance_ret.value().instance, nullptr);
 
     vkb::PhysicalDeviceSelector phys_device_selector(instance);
     auto phys_device_ret = phys_device_selector
@@ -80,6 +77,8 @@ bool vulkanapp::DeviceManager::device_init()
     auto shader_object_features = VulkanFeatureActivator::create_shader_object_features();
     auto device_memory_features = VulkanFeatureActivator::create_physics_device_buffer_address();
     auto descriptorIndexingFeatures = VulkanFeatureActivator::create_physical_device_descriptor_indexing_features();
+    auto synchronization2_features = VulkanFeatureActivator::create_synchronization2_features();
+    auto vertex_input_dynamic_state_features = VulkanFeatureActivator::create_vertex_input_dynamic_state_features();
     
     if (!phys_device_ret)
     {
@@ -94,6 +93,8 @@ bool vulkanapp::DeviceManager::device_init()
         .add_pNext(&shader_object_features)
         .add_pNext(&device_memory_features)
         .add_pNext(&descriptorIndexingFeatures)
+        .add_pNext(&synchronization2_features)
+        .add_pNext(&vertex_input_dynamic_state_features)
         .build();
     
     if (!device_ret)
@@ -104,12 +105,12 @@ bool vulkanapp::DeviceManager::device_init()
 
     device = device_ret.value();
     physical_device = p_device;
-    engine_context.dispatch_table = device.make_table();
+    render_context.dispatch_table = device.make_table();
     
     return true;
 }
 
-bool vulkanapp::DeviceManager::get_queues()
+bool vulkanapp::DeviceManager::init_queues()
 {
     auto gq = device.get_queue(vkb::QueueType::graphics);
     if (!gq.has_value())
@@ -144,12 +145,12 @@ void vulkanapp::DeviceManager::cleanup()
 {
     if(instance.debug_messenger)
     {
-        engine_context.instance_dispatch_table.destroyDebugUtilsMessengerEXT(instance.debug_messenger, nullptr);
+        render_context.instance_dispatch_table.destroyDebugUtilsMessengerEXT(instance.debug_messenger, nullptr);
     }
 
-    engine_context.instance_dispatch_table.destroySurfaceKHR(surface, nullptr);
+    render_context.instance_dispatch_table.destroySurfaceKHR(surface, nullptr);
     
     //No corresponding Vk Bootstrapper function for destroy device
     vkDestroyDevice(device.device, nullptr);
-    engine_context.instance_dispatch_table.destroyInstance(nullptr);
+    render_context.instance_dispatch_table.destroyInstance(nullptr);
 }

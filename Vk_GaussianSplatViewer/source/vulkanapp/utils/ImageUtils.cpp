@@ -6,9 +6,8 @@
 #include <vma/vk_mem_alloc.h>
 #include <VkBootstrapDispatch.h>
 #include "vulkanapp/utils/MemoryUtils.h"
-#include "structs/EngineContext.h"
-#include "structs/GPU_Buffer.h"
-#include "structs/Vk_Image.h"
+#include "structs/engine/RenderContext.h"
+#include "structs/vulkan/GPU_Buffer.h"
 #include "vulkanapp/DeviceManager.h"
 
 LoadedImageData utils::ImageUtils::load_image_data(const std::string& filePath, int desired_channels)
@@ -39,7 +38,7 @@ LoadedImageData utils::ImageUtils::load_image_data(const std::string& filePath, 
     return imageData;
 }
 
-Vk_Image utils::ImageUtils::create_texture_image(EngineContext& engine_context, VkCommandPool command_pool, const LoadedImageData& image_data)
+Vk_Image utils::ImageUtils::create_texture_image(RenderContext& engine_context, VkCommandPool command_pool, const LoadedImageData& image_data)
 {
     if (image_data.pixels)
     {
@@ -114,7 +113,7 @@ VkImageCreateInfo utils::ImageUtils::image_create_info(VkFormat image_format, Vk
     return imgInfo;
 }
 
-void utils::ImageUtils::copy_image(EngineContext& engine_context, VkQueue queue, VkCommandPool command_pool, GPU_Buffer srcBuffer, Vk_Image
+void utils::ImageUtils::copy_image(RenderContext& engine_context, VkQueue queue, VkCommandPool command_pool, GPU_Buffer srcBuffer, Vk_Image
                                   dstImage, VkDeviceSize size, VkExtent3D extend)
 {
     VkCommandBufferAllocateInfo allocInfo{};
@@ -197,9 +196,9 @@ void utils::ImageUtils::copy_image(EngineContext& engine_context, VkQueue queue,
     vmaDestroyBuffer(engine_context.device_manager->get_allocator(), srcBuffer.buffer, srcBuffer.allocation);
 }
 
-void utils::ImageUtils::copy_image_to_buffer(EngineContext& engine_context, Vk_Image src_image, GPU_Buffer& dst_buffer, VkCommandBuffer cmd_buffer, VkOffset3D image_offset)
+void utils::ImageUtils::copy_image_to_buffer(RenderContext& render_context, Vk_Image src_image, GPU_Buffer& dst_buffer, VkCommandBuffer cmd_buffer, VkOffset3D image_offset)
 {
-    auto dispatch_table = engine_context.dispatch_table;
+    auto dispatch_table = render_context.dispatch_table;
     
     // Transition image for transfer
     ImageUtils::image_layout_transition(
@@ -224,7 +223,7 @@ void utils::ImageUtils::copy_image_to_buffer(EngineContext& engine_context, Vk_I
     copy_region.imageSubresource.baseArrayLayer = 0;
     copy_region.imageSubresource.layerCount = 1;
     copy_region.imageOffset = image_offset;
-    auto extents = engine_context.swapchain_manager->get_swapchain_extent();
+    auto extents = render_context.swapchain_manager->get_extent();
     copy_region.imageExtent = {extents.width, extents.height, 1};
     
     dispatch_table.cmdCopyImageToBuffer(
@@ -260,7 +259,7 @@ void utils::ImageUtils::copy_image_to_buffer(EngineContext& engine_context, Vk_I
     buffer_barrier.offset = 0;
     buffer_barrier.size = VK_WHOLE_SIZE;
 
-    engine_context.dispatch_table.cmdPipelineBarrier(
+    render_context.dispatch_table.cmdPipelineBarrier(
         cmd_buffer,
         VK_PIPELINE_STAGE_TRANSFER_BIT,
         VK_PIPELINE_STAGE_HOST_BIT,
@@ -307,7 +306,6 @@ void  utils::ImageUtils::image_layout_transition(VkCommandBuffer command_buffer,
     VkAccessFlags dst_access_mask, VkImageLayout old_layout, VkImageLayout new_layout,
     const VkImageSubresourceRange& subresource_range)
 {
-    // Define an image memory barrier
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = old_layout;       // Previous image layout

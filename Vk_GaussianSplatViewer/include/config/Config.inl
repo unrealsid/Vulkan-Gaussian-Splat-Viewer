@@ -1,6 +1,6 @@
 ﻿#pragma once
+#include <cstdint>
 
-//Config file 
-
-constexpr int WINDOW_WIDTH = 1280;
-constexpr int WINDOW_HEIGHT = 720;
+constexpr uint32_t window_width = 1024;
+constexpr uint32_t window_height = 768;
+constexpr const char* window_title = "Vulkan Scrapyard Renderer";

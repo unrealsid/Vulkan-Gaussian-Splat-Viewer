@@ -43,3 +43,25 @@ VkPhysicalDeviceDescriptorIndexingFeatures vulkanapp::VulkanFeatureActivator::cr
 
     return features;
 }
+
+VkPhysicalDeviceSynchronization2Features vulkanapp::VulkanFeatureActivator::create_synchronization2_features()
+{
+    VkPhysicalDeviceSynchronization2Features synchronization2Features{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
+    synchronization2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+    synchronization2Features.pNext = nullptr;
+    synchronization2Features.synchronization2 = VK_TRUE;
+
+    return synchronization2Features;
+}
+
+VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT vulkanapp::VulkanFeatureActivator::create_vertex_input_dynamic_state_features()
+{
+    VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT vertexInputDynamicStateFeatures{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT};
+    vertexInputDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT;
+    vertexInputDynamicStateFeatures.pNext = nullptr;
+    vertexInputDynamicStateFeatures.vertexInputDynamicState = VK_TRUE;
+
+    return vertexInputDynamicStateFeatures;
+}
+
+

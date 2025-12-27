@@ -8,7 +8,7 @@
 #include "vulkanapp/DeviceManager.h"
 
 struct GPU_Buffer;
-struct EngineContext;
+struct RenderContext;
 struct MaterialParams;
 struct VMAAllocator;
 
@@ -33,10 +33,11 @@ namespace utils
 
         static void copy_buffer(vkb::DispatchTable disp, VkQueue queue, VkCommandPool command_pool, VkBuffer srcBuffer, VkBuffer dst_buffer, VkDeviceSize size);
 
-        static void create_vertex_and_index_buffers(EngineContext& engine_context,
-                                                   const std::vector<Vertex>& vertices,
+        template<typename V>
+        static void create_vertex_and_index_buffers(RenderContext& render_context,
+                                                   const std::vector<V>& vertices,
                                                    const std::vector<uint32_t>& indices,
-                                                   VkCommandPool command_pool, 
+                                                   VkCommandPool command_pool,
                                                    GPU_Buffer& out_vertex_buffer, GPU_Buffer& out_index_buffer);
         
         //Creates a device-addressable buffer (Can be addressed via vulkan BDA)

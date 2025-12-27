@@ -1,17 +1,7 @@
 ﻿set(
     Header_Files
-	"include/vulkanapp/DeviceManager.h"
-	"include/vulkanapp/SwapchainManager.h"
-	"include/vulkanapp/VulkanCleanupQueue.h"
 	"include/vulkanapp/feature_activator/VulkanFeatureActivator.h"
-	
-	"include/vulkanapp/utils/DescriptorUtils.h"
-	"include/vulkanapp/utils/FileUtils.h"
-	"include/vulkanapp/utils/ImageUtils.h"
-	"include/vulkanapp/utils/MemoryUtils.h"
-	"include/vulkanapp/utils/RenderUtils.h"
-	"include/vulkanapp/utils/Vk_Utils.h"
-	
+
 	"include/structs/EngineContext.h"
 	"include/structs/GPU_Buffer.h"
 	"include/structs/LoadedImageData.h"
@@ -22,6 +12,17 @@
 	"include/platform/WindowManager.h"
 	"include/core/Engine.h"
 	"include/config/Config.inl"
+	"include/renderer/Subpass.h"
+	"include/3d/ModelUtils.h"
+	"include/enums/PresentationImageType.h"
+	"include/materials/Material.h"
+	"include/materials/MaterialUtils.h"
+	"include/materials/ShaderObject.h"
+	"include/renderer/subpasses/GeometryPass.h"
+	"include/renderer/Renderer.h"
+	"include/renderer/RenderPass.h"
+	"include/structs/WindowCreateParams.h"
+
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -45,6 +46,15 @@ set(
 	"source/vulkanapp/utils/MemoryUtils.cpp"
 	"source/vulkanapp/utils/RenderUtils.cpp"
 	"source/vulkanapp/utils/Vk_Utils.cpp"
+	"source/3d/ModelUtils.cpp"
+	"source/materials/ShaderObject.cpp"
+	"source/materials/MaterialUtils.cpp"
+	"source/materials/Material.cpp"
+	"source/render/subpasses/GeometryPass.cpp"
+	"source/render/Renderer.cpp"
+	"source/render/Subpass.cpp"
+	"source/render/RenderPass.cpp"
+	"source/render/RendererVulkan.cpp"
 )
 
 source_group(
