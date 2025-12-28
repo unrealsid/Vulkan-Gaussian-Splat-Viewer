@@ -44,6 +44,8 @@ SDL_Window* platform::WindowManager::create_window_sdl3(const WindowCreateParams
         return nullptr;
     }
 
+    setup_window_resize_callback();
+
     return window;  
 }
 
