@@ -1,8 +1,11 @@
 ﻿#include "core/Engine.h"
 #include <chrono>
+
+#include "3d/ModelUtils.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "config/Config.inl"
 #include "renderer/Renderer.h"
+#include "renderer/RenderPass.h"
 #include "structs/WindowCreateParams.h"
 
 void core::Engine::create_window() const
@@ -18,6 +21,12 @@ void core::Engine::create_renderer() const
     engine_context->renderer->renderer_init();
 }
 
+void core::Engine::geometry_init() const
+{
+    auto triangle_data = entity_3d::ModelUtils::load_triangle_model();
+    engine_context->renderer->allocate_mesh_buffers(triangle_data, {0, 1, 2});
+}
+
 void core::Engine::create_cleanup() const
 {
     engine_context->renderer->init_cleanup();
@@ -30,6 +39,9 @@ void core::Engine::init()
     
     create_window();
     create_renderer();
+
+    //TODO: Remove this later
+    geometry_init();
     create_cleanup();
 }
 
@@ -62,6 +74,7 @@ void core::Engine::run() const
         // update();
 
         // draw();
+        engine_context->renderer->renderer_update();
 
         previous_time = current_time;
     }

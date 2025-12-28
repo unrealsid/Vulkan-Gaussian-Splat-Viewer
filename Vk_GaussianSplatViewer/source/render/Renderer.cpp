@@ -23,15 +23,6 @@ namespace core::renderer
 
     void Renderer::renderer_update()
     {
-        std::cout << "Renderer Update" << std::endl;
-
-        //TODO: Change this.
-        if (engine_context.start_rendering)
-        {
-            while (true)
-            {
-                render_pass->record_commands_and_draw();
-            }
-        }
+        render_pass->record_commands_and_draw();
     }
 }

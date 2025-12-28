@@ -20,6 +20,9 @@ namespace core
         void create_window() const;
         void create_renderer() const;
 
+        //TODO: Change this later:
+        void geometry_init() const;
+
         //Orders and stores cleanup function for resource clear
         void create_cleanup() const;
     };

@@ -27,6 +27,9 @@ namespace core::renderer
 
         [[nodiscard]] RenderPass* get_render_pass() const { return render_pass.get(); }
 
+        template<typename V>
+        void allocate_mesh_buffers(const std::vector<V>& vertices, const std::vector<uint32_t>& indices);
+
     private:
         EngineContext& engine_context;
 
@@ -42,8 +45,5 @@ namespace core::renderer
 
 
         void cleanup();
-
-        template<typename V>
-        void allocate_mesh_buffers(const std::vector<V>& vertices, const std::vector<uint32_t>& indices);
     };
 }
