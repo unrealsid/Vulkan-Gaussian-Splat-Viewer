@@ -33,7 +33,7 @@ namespace core::renderer
         void end_rendering();
         void end_command_buffer_recording(uint32_t image);
 
-        virtual void record_commands(VkCommandBuffer* command_buffer) = 0;
+        virtual void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index) = 0;
 
         void set_material(const std::shared_ptr<material::Material>& material);
 

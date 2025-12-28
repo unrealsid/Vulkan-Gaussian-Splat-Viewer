@@ -12,14 +12,14 @@ namespace core::renderer
         set_material(material_utils.create_material("default"));
     }
 
-    void GeometryPass::record_commands(VkCommandBuffer* command_buffer)
+    void GeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index)
     {
         engine_context.dispatch_table.resetCommandBuffer(*command_buffer, 0);
 
         begin_command_buffer_recording();
-        set_present_image_transition(current_frame, PresentationImageType::SwapChain);
+        set_present_image_transition(image_index, PresentationImageType::SwapChain);
         set_present_image_transition(current_frame, PresentationImageType::DepthStencil);
-        setup_color_attachment(current_frame, { {0.1f, 0.1f, 0.1f, 1.0f} });
+        setup_color_attachment(image_index, { {0.1f, 0.1f, 0.1f, 1.0f} });
         setup_depth_attachment({ {1.0f, 0} });
 
         begin_rendering();
@@ -38,6 +38,6 @@ namespace core::renderer
         engine_context.dispatch_table.cmdDraw(*command_buffer, 3, 1, 0, 0);
 
         end_rendering();
-        end_command_buffer_recording(current_frame);
+        end_command_buffer_recording(image_index);
     }
  }

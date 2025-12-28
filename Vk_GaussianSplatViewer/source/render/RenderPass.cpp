@@ -43,23 +43,46 @@ namespace core::renderer
         create_rendering_resources();
     }
 
-    void RenderPass::record_subpasses(uint32_t frame)
+    void RenderPass::record_subpasses(uint32_t image_index)
     {
         //TODO: Need better sync -- works for now, though
         engine_context.dispatch_table.deviceWaitIdle();
 
-        auto command_buffer = get_command_buffer(frame);
+        auto command_buffer = get_command_buffer(current_frame);
         for (const auto& subpass : subpasses)
         {
-            subpass->init_pass_new_frame(*command_buffer, depth_stencil_image.get(), frame);
-            subpass->record_commands(command_buffer);
+            subpass->init_pass_new_frame(*command_buffer, depth_stencil_image.get(), current_frame);
+            subpass->record_commands(command_buffer, image_index);
         }
     }
 
     void RenderPass::record_commands_and_draw()
     {
-        record_subpasses(current_frame);
-        draw_frame();
+        uint32_t image_index = 0;
+        auto dispatch_table = engine_context.dispatch_table;
+
+        // We need to acquire the image before recording because we need image_index for layout transitions
+        VkResult result = dispatch_table.acquireNextImageKHR(swapchain_manager->get_swapchain(), UINT64_MAX, available_semaphores[current_frame], VK_NULL_HANDLE, &image_index);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR)
+        {
+            dispatch_table.deviceWaitIdle();
+
+            reset_subpass_command_buffers();
+            recreate_swapchain();
+            create_rendering_resources();
+
+            return;
+        }
+
+        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+        {
+            std::cout << "failed to acquire swapchain image. Error " << result << "\n";
+            return;
+        }
+
+        record_subpasses(image_index);
+        draw_frame(image_index);
     }
 
     void RenderPass::init_subpasses()
@@ -138,29 +161,10 @@ namespace core::renderer
         allocate_and_record_command_buffers();
     }
 
-    bool RenderPass::draw_frame()
+    bool RenderPass::draw_frame(uint32_t image_index)
     {
         auto dispatch_table = engine_context.dispatch_table;
         dispatch_table.waitForFences(1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
-
-        uint32_t image_index = 0;
-        VkResult result = dispatch_table.acquireNextImageKHR(swapchain_manager->get_swapchain(), UINT64_MAX, available_semaphores[current_frame], VK_NULL_HANDLE, &image_index);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR)
-        {
-            dispatch_table.deviceWaitIdle();
-
-            reset_subpass_command_buffers();
-            recreate_swapchain();
-            create_rendering_resources();
-
-            return true;
-        }
-
-        if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-        {
-            std::cout << "failed to acquire swapchain image. Error " << result << "\n";
-            return false;
-        }
 
         if (image_in_flight[image_index] != VK_NULL_HANDLE)
         {
@@ -182,8 +186,8 @@ namespace core::renderer
         submitInfo.pWaitSemaphores = wait_semaphores;
         submitInfo.pWaitDstStageMask = wait_stages;
 
-        submitInfo.commandBufferCount = 2;
-        submitInfo.pCommandBuffers = command_buffers.data(); //{ command_buffer };
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &command_buffers[current_frame];
 
         VkSemaphore signal_semaphores[] = { finished_semaphores[current_frame] };
         submitInfo.signalSemaphoreCount = 1;
@@ -208,7 +212,7 @@ namespace core::renderer
 
         present_info.pImageIndices = &image_index;
 
-        result = dispatch_table.queuePresentKHR(device_manager->get_present_queue(), &present_info);
+        VkResult result = dispatch_table.queuePresentKHR(device_manager->get_present_queue(), &present_info);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             dispatch_table.deviceWaitIdle();

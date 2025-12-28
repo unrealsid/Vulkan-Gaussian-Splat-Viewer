@@ -39,9 +39,9 @@ namespace core::renderer
         void recreate_swapchain();
         void create_rendering_resources();
 
-        bool draw_frame();
+        bool draw_frame(uint32_t image_index);
 
-        void record_subpasses(uint32_t frame);
+        void record_subpasses(uint32_t image_index);
 
         void record_commands_and_draw();
 
