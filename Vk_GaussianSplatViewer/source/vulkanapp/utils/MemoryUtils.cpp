@@ -123,12 +123,23 @@ void utils::MemoryUtils::copy_buffer(vkb::DispatchTable disp, VkQueue queue, VkC
 
     disp.endCommandBuffer(commandBuffer);
 
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
+    VkSubmitInfo2 submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
+    submitInfo.pNext = nullptr;
+    submitInfo.flags = 0;
 
-    disp.queueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+    VkCommandBufferSubmitInfo commandBufferSubmitInfo{};
+    commandBufferSubmitInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+    commandBufferSubmitInfo.pNext = nullptr;
+    commandBufferSubmitInfo.commandBuffer = commandBuffer;
+    commandBufferSubmitInfo.deviceMask = 0;
+
+    std::vector commandBufferSubmitInfos = {commandBufferSubmitInfo};
+
+    submitInfo.commandBufferInfoCount = commandBufferSubmitInfos.size();
+    submitInfo.pCommandBufferInfos = commandBufferSubmitInfos.data();
+
+    disp.queueSubmit2(queue, 1, &submitInfo, VK_NULL_HANDLE);
     disp.queueWaitIdle(queue);
 
     disp.freeCommandBuffers(command_pool, 1, &commandBuffer);

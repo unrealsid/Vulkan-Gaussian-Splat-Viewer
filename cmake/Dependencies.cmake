@@ -11,7 +11,7 @@ if(NOT vk-bootstrap_FOUND)
 	FetchContent_Declare(
 		vk_bootstrap
 		GIT_REPOSITORY "https://github.com/charles-lunarg/vk-bootstrap"
-		GIT_TAG        v1.4.321
+		GIT_TAG        v1.4.336
 		GIT_SHALLOW TRUE
 		GIT_PROGRESS TRUE
 	)

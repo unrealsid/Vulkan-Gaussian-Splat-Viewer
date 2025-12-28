@@ -36,10 +36,10 @@ namespace utils
 
         static void image_layout_transition(VkCommandBuffer command_buffer,
                                     VkImage image,
-                                    VkPipelineStageFlags src_stage_mask,
-                                    VkPipelineStageFlags dst_stage_mask,
-                                    VkAccessFlags src_access_mask,
-                                    VkAccessFlags dst_access_mask,
+                                    VkPipelineStageFlags2 src_stage_mask,
+                                    VkPipelineStageFlags2 dst_stage_mask,
+                                    VkAccessFlags2 src_access_mask,
+                                    VkAccessFlags2 dst_access_mask,
                                     VkImageLayout old_layout,
                                     VkImageLayout new_layout,
                                     const VkImageSubresourceRange &subresource_range);

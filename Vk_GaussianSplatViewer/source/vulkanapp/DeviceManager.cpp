@@ -1,9 +1,6 @@
 #include "vulkanapp/DeviceManager.h"
 
 #include <iostream>
-#include <utility>
-#include <vulkan/vulkan.h>
-
 #include "structs/EngineContext.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/feature_activator/VulkanFeatureActivator.h"
@@ -66,6 +63,7 @@ bool vulkanapp::DeviceManager::device_init()
         .add_required_extension(VK_KHR_MAINTENANCE1_EXTENSION_NAME)
         .add_required_extension(VK_KHR_MAINTENANCE3_EXTENSION_NAME)
         .add_required_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME)
+        .add_required_extension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME)
         .add_required_extension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)
         //.add_required_extension(VK_KHR_MAINTENANCE_6_EXTENSION_NAME)
         .set_required_features(features)

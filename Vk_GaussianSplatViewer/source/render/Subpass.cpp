@@ -47,10 +47,10 @@ namespace core::renderer
 
             utils::ImageUtils::image_layout_transition(active_command_buffer,
                                             image.image,
-                                            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                            VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+                                            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
                                             0,
-                                            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                                            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
                                             VK_IMAGE_LAYOUT_UNDEFINED,
                                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                             VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
@@ -60,10 +60,10 @@ namespace core::renderer
         case PresentationImageType::DepthStencil:
             utils::ImageUtils::image_layout_transition(active_command_buffer,
                                           depth_stencil_image->image,
-                                         VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-                                         VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                                         VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+                                         VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
                                          0,
-                                         VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                                         VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
                                          VK_IMAGE_LAYOUT_UNDEFINED,
                                          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                           VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 });
@@ -135,9 +135,9 @@ namespace core::renderer
         (
              active_command_buffer,                            // Command buffer
              engine_context.swapchain_manager->get_images()[image].image,    // Swapchain image
-             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
-             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
-             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
+             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
+             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
+             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
              0,                                        // Destination access mask
              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
              VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout

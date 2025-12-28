@@ -139,20 +139,27 @@ void utils::ImageUtils::copy_image(EngineContext& engine_context, VkQueue queue,
     range.baseArrayLayer = 0;
     range.layerCount = 1;
 
-    VkImageMemoryBarrier imageBarrier_toTransfer = {};
-    imageBarrier_toTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    VkImageMemoryBarrier2 imageBarrier_toTransfer = {};
+    imageBarrier_toTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
 
     imageBarrier_toTransfer.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageBarrier_toTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     imageBarrier_toTransfer.image = dstImage.image;
     imageBarrier_toTransfer.subresourceRange = range;
 
+    imageBarrier_toTransfer.srcStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
     imageBarrier_toTransfer.srcAccessMask = 0;
-    imageBarrier_toTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    imageBarrier_toTransfer.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    imageBarrier_toTransfer.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+
+    VkDependencyInfo dependencyInfo = {};
+    dependencyInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    dependencyInfo.imageMemoryBarrierCount = 1;
+    dependencyInfo.pImageMemoryBarriers = &imageBarrier_toTransfer;
 
     //barrier the image into the transfer-receive layout
     //1.1 barrier
-    engine_context.dispatch_table.cmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrier_toTransfer);
+    engine_context.dispatch_table.cmdPipelineBarrier2(commandBuffer, &dependencyInfo);
 
     VkBufferImageCopy copyRegion = {};
     copyRegion.bufferOffset = 0;
@@ -169,25 +176,34 @@ void utils::ImageUtils::copy_image(EngineContext& engine_context, VkQueue queue,
     engine_context.dispatch_table.cmdCopyBufferToImage(commandBuffer, srcBuffer.buffer, dstImage.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
     //3. Put barrier for image after copy
-    VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toTransfer;
+    VkImageMemoryBarrier2 imageBarrier_toReadable = imageBarrier_toTransfer;
 
     imageBarrier_toReadable.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     imageBarrier_toReadable.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    imageBarrier_toReadable.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    imageBarrier_toReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    imageBarrier_toReadable.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    imageBarrier_toReadable.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+    imageBarrier_toReadable.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+    imageBarrier_toReadable.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+
+    dependencyInfo.pImageMemoryBarriers = &imageBarrier_toReadable;
 
     //barrier the image into the shader readable layout
-    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrier_toReadable);
+    engine_context.dispatch_table.cmdPipelineBarrier2(commandBuffer, &dependencyInfo);
     
     engine_context.dispatch_table.endCommandBuffer(commandBuffer);
 
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
+    VkSubmitInfo2 submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
 
-    engine_context.dispatch_table.queueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+    VkCommandBufferSubmitInfo commandBufferSubmitInfo{};
+    commandBufferSubmitInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+    commandBufferSubmitInfo.commandBuffer = commandBuffer;
+
+    submitInfo.commandBufferInfoCount = 1;
+    submitInfo.pCommandBufferInfos = &commandBufferSubmitInfo;
+
+    engine_context.dispatch_table.queueSubmit2(queue, 1, &submitInfo, VK_NULL_HANDLE);
     engine_context.dispatch_table.queueWaitIdle(queue);
 
     engine_context.dispatch_table.freeCommandBuffers(command_pool, 1, &commandBuffer);
@@ -203,10 +219,10 @@ void utils::ImageUtils::copy_image_to_buffer(EngineContext& render_context, Vk_I
     ImageUtils::image_layout_transition(
         cmd_buffer,
         src_image.image,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        VK_ACCESS_TRANSFER_READ_BIT,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_ACCESS_2_TRANSFER_READ_BIT,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
@@ -238,9 +254,9 @@ void utils::ImageUtils::copy_image_to_buffer(EngineContext& render_context, Vk_I
     ImageUtils::image_layout_transition(
         cmd_buffer,
         src_image.image,
-        VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-        VK_ACCESS_TRANSFER_READ_BIT,
+        VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
+        VK_ACCESS_2_TRANSFER_READ_BIT,
         0,
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -248,25 +264,24 @@ void utils::ImageUtils::copy_image_to_buffer(EngineContext& render_context, Vk_I
     );
 
     //And add a buffer for the buffer before it is read on the cpu
-    VkBufferMemoryBarrier buffer_barrier{};
-    buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    buffer_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    buffer_barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+    VkBufferMemoryBarrier2 buffer_barrier{};
+    buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+    buffer_barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    buffer_barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+    buffer_barrier.dstStageMask = VK_PIPELINE_STAGE_2_HOST_BIT;
+    buffer_barrier.dstAccessMask = VK_ACCESS_2_HOST_READ_BIT;
     buffer_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     buffer_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     buffer_barrier.buffer = dst_buffer.buffer;
     buffer_barrier.offset = 0;
     buffer_barrier.size = VK_WHOLE_SIZE;
 
-    render_context.dispatch_table.cmdPipelineBarrier(
-        cmd_buffer,
-        VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_PIPELINE_STAGE_HOST_BIT,
-        0,
-        0, nullptr,
-        1, &buffer_barrier,
-        0, nullptr
-    );
+    VkDependencyInfo dependencyInfo = {};
+    dependencyInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    dependencyInfo.bufferMemoryBarrierCount = 1;
+    dependencyInfo.pBufferMemoryBarriers = &buffer_barrier;
+
+    render_context.dispatch_table.cmdPipelineBarrier2(cmd_buffer, &dependencyInfo);
 }
 
 void utils::ImageUtils::create_image_sampler(const vkb::DispatchTable& disp, Vk_Image& image, VkFilter filter)
@@ -301,12 +316,12 @@ void utils::ImageUtils::create_image_view(const vkb::DispatchTable& disp, Vk_Ima
 }
 
 void  utils::ImageUtils::image_layout_transition(VkCommandBuffer command_buffer, VkImage image,
-    VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkAccessFlags src_access_mask,
-    VkAccessFlags dst_access_mask, VkImageLayout old_layout, VkImageLayout new_layout,
+    VkPipelineStageFlags2 src_stage_mask, VkPipelineStageFlags2 dst_stage_mask, VkAccessFlags2 src_access_mask,
+    VkAccessFlags2 dst_access_mask, VkImageLayout old_layout, VkImageLayout new_layout,
     const VkImageSubresourceRange& subresource_range)
 {
-    VkImageMemoryBarrier barrier{};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    VkImageMemoryBarrier2 barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
     barrier.oldLayout = old_layout;       // Previous image layout
     barrier.newLayout = new_layout;       // Target image layout
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -315,17 +330,19 @@ void  utils::ImageUtils::image_layout_transition(VkCommandBuffer command_buffer,
     barrier.subresourceRange = subresource_range; // Range of image subresources
 
     // Set source and destination access masks
+    barrier.srcStageMask = src_stage_mask;
     barrier.srcAccessMask = src_access_mask; // Access mask for the previous layout
+    barrier.dstStageMask = dst_stage_mask;
     barrier.dstAccessMask = dst_access_mask; // Access mask for the target layout
 
+    VkDependencyInfo dependencyInfo = {};
+    dependencyInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    dependencyInfo.imageMemoryBarrierCount = 1;
+    dependencyInfo.pImageMemoryBarriers = &barrier;
+
     // Record the pipeline barrier into the command buffer
-    vkCmdPipelineBarrier(
+    vkCmdPipelineBarrier2(
         command_buffer,  // Command buffer
-        src_stage_mask,  // Source pipeline stage
-        dst_stage_mask,  // Destination pipeline stage
-        0,               
-        0, nullptr,      // Memory barriers
-        0, nullptr,      // Buffer memory barriers 
-        1, &barrier      // Image memory barriers
+        &dependencyInfo
     );
 }

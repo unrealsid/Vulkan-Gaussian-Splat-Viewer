@@ -173,28 +173,34 @@ namespace core::renderer
 
         image_in_flight[image_index] = in_flight_fences[current_frame];
 
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        VkSubmitInfo2 submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
 
-        VkSemaphore wait_semaphores[] = { available_semaphores[current_frame] };
-        VkPipelineStageFlags wait_stages[] =
-        {
-           VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-        };
+        VkSemaphoreSubmitInfo waitSemaphoreSubmitInfo = {};
+        waitSemaphoreSubmitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+        waitSemaphoreSubmitInfo.semaphore = available_semaphores[current_frame];
+        waitSemaphoreSubmitInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = wait_semaphores;
-        submitInfo.pWaitDstStageMask = wait_stages;
+        submitInfo.waitSemaphoreInfoCount = 1;
+        submitInfo.pWaitSemaphoreInfos = &waitSemaphoreSubmitInfo;
 
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &command_buffers[current_frame];
+        VkCommandBufferSubmitInfo commandBufferSubmitInfo = {};
+        commandBufferSubmitInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+        commandBufferSubmitInfo.commandBuffer = command_buffers[current_frame];
 
-        VkSemaphore signal_semaphores[] = { finished_semaphores[current_frame] };
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signal_semaphores;
+        submitInfo.commandBufferInfoCount = 1;
+        submitInfo.pCommandBufferInfos = &commandBufferSubmitInfo;
+
+        VkSemaphoreSubmitInfo signalSemaphoreSubmitInfo = {};
+        signalSemaphoreSubmitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+        signalSemaphoreSubmitInfo.semaphore = finished_semaphores[current_frame];
+        signalSemaphoreSubmitInfo.stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT; // Signal when all commands are done
+
+        submitInfo.signalSemaphoreInfoCount = 1;
+        submitInfo.pSignalSemaphoreInfos = &signalSemaphoreSubmitInfo;
 
         dispatch_table.resetFences(1, &in_flight_fences[current_frame]);
-        if (dispatch_table.queueSubmit(device_manager->get_graphics_queue(), 1, &submitInfo, in_flight_fences[current_frame]) != VK_SUCCESS)
+        if (dispatch_table.queueSubmit2(device_manager->get_graphics_queue(), 1, &submitInfo, in_flight_fences[current_frame]) != VK_SUCCESS)
         {
             std::cout << "failed to submit draw command buffer\n";
             return false;
@@ -203,6 +209,7 @@ namespace core::renderer
         VkPresentInfoKHR present_info = {};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
+        VkSemaphore signal_semaphores[] = { finished_semaphores[current_frame] };
         present_info.waitSemaphoreCount = 1;
         present_info.pWaitSemaphores = signal_semaphores;
 
