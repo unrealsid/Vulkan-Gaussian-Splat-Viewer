@@ -1,5 +1,5 @@
 REM How to use this file:
-REM ./compile_shaders.bat D:\"Visual Studio 2022"\Code\Vk_RubiksCube2\Vk_RubiksCube\shaders C:\VulkanSDK\1.4.321.1\Bin\glslc.exe [optional: D:\"Visual Studio 2022"\Code\Vk_RubiksCube2\Vk_RubiksCube\shaders\include]
+REM ./compile_shaders.bat D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders C:\VulkanSDK\1.4.335.0\Bin\glslc.exe
 
 @echo off
 setlocal enabledelayedexpansion

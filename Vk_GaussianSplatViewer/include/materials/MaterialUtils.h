@@ -13,8 +13,8 @@ namespace material
 
         MaterialUtils(EngineContext& engine_context) : engine_context(engine_context)
         {
-            vertex_shader_path = R"(C:\Users\Sid\Documents\Visual Studio 2022\Code\VkLiteRenderer\VkLiteRenderer\shaders\triangle.vert.spv)";
-            fragment_shader_path = R"(C:\Users\Sid\Documents\Visual Studio 2022\Code\VkLiteRenderer\VkLiteRenderer\shaders\triangle.frag.spv)";
+            vertex_shader_path = R"(D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders\triangle.vert.spv)";
+            fragment_shader_path = R"(D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders\triangle.frag.spv)";
         }
 
         [[nodiscard]] std::shared_ptr<Material> create_material(const std::string& name) const;
