@@ -49,3 +49,18 @@ if(NOT STB_FOUND)
 	message(STATUS "Using STB via FetchContent")
 	FetchContent_MakeAvailable(STB)
 endif()
+
+find_package(TINYPLY QUIET)
+if(TINYPLY_FOUND)
+	message(STATUS "Using TinyPly via find_package")
+endif()
+if(NOT TINYPLY_FOUND)
+	FetchContent_Declare(
+			TINYPLY
+			GIT_REPOSITORY "https://github.com/unrealsid/tinyply-cmake.git"
+			GIT_SHALLOW TRUE
+			GIT_PROGRESS TRUE
+	)
+	message(STATUS "Using Tiny Ply via FetchContent")
+	FetchContent_MakeAvailable(TINYPLY)
+endif()

@@ -82,7 +82,12 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
+if(NOT TARGET tinyply)
+	message(SEND_ERROR "Attempt to link to non-existent tinyply.")
+endif()
+
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE Vulkan::Vulkan 
 													vk-bootstrap::vk-bootstrap 
 													SDL3::SDL3
-													STB-image::STB-image)
+													STB-image::STB-image
+													tinyply)
