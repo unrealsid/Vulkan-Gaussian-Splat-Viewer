@@ -1,6 +1,6 @@
 ﻿#include "vulkanapp/SwapchainManager.h"
 
-#include "structs/engine/RenderContext.h"
+#include "structs/EngineContext.h"
 #include <iostream>
 #include <vulkan/vulkan_core.h>
 #include <algorithm>
@@ -9,11 +9,11 @@
 
 namespace vulkanapp
 {
-    SwapchainManager::SwapchainManager(RenderContext* render_context) : max_image_count(2),
-                                                                        render_context(render_context)
+    SwapchainManager::SwapchainManager(EngineContext& engine_context) : max_image_count(2),
+                                                                        engine_context(engine_context)
     {
-        dispatch_table = render_context->dispatch_table;
-        instance_dispatch_table = render_context->instance_dispatch_table;
+        dispatch_table = engine_context.dispatch_table;
+        instance_dispatch_table = engine_context.instance_dispatch_table;
     }
 
     void SwapchainManager::initialize(VkPhysicalDevice physical_device, VkDevice device,

@@ -6,9 +6,8 @@
 
 #include "vulkanapp/utils/DescriptorUtils.h"
 #include "vulkanapp/utils/Vk_Utils.h"
-#include "structs/engine/RenderContext.h"
-#include "structs/vulkan/GPU_Buffer.h"
-#include "structs/vulkan/Vertex2D.h"
+#include "structs/GPU_Buffer.h"
+#include "structs/Vertex2D.h"
 #include "vulkanapp/DeviceManager.h"
 
 void utils::MemoryUtils::create_vma_allocator(vulkanapp::DeviceManager& device_manager)
@@ -137,7 +136,7 @@ void utils::MemoryUtils::copy_buffer(vkb::DispatchTable disp, VkQueue queue, VkC
 
 template<typename V>
 void utils::MemoryUtils::create_vertex_and_index_buffers(
-    RenderContext& render_context, const std::vector<V>& vertices,
+    EngineContext& render_context, const std::vector<V>& vertices,
     const std::vector<uint32_t>& indices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer, GPU_Buffer&
     out_index_buffer)
 {
@@ -201,12 +200,12 @@ void utils::MemoryUtils::create_vertex_and_index_buffers(
 
 //Instantiations
 template void utils::MemoryUtils::create_vertex_and_index_buffers<Vertex>(
-    RenderContext& engine_context, const std::vector<Vertex>& vertices,
+    EngineContext& engine_context, const std::vector<Vertex>& vertices,
     const std::vector<uint32_t>& indices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer, GPU_Buffer&
     out_index_buffer);
 
 template void utils::MemoryUtils::create_vertex_and_index_buffers<Vertex2D>(
-    RenderContext& engine_context, const std::vector<Vertex2D>& vertices,
+    EngineContext& engine_context, const std::vector<Vertex2D>& vertices,
     const std::vector<uint32_t>& indices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer, GPU_Buffer&
     out_index_buffer);
 

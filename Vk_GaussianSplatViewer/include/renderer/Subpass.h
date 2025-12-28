@@ -6,7 +6,7 @@
 #include "platform/WindowManager.h"
 #include "structs/Vk_Image.h"
 
-struct RenderContext;
+struct EngineContext;
 struct WindowCreateParams;
 
 namespace vulkanapp
@@ -21,7 +21,7 @@ namespace core::renderer
     {
     public:
         virtual ~Subpass() = default;
-        explicit Subpass(RenderContext* render_context, uint32_t max_frames_in_flight = 2);
+        explicit Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
 
         void init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame);
 
@@ -38,7 +38,7 @@ namespace core::renderer
         void set_material(const std::shared_ptr<material::Material>& material);
 
     protected:
-        RenderContext* render_context;
+        EngineContext& engine_context;
 
         vulkanapp::SwapchainManager* swapchain_manager;
         vulkanapp::DeviceManager* device_manager;
@@ -54,9 +54,6 @@ namespace core::renderer
         VkRenderingAttachmentInfoKHR depth_attachment_info;
 
         std::shared_ptr<material::Material> material_to_use;
-
-        //stores mesh buffers to draw
-        std::vector<EntityBufferData> entity_buffer_data;
 
         void cleanup();
     };

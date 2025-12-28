@@ -1,18 +1,20 @@
 ﻿#include "core/Engine.h"
 #include <chrono>
 #include "vulkanapp/VulkanCleanupQueue.h"
-#include <iostream>
+#include "config/Config.inl"
+#include "structs/WindowCreateParams.h"
 
 void core::Engine::create_window() const
 {
     engine_context->window_manager = std::make_unique<platform::WindowManager>(*engine_context);
-    engine_context->window_manager->create_window_sdl3("Vulkan Gaussian Splat");
+    WindowCreateParams window_create_params = { window_width, window_height, window_title };
+    engine_context->window_manager->create_window_sdl3(window_create_params, true);
 }
 
 void core::Engine::create_swapchain() const
 {
     engine_context->swapchain_manager = std::make_unique<vulkanapp::SwapchainManager>(*engine_context);
-    engine_context->swapchain_manager->create_swapchain();
+    engine_context->swapchain_manager->create_swapchain(window_width, window_height);
 }
 
 void core::Engine::create_device() const

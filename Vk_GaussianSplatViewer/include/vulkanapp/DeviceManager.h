@@ -1,11 +1,11 @@
 #pragma once
-#include <vulkan/vulkan.h>
+
 #include <vma/vk_mem_alloc.h>
 #include <VkBootstrap.h>
 
 #include "structs/EngineContext.h"
 
-struct RenderContext;
+struct EngineContext;
 
 //Manages instance, device and queues
 namespace vulkanapp
@@ -13,7 +13,7 @@ namespace vulkanapp
     class DeviceManager
     {
     public:
-        DeviceManager(RenderContext& p_render_context);
+        DeviceManager(EngineContext& engine_context);
         ~DeviceManager();
         
         bool device_init();
@@ -32,8 +32,7 @@ namespace vulkanapp
 
         VmaAllocator vma_allocator;
 
-        RenderContext& render_context;
-        std::shared_ptr<EngineContext> engine_context;
+        EngineContext& engine_context;
         
     public:
         [[nodiscard]] vkb::Instance get_instance() const { return instance; }

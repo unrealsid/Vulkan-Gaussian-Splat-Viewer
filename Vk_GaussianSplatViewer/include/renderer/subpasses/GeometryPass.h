@@ -8,7 +8,7 @@ namespace core::renderer
     {
 
     public:
-        GeometryPass(RenderContext* render_context, uint32_t max_frames_in_flight);
+        GeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight);
 
         void record_commands(VkCommandBuffer* command_buffer) override;
     };

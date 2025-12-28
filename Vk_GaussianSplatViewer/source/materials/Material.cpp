@@ -1,16 +1,15 @@
 #include "materials/Material.h"
 #include "materials/ShaderObject.h"
-#include "structs//RenderContext.h"
-
+#include "structs/EngineContext.h"
 #include "structs//PushConstantBlock.h"
 #include "vulkanapp/utils/DescriptorUtils.h"
 #include "vulkanapp/utils/FileUtils.h"
 
 namespace material
 {
-    Material::Material(std::string material_name, RenderContext* render_context) :
+    Material::Material(std::string material_name, EngineContext& engine_context) :
         material_name(std::move(material_name)), descriptor_set(nullptr), pipeline_layout(nullptr),
-        render_context(render_context)
+        engine_context(engine_context)
     {
         
     }

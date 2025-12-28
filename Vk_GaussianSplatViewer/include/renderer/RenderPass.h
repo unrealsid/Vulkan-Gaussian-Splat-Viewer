@@ -1,8 +1,9 @@
 ﻿#pragma once
 
 #include "Subpass.h"
-#include "structs/EngineContext.h"
 #include "structs/Vk_Image.h"
+
+struct EngineContext;
 
 namespace vulkanapp
 {
@@ -10,14 +11,12 @@ namespace vulkanapp
     class DeviceManager;
 }
 
-struct RenderContext;
-
 namespace core::renderer
 {
     class RenderPass
     {
     public:
-        RenderPass(RenderContext* render_context, std::weak_ptr<EngineContext> engine_context, uint32_t max_frames_in_flight = 2);
+        RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
         void allocate_and_record_command_buffers();
         void init_renderpass();
         void init_subpasses();
@@ -59,8 +58,7 @@ namespace core::renderer
         std::vector<VkFence> in_flight_fences;
         std::vector<VkFence> image_in_flight;
 
-        RenderContext* render_context;
-        std::weak_ptr<EngineContext> engine_context;
+        EngineContext& engine_context;
 
         VkCommandPool command_pool;
 

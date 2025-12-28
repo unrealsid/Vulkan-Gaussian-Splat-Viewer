@@ -5,7 +5,7 @@
 #include "structs/LoadedImageData.h"
 #include "structs/Vk_Image.h"
 
-struct RenderContext;
+struct EngineContext;
 
 namespace vulkan
 {
@@ -22,13 +22,13 @@ namespace utils
     public:    
         static LoadedImageData load_image_data(const std::string& file_path, int desired_channels = 4);
 
-        static Vk_Image create_texture_image(RenderContext& engine_context, VkCommandPool command_pool, const LoadedImageData& image_data);
+        static Vk_Image create_texture_image(EngineContext& engine_context, VkCommandPool command_pool, const LoadedImageData& image_data);
 
         static VkImageCreateInfo image_create_info(VkFormat image_format, VkImageUsageFlags image_usage_flags, VkExtent3D image_extent);
 
-        static void copy_image(RenderContext& engine_context, VkQueue queue, VkCommandPool command_pool, GPU_Buffer srcBuffer, Vk_Image dstImage, VkDeviceSize size, VkExtent3D extend);
+        static void copy_image(EngineContext& engine_context, VkQueue queue, VkCommandPool command_pool, GPU_Buffer srcBuffer, Vk_Image dstImage, VkDeviceSize size, VkExtent3D extend);
 
-        static void copy_image_to_buffer(RenderContext& render_context, Vk_Image src_image, GPU_Buffer& dst_buffer, VkCommandBuffer cmd_buffer, VkOffset3D image_offset);
+        static void copy_image_to_buffer(EngineContext& render_context, Vk_Image src_image, GPU_Buffer& dst_buffer, VkCommandBuffer cmd_buffer, VkOffset3D image_offset);
 
         static void create_image_sampler(const vkb::DispatchTable& disp, Vk_Image& image, VkFilter filter);
 

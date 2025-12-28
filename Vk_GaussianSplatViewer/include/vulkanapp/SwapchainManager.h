@@ -3,10 +3,9 @@
 #include <VkBootstrap.h>
 #include <vulkan/vulkan.h>
 #include <vector>
-#include <optional>
-#include <memory>
 
-struct RenderContext;
+struct EngineContext;
+struct EngineContext;
 
 //Manages the swapchain
 namespace vulkanapp
@@ -27,7 +26,7 @@ namespace vulkanapp
     class SwapchainManager
     {
     public:
-        explicit SwapchainManager(RenderContext* render_context);
+        explicit SwapchainManager(EngineContext& engine_context);
         ~SwapchainManager() = default;
 
 
@@ -77,7 +76,7 @@ namespace vulkanapp
 
         uint32_t max_image_count;
 
-        RenderContext* render_context;
+        EngineContext& engine_context;
         vkb::DispatchTable dispatch_table;
         vkb::InstanceDispatchTable instance_dispatch_table;
     };

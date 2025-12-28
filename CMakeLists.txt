@@ -13,6 +13,8 @@ include(GNUInstallDirs)
 
 add_subdirectory(Vk_GaussianSplatViewer)
 
+target_compile_features(Vk_GaussianSplatViewer PRIVATE cxx_std_20)
+
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)

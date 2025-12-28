@@ -1,13 +1,9 @@
 ﻿#pragma once
 
-#include <memory>
-#include <utility>
+#include <cstdint>
+#include <vector>
 
-#include "platform/WindowManager.h"
-#include "structs/EngineContext.h"
-#include "structs/RenderContext.h"
-
-struct RenderContext;
+struct EngineContext;
 struct WindowCreateParams;
 
 namespace core::renderer
@@ -15,8 +11,8 @@ namespace core::renderer
     class Renderer
     {
     public:
-        explicit Renderer(std::shared_ptr<EngineContext> engine_context, const uint32_t p_max_frames_in_flight = 2) :
-                                                                        engine_context(std::move(engine_context)),
+        explicit Renderer(EngineContext& engine_context, const uint32_t p_max_frames_in_flight = 2) :
+                                                                        engine_context(engine_context),
                                                                         max_frames_in_flight(p_max_frames_in_flight)
         {
         }
@@ -24,14 +20,8 @@ namespace core::renderer
         void renderer_init();
         void renderer_update();
 
-        [[nodiscard]] RenderContext* get_render_context() const
-        {
-            return render_context.get();
-        }
-
     private:
-        std::unique_ptr<RenderContext> render_context;
-        std::shared_ptr<EngineContext> engine_context;
+        EngineContext& engine_context;
 
         //How many images are we using for a single frame?
         uint32_t max_frames_in_flight;
@@ -42,8 +32,9 @@ namespace core::renderer
         void create_device() const;
         void init_cleanup() const;
 
-        void process_command();
-
         void cleanup();
+
+        template<typename V>
+        void allocate_mesh_buffers(const std::vector<V>& vertices, const std::vector<uint32_t>& indices);
     };
 }

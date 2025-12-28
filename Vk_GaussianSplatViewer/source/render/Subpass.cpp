@@ -1,17 +1,18 @@
 #include "renderer/Subpass.h"
-#include "renderer/Renderer.h"
+
+#include "structs/EngineContext.h"
 #include "vulkanapp/utils/ImageUtils.h"
 #include "vulkanapp/utils/RenderUtils.h"
 
 namespace core::renderer
 {
-    Subpass::Subpass(RenderContext* render_context, uint32_t max_frames_in_flight) :
-                    render_context(render_context),
+    Subpass::Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
+                    engine_context(engine_context),
                     max_frames_in_flight(max_frames_in_flight),
                     active_command_buffer(nullptr), depth_stencil_image(nullptr)
     {
-        swapchain_manager = render_context->swapchain_manager.get();
-        device_manager = render_context->device_manager.get();
+        swapchain_manager = engine_context.swapchain_manager.get();
+        device_manager = engine_context.device_manager.get();
     }
 
     void Subpass::init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame)
@@ -26,7 +27,7 @@ namespace core::renderer
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-        if (render_context->dispatch_table.beginCommandBuffer(active_command_buffer, &begin_info) != VK_SUCCESS)
+        if (engine_context.dispatch_table.beginCommandBuffer(active_command_buffer, &begin_info) != VK_SUCCESS)
         {
             std::cout << "failed to begin recording command buffer\n";
             assert(false);
@@ -41,7 +42,7 @@ namespace core::renderer
 
         case PresentationImageType::SwapChain:
             {
-            auto swapchain_ref = render_context->swapchain_manager.get();
+            auto swapchain_ref = engine_context.swapchain_manager.get();
             auto image = swapchain_ref->get_images()[image_id];
 
             utils::ImageUtils::image_layout_transition(active_command_buffer,
@@ -77,7 +78,7 @@ namespace core::renderer
     void Subpass::setup_color_attachment(uint32_t image, VkClearValue clear_value)
     {
 
-        auto swapchain_ref = render_context->swapchain_manager.get();
+        auto swapchain_ref = engine_context.swapchain_manager.get();
         color_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
 
         //TODO: Bounds check
@@ -120,12 +121,12 @@ namespace core::renderer
         render_info.pDepthAttachment    = &depth_attachment_info;
         render_info.pStencilAttachment  = &depth_attachment_info;
 
-        render_context->dispatch_table.cmdBeginRenderingKHR(active_command_buffer, &render_info);
+        engine_context.dispatch_table.cmdBeginRenderingKHR(active_command_buffer, &render_info);
     }
 
     void Subpass::end_rendering()
     {
-        render_context->dispatch_table.cmdEndRenderingKHR(active_command_buffer);
+        engine_context.dispatch_table.cmdEndRenderingKHR(active_command_buffer);
     }
 
     void Subpass::end_command_buffer_recording(uint32_t image)
@@ -133,7 +134,7 @@ namespace core::renderer
         utils::ImageUtils::image_layout_transition
         (
              active_command_buffer,                            // Command buffer
-             render_context->swapchain_manager->get_images()[image].image,    // Swapchain image
+             engine_context.swapchain_manager->get_images()[image].image,    // Swapchain image
              VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
              VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
              VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
@@ -142,7 +143,7 @@ namespace core::renderer
              VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
               VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
-        if (render_context->dispatch_table.endCommandBuffer(active_command_buffer) != VK_SUCCESS)
+        if (engine_context.dispatch_table.endCommandBuffer(active_command_buffer) != VK_SUCCESS)
         {
             std::cout << "failed to record command buffer\n";
         }

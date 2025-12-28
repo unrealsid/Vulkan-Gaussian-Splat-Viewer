@@ -2,8 +2,6 @@
 #include "renderer/RenderPass.h"
 
 #include <iostream>
-#include <thread>
-#include "structs/RenderContext.h"
 #include "renderer/subpasses/GeometryPass.h"
 #include "structs/PushConstantBlock.h"
 #include "structs/Vertex.h"
@@ -13,13 +11,12 @@
 
 namespace core::renderer
 {
-    RenderPass::RenderPass(RenderContext* render_context, std::weak_ptr<EngineContext> engine_context, uint32_t max_frames_in_flight) :
-        render_context(render_context),
-        max_frames_in_flight(max_frames_in_flight),
-        engine_context(std::move(engine_context))
+    RenderPass::RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
+        engine_context(engine_context),
+        max_frames_in_flight(max_frames_in_flight)
     {
-        swapchain_manager = render_context->swapchain_manager.get();
-        device_manager = render_context->device_manager.get();
+        swapchain_manager = engine_context.swapchain_manager.get();
+        device_manager = engine_context.device_manager.get();
         depth_stencil_image = nullptr;
         command_buffers.resize(max_frames_in_flight);
     }
@@ -49,7 +46,7 @@ namespace core::renderer
     void RenderPass::record_subpasses(uint32_t frame)
     {
         //TODO: Need better sync -- works for now, though
-        render_context->dispatch_table.deviceWaitIdle();
+        engine_context.dispatch_table.deviceWaitIdle();
 
         auto command_buffer = get_command_buffer(frame);
         for (const auto& subpass : subpasses)
@@ -67,26 +64,26 @@ namespace core::renderer
 
     void RenderPass::init_subpasses()
     {
-        subpasses.emplace_back(std::make_unique<GeometryPass>(render_context, max_frames_in_flight));
+        subpasses.emplace_back(std::make_unique<GeometryPass>(engine_context, max_frames_in_flight));
     }
 
     void RenderPass::create_command_pool()
     {
-        utils::RenderUtils::create_command_pool(*render_context, command_pool);
+        utils::RenderUtils::create_command_pool(engine_context, command_pool);
     }
 
     void RenderPass::reset_command_pool()
     {
         if (command_pool != VK_NULL_HANDLE)
         {
-            render_context->dispatch_table.destroyCommandPool(command_pool, 0);
+            engine_context.dispatch_table.destroyCommandPool(command_pool, 0);
             command_buffers.clear();
             command_pool = VK_NULL_HANDLE;
         }
 
         if (depth_stencil_image)
         {
-            render_context->dispatch_table.destroyImage(depth_stencil_image->image, nullptr);
+            engine_context.dispatch_table.destroyImage(depth_stencil_image->image, nullptr);
             depth_stencil_image = {};
         }
     }
@@ -103,7 +100,7 @@ namespace core::renderer
     {
         if (VkCommandBuffer* command_buffer = get_command_buffer(image))
         {
-            utils::RenderUtils::allocate_command_buffer(*render_context, command_pool, *command_buffer);
+            utils::RenderUtils::allocate_command_buffer(engine_context, command_pool, *command_buffer);
         }
     }
 
@@ -111,7 +108,7 @@ namespace core::renderer
     {
         depth_stencil_image = std::make_unique<Vk_Image>();
         utils::RenderUtils::get_supported_depth_stencil_format(device_manager->get_physical_device(), &depth_stencil_image->format);
-        utils::RenderUtils::create_depth_stencil_image(*render_context,
+        utils::RenderUtils::create_depth_stencil_image(engine_context,
                                                        swapchain_manager->get_extent(),
                                                         device_manager->get_allocator(),
                                                        *depth_stencil_image);
@@ -125,7 +122,7 @@ namespace core::renderer
 
     void RenderPass::recreate_swapchain()
     {
-        auto window_manager = engine_context.lock()->window_manager;
+        auto window_manager = engine_context.window_manager.get();
 
         auto window_width = window_manager->get_window_width();
         auto window_height = window_manager->get_window_height();
@@ -143,7 +140,7 @@ namespace core::renderer
 
     bool RenderPass::draw_frame()
     {
-        auto dispatch_table = render_context->dispatch_table;
+        auto dispatch_table = engine_context.dispatch_table;
         dispatch_table.waitForFences(1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
 
         uint32_t image_index = 0;
@@ -247,7 +244,7 @@ namespace core::renderer
        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-       auto dispatch_table = render_context->dispatch_table;
+       auto dispatch_table = engine_context.dispatch_table;
 
        for (size_t i = 0; i < max_frames_in_flight; i++)
        {

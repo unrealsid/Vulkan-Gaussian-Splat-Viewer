@@ -1,7 +1,9 @@
 ﻿#pragma once
-#include "structs/engine/RenderContext.h"
+
 #include "Material.h"
 #include <string>
+
+struct EngineContext;
 
 namespace material
 {
@@ -9,16 +11,16 @@ namespace material
     {
     public:
 
-        MaterialUtils(RenderContext* render_context) : render_context(render_context)
+        MaterialUtils(EngineContext& engine_context) : engine_context(engine_context)
         {
             vertex_shader_path = R"(C:\Users\Sid\Documents\Visual Studio 2022\Code\VkLiteRenderer\VkLiteRenderer\shaders\triangle.vert.spv)";
             fragment_shader_path = R"(C:\Users\Sid\Documents\Visual Studio 2022\Code\VkLiteRenderer\VkLiteRenderer\shaders\triangle.frag.spv)";
         }
 
-        std::shared_ptr<Material> create_material(const std::string& name) const;
+        [[nodiscard]] std::shared_ptr<Material> create_material(const std::string& name) const;
 
     private:
-        RenderContext* render_context;
+        EngineContext& engine_context;
         std::string vertex_shader_path;
         std::string fragment_shader_path;
 

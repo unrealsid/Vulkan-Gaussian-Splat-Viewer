@@ -1,6 +1,7 @@
 ﻿#include "platform/WindowManager.h"
 #include <iostream>
 #include "structs/EngineContext.h"
+#include "structs/WindowCreateParams.h"
 #include "vulkanapp/SwapchainManager.h"
 #include "vulkanapp/DeviceManager.h"
 #include "config/Config.inl"
@@ -17,7 +18,7 @@ platform::WindowManager::~WindowManager()
     
 }
 
-SDL_Window* platform::WindowManager::create_window_sdl3(const char* windowName, bool resize) 
+SDL_Window* platform::WindowManager::create_window_sdl3(const WindowCreateParams& window_create_params, bool resize)
 {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
     {
@@ -32,7 +33,9 @@ SDL_Window* platform::WindowManager::create_window_sdl3(const char* windowName, 
         flags |= SDL_WINDOW_RESIZABLE;
     }
 
-    window = SDL_CreateWindow(windowName, WINDOW_WIDTH, WINDOW_HEIGHT, flags);
+    window = SDL_CreateWindow(window_create_params.window_title,
+                           window_create_params.window_width,
+                           window_create_params.window_height, flags);
 
     if (!window)
     {
@@ -82,7 +85,7 @@ void platform::WindowManager::update_mouse_position()
 
 bool platform::WindowManager::get_local_mouse_xy()
 {
-    auto swapchain_extents = engine_context.swapchain_manager->get_swapchain().extent;
+    auto swapchain_extents = engine_context.swapchain_manager->get_extent();
     
     if (mouse_x > 0 && mouse_x < swapchain_extents.width)
     {
@@ -106,4 +109,36 @@ void platform::WindowManager::update_last_mouse_position()
 {
     last_mouse_x = local_mouse_x;
     last_mouse_y = local_mouse_y;
+}
+
+void platform::WindowManager::update_window_dimensions()
+{
+    if (window != nullptr)
+    {
+        int width = 0, height = 0;
+        SDL_GetWindowSize(window, &width, &height);
+        m_window_width = static_cast<uint32_t>(width);
+        m_window_height = static_cast<uint32_t>(height);
+    }
+}
+
+void platform::WindowManager::setup_window_resize_callback()
+{
+    if (window != nullptr)
+    {
+        SDL_AddEventWatch(sdl_window_event_watcher, this);
+    }
+}
+
+bool platform::WindowManager::sdl_window_event_watcher(void* userdata, SDL_Event* event)
+{
+    if (event->type == SDL_EVENT_WINDOW_RESIZED)
+    {
+        auto* window_manager = static_cast<WindowManager*>(userdata);
+        if (window_manager != nullptr)
+        {
+            window_manager->update_window_dimensions();
+        }
+    }
+    return true;
 }

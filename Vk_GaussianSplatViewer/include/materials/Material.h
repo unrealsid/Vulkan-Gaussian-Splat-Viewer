@@ -5,7 +5,7 @@
 #include <vulkan/vulkan_core.h>
 #include "materials/ShaderObject.h"
 
-struct RenderContext;
+struct EngineContext;
 
 namespace vkb
 {
@@ -14,14 +14,12 @@ namespace vkb
 
 namespace material
 {
-    class ShaderObject;
-    
     class Material
     {
 
     public:
         Material() = default;
-        Material(std::string material_name, RenderContext* render_context);
+        Material(std::string material_name, EngineContext& engine_context);
 
         //load the shader code
         void init();
@@ -30,17 +28,17 @@ namespace material
         void add_pipeline_layout(VkPipelineLayout pipeline_layout);
         void add_descriptor_set(VkDescriptorSet descriptor_set);
 
-        VkPipelineLayout get_pipeline_layout() const { return pipeline_layout; }
-        ShaderObject* get_shader_object() const { return shader_object.get(); }
+        [[nodiscard]] VkPipelineLayout get_pipeline_layout() const { return pipeline_layout; }
+        [[nodiscard]] ShaderObject* get_shader_object() const { return shader_object.get(); }
         VkDescriptorSet& get_descriptor_set()  { return descriptor_set; }
-        std::string get_material_name() const { return material_name; }
+        [[nodiscard]] std::string get_material_name() const { return material_name; }
         
     private: 
         std::unique_ptr<ShaderObject> shader_object;
         VkDescriptorSet descriptor_set;
         VkPipelineLayout pipeline_layout;
 
-        RenderContext* render_context;
+        EngineContext& engine_context;
 
         std::string material_name;
 

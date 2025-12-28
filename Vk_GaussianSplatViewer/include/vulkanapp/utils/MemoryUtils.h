@@ -8,7 +8,7 @@
 #include "vulkanapp/DeviceManager.h"
 
 struct GPU_Buffer;
-struct RenderContext;
+struct EngineContext;
 struct MaterialParams;
 struct VMAAllocator;
 
@@ -34,7 +34,7 @@ namespace utils
         static void copy_buffer(vkb::DispatchTable disp, VkQueue queue, VkCommandPool command_pool, VkBuffer srcBuffer, VkBuffer dst_buffer, VkDeviceSize size);
 
         template<typename V>
-        static void create_vertex_and_index_buffers(RenderContext& render_context,
+        static void create_vertex_and_index_buffers(EngineContext& render_context,
                                                    const std::vector<V>& vertices,
                                                    const std::vector<uint32_t>& indices,
                                                    VkCommandPool command_pool,

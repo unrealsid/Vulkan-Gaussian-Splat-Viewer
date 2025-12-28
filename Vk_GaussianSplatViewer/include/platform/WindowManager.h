@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include <functional>
 #include <memory>
 #include <vulkan/vulkan_core.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
+struct WindowCreateParams;
 struct EngineContext;
 
 //Manages window functionality
@@ -27,11 +27,11 @@ namespace platform
         int32_t mouse_delta_x;
         int32_t mouse_delta_y;
 
-        SDL_Window* create_window_sdl3(const char* windowName = "", bool resize = true);
+        SDL_Window* create_window_sdl3(const WindowCreateParams& window_create_params, bool resize = true);
         void destroy_window_sdl3() const;
         VkSurfaceKHR create_surface_sdl3(VkInstance instance, VkAllocationCallbacks* allocator = nullptr) const;
         
-        SDL_Window* get_window() const;
+        [[nodiscard]] SDL_Window* get_window() const;
 
         void update_mouse_position();
         double get_mouse_x() const { return mouse_x > 0 ? mouse_x : 0.0 ; }
@@ -44,10 +44,21 @@ namespace platform
         void reset_mouse_moved_flag() { mouse_moved = false; }
         void get_mouse_delta();
         void update_last_mouse_position();
+        
+        void update_window_dimensions();
+        void setup_window_resize_callback();
+
+        [[nodiscard]] uint32_t get_window_width() const { return m_window_width; }
+        [[nodiscard]] uint32_t get_window_height() const { return m_window_height; }
 
     private:
+        static bool sdl_window_event_watcher(void* userdata, SDL_Event* event);
+
         SDL_Window* window;
         EngineContext& engine_context;
+
+        uint32_t m_window_width = 0;
+        uint32_t m_window_height = 0;
 
         double mouse_x = 0.0;
         double mouse_y = 0.0;
