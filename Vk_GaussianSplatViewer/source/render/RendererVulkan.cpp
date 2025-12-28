@@ -52,7 +52,7 @@ namespace core::renderer
         utils::MemoryUtils::create_vertex_and_index_buffers<Vertex2D>(engine_context,
                 vertices,
                 indices,
-                engine_context.render_pass->get_command_pool(),
+                engine_context.renderer->get_render_pass()->get_command_pool(),
                 engine_context.mesh_vertices_buffer, engine_context.mesh_indices_buffer);
     }
 

@@ -2,6 +2,7 @@
 #include <chrono>
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "config/Config.inl"
+#include "renderer/Renderer.h"
 #include "structs/WindowCreateParams.h"
 
 void core::Engine::create_window() const
@@ -11,22 +12,15 @@ void core::Engine::create_window() const
     engine_context->window_manager->create_window_sdl3(window_create_params, true);
 }
 
-void core::Engine::create_swapchain() const
+void core::Engine::create_renderer() const
 {
-    engine_context->swapchain_manager = std::make_unique<vulkanapp::SwapchainManager>(*engine_context);
-    engine_context->swapchain_manager->create_swapchain(window_width, window_height);
-}
-
-void core::Engine::create_device() const
-{
-    engine_context->device_manager = std::make_unique<vulkanapp::DeviceManager>(*engine_context);
-    engine_context->device_manager->device_init();
+    engine_context->renderer = std::make_unique<renderer::Renderer>(*engine_context);
+    engine_context->renderer->renderer_init();
 }
 
 void core::Engine::create_cleanup() const
 {
-    vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context->swapchain_manager->cleanup()));
-    vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context->device_manager->cleanup()));
+    engine_context->renderer->init_cleanup();
     vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context->window_manager->destroy_window_sdl3()));
 }
 
@@ -35,8 +29,7 @@ void core::Engine::init()
     engine_context = std::make_unique<EngineContext>();
     
     create_window();
-    create_device();
-    create_swapchain();
+    create_renderer();
     create_cleanup();
 }
 

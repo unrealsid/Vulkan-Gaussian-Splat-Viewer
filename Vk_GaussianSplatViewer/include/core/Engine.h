@@ -18,8 +18,7 @@ namespace core
         std::unique_ptr<EngineContext> engine_context;
 
         void create_window() const;
-        void create_swapchain() const;
-        void create_device() const;
+        void create_renderer() const;
 
         //Orders and stores cleanup function for resource clear
         void create_cleanup() const;

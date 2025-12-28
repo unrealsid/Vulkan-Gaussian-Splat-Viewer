@@ -4,10 +4,8 @@
 #include <ostream>
 
 #include "materials/Material.h"
+#include "renderer/RenderPass.h"
 #include "structs/EngineContext.h"
-#include "renderer/Subpass.h"
-#include "structs//PushConstantBlock.h"
-#include "structs/Vertex.h"
 
 namespace core::renderer
 {
@@ -16,10 +14,9 @@ namespace core::renderer
         std::cout << "Renderer Setup" << std::endl;
 
         init_vulkan();
-        init_cleanup();
 
-        engine_context.render_pass = std::make_unique<RenderPass>(engine_context, 2);
-        engine_context.render_pass->init_renderpass();
+        render_pass = std::make_unique<RenderPass>(engine_context, 2);
+        render_pass->init_renderpass();
 
         std::cout << "Done";
     }
@@ -33,7 +30,7 @@ namespace core::renderer
         {
             while (true)
             {
-                engine_context.render_pass->record_commands_and_draw();
+                render_pass->record_commands_and_draw();
             }
         }
     }

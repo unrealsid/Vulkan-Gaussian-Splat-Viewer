@@ -30,7 +30,7 @@ namespace core::renderer
             allocate_command_buffer(i);
         }
 
-        //TODO: Need to remove this later. Causes null command buffer validation errors since buffers are recorded from an instruction from the render thread
+        //TODO: Need to remove this later. Causes null command buffer validation errors since buffers are recorded
         for (uint32_t i = 0; i < max_frames_in_flight; i++)
         {
             record_subpasses(i);
