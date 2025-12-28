@@ -1,24 +1,24 @@
 #pragma once
-#include <vulkan/vulkan.h>
+
 #include <vma/vk_mem_alloc.h>
 #include <VkBootstrap.h>
 
-namespace window
-{
-    class WindowManager;
-}
+#include "structs/EngineContext.h"
 
-namespace vulkan_app
+struct EngineContext;
+
+//Manages instance, device and queues
+namespace vulkanapp
 {
     class DeviceManager
     {
     public:
-        DeviceManager();
+        DeviceManager(EngineContext& engine_context);
         ~DeviceManager();
         
-        //Incomplete function. Only used for testing VK Bootstrapper
         bool device_init();
-        bool get_queues();
+        bool init_queues();
+        void cleanup();
         
     private:
         vkb::Instance instance;
@@ -26,10 +26,13 @@ namespace vulkan_app
         vkb::Device device;
         vkb::PhysicalDevice physical_device;
 
+        VkQueue compute_queue;
         VkQueue graphics_queue;
         VkQueue present_queue;
 
-        VmaAllocator vmaAllocator;
+        VmaAllocator vma_allocator;
+
+        EngineContext& engine_context;
         
     public:
         [[nodiscard]] vkb::Instance get_instance() const { return instance; }
@@ -38,9 +41,10 @@ namespace vulkan_app
         [[nodiscard]] vkb::PhysicalDevice get_physical_device() const { return physical_device; }
         [[nodiscard]] VkQueue get_graphics_queue() const { return graphics_queue; }
         [[nodiscard]] VkQueue get_present_queue() const { return present_queue; }
-        [[nodiscard]] VmaAllocator get_allocator() const { return vmaAllocator; }
+        [[nodiscard]] VkQueue get_compute_queue() const { return compute_queue; }
+        [[nodiscard]] VmaAllocator get_allocator() const { return vma_allocator; }
 
-        void set_vma_allocator(VmaAllocator allocator) { vmaAllocator = allocator; }
+        void set_vma_allocator(VmaAllocator allocator) { vma_allocator = allocator; }
     };
 }
 

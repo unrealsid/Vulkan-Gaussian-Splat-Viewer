@@ -11,7 +11,7 @@ if(NOT vk-bootstrap_FOUND)
 	FetchContent_Declare(
 		vk_bootstrap
 		GIT_REPOSITORY "https://github.com/charles-lunarg/vk-bootstrap"
-		GIT_TAG        v1.4.321
+		GIT_TAG        v1.4.336
 		GIT_SHALLOW TRUE
 		GIT_PROGRESS TRUE
 	)
@@ -33,4 +33,34 @@ if(NOT SDL3_FOUND)
 	)
 	message(STATUS "Using SDL3 via FetchContent")
 	FetchContent_MakeAvailable(SDL3)
+endif()
+
+find_package(STB QUIET)
+if(STB_FOUND)
+    message(STATUS "Using STB via find_package")
+endif()
+if(NOT STB_FOUND)
+	FetchContent_Declare(
+		STB
+		GIT_REPOSITORY "https://github.com/unrealsid/stb-cmake.git"
+		GIT_SHALLOW TRUE
+		GIT_PROGRESS TRUE
+	)
+	message(STATUS "Using STB via FetchContent")
+	FetchContent_MakeAvailable(STB)
+endif()
+
+find_package(TINYPLY QUIET)
+if(TINYPLY_FOUND)
+	message(STATUS "Using TinyPly via find_package")
+endif()
+if(NOT TINYPLY_FOUND)
+	FetchContent_Declare(
+			TINYPLY
+			GIT_REPOSITORY "https://github.com/unrealsid/tinyply-cmake.git"
+			GIT_SHALLOW TRUE
+			GIT_PROGRESS TRUE
+	)
+	message(STATUS "Using Tiny Ply via FetchContent")
+	FetchContent_MakeAvailable(TINYPLY)
 endif()
