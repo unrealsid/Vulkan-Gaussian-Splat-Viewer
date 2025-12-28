@@ -22,7 +22,6 @@
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
 	"include/structs/WindowCreateParams.h"
-
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -32,7 +31,6 @@ source_group(
 
 set(
     Source_Files
-	"source/main.cpp"
 	"source/vulkanapp/DeviceManager.cpp"
 	"source/vulkanapp/SwapchainManager.cpp"
 	"source/vulkanapp/VulkanCleanupQueue.cpp"
@@ -73,21 +71,19 @@ find_package(Vulkan REQUIRED)
 
 set(ENGINE_PROJECT_NAME "Vk_GaussianSplatViewer")
 
-add_executable(
-    ${ENGINE_PROJECT_NAME} ${ALL_FILES}
-) 
+add_library( ${ENGINE_PROJECT_NAME} STATIC ${ALL_FILES})
+
+target_compile_features(${ENGINE_PROJECT_NAME} PUBLIC cxx_std_20)
 
 target_include_directories(
     ${ENGINE_PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-if(NOT TARGET tinyply)
-	message(SEND_ERROR "Attempt to link to non-existent tinyply.")
-endif()
+target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC Vulkan::Vulkan
+													vk-bootstrap
+													SDL3-shared
+													STB-image)
 
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE Vulkan::Vulkan 
-													vk-bootstrap::vk-bootstrap 
-													SDL3::SDL3
-													STB-image::STB-image
-													tinyply)
+
+add_library(${ENGINE_PROJECT_NAME}::${ENGINE_PROJECT_NAME} ALIAS ${ENGINE_PROJECT_NAME})

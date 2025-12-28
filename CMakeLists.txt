@@ -12,6 +12,7 @@ include(cmake/Dependencies.cmake)
 include(GNUInstallDirs)
 
 add_subdirectory(Vk_GaussianSplatViewer)
+add_subdirectory(GaussianSplatLoader)
 
 target_compile_features(Vk_GaussianSplatViewer PRIVATE cxx_std_20)
 
