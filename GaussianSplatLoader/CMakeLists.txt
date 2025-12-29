@@ -1,7 +1,7 @@
 ﻿set(
     Header_Files
-	"include/GaussianSplatPly.h"
-		include/structs/Gaussian.h
+	"include/GaussianSplatPlyLoader.h"
+		include/structs/GaussianSurface.h
 
 )
 
@@ -13,7 +13,7 @@ source_group(
 
 set(
     Source_Files
-	"source/GaussianSplatPly.cpp"
+	"source/GaussianSplatPlyLoader.cpp"
 	"source/main.cpp"
 )
 

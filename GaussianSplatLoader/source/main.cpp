@@ -2,11 +2,11 @@
 #include <iostream>
 #include <core/Engine.h>
 
-#include "GaussianSplatPly.h"
+#include "GaussianSplatPlyLoader.h"
 
 int main()
 {
-    splat_loader::GaussianSplatPly ply;
+    splat_loader::GaussianSplatPlyLoader ply;
 
     if (!ply.load(R"(D:\Projects\CPP\Vk_GaussianSplat\data\truck_point_cloud.ply)"))
     {

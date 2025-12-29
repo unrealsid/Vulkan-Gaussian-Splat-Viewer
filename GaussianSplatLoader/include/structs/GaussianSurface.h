@@ -1,6 +1,6 @@
 #pragma once
 
-struct Gaussian
+struct GaussianSurface
 {
     float x, y, z;
     float nx, ny, nz;

@@ -1,4 +1,4 @@
-#include "GaussianSplatPly.h"
+#include "GaussianSplatPlyLoader.h"
 
 #include <fstream>
 #include <iostream>
@@ -21,7 +21,7 @@ namespace splat_loader
         }
     }
 
-    bool GaussianSplatPly::load(const std::string& file_path)
+    bool GaussianSplatPlyLoader::load(const std::string& file_path)
     {
         std::ifstream file(file_path, std::ios::binary);
         if (!file)
