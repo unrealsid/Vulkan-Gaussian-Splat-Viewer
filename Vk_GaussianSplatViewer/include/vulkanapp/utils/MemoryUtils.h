@@ -4,7 +4,7 @@
 
 #include "VkBootstrapDispatch.h"
 #include "structs/Vk_Image.h"
-#include "structs/Vertex.h"
+#include "../../structs/geometry/Vertex.h"
 #include "vulkanapp/DeviceManager.h"
 
 struct GPU_Buffer;

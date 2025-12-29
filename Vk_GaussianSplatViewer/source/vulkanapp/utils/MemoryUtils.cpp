@@ -7,7 +7,7 @@
 #include "vulkanapp/utils/DescriptorUtils.h"
 #include "vulkanapp/utils/Vk_Utils.h"
 #include "structs/GPU_Buffer.h"
-#include "structs/Vertex2D.h"
+#include "../../../include/structs/geometry/Vertex2D.h"
 #include "vulkanapp/DeviceManager.h"
 
 void utils::MemoryUtils::create_vma_allocator(vulkanapp::DeviceManager& device_manager)

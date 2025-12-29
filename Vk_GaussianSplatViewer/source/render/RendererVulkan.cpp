@@ -2,7 +2,7 @@
 #include "config/Config.inl"
 #include "renderer/Renderer.h"
 #include "structs/EngineContext.h"
-#include "structs/Vertex2D.h"
+#include "../../include/structs/geometry/Vertex2D.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/utils/MemoryUtils.h"
 

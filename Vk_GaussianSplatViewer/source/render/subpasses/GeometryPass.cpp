@@ -1,8 +1,8 @@
 ﻿#include "renderer/subpasses/GeometryPass.h"
 #include "materials/MaterialUtils.h"
 #include "structs/EngineContext.h"
-#include "structs/Vertex.h"
-#include "structs/Vertex2D.h"
+#include "structs//geometry/Vertex.h"
+#include "structs/geometry/Vertex2D.h"
 
 namespace core::renderer
 {

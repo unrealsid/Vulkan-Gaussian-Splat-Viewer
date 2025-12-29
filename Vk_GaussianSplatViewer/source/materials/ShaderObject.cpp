@@ -1,6 +1,6 @@
 #include "materials/ShaderObject.h"
 
-#include "structs/Vertex.h"
+#include "../../include/structs/geometry/Vertex.h"
 #include "vulkanapp/SwapchainManager.h"
 #include <iostream>
 #include <utility>

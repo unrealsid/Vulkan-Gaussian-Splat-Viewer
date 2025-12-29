@@ -6,14 +6,20 @@
 	"include/structs/GPU_Buffer.h"
 	"include/structs/LoadedImageData.h"
 	"include/structs/PushConstantBlock.h"
-	"include/structs/Vertex.h"
+
+	"include/structs/geometry/Vertex.h"
+	"include/structs/geometry/Vertex2D.h"
+	"include/structs/geometry/GaussianSurface.h"
 	"include/structs/Vk_Image.h"
 	
 	"include/platform/WindowManager.h"
 	"include/core/Engine.h"
 	"include/config/Config.inl"
 	"include/renderer/Subpass.h"
+
 	"include/3d/ModelUtils.h"
+	"include/3d/GaussianSplatPlyLoader.h"
+
 	"include/enums/PresentationImageType.h"
 	"include/materials/Material.h"
 	"include/materials/MaterialUtils.h"
@@ -44,7 +50,10 @@ set(
 	"source/vulkanapp/utils/MemoryUtils.cpp"
 	"source/vulkanapp/utils/RenderUtils.cpp"
 	"source/vulkanapp/utils/Vk_Utils.cpp"
+
 	"source/3d/ModelUtils.cpp"
+	"source/3d/GaussianSplatPlyLoader.cpp"
+
 	"source/materials/ShaderObject.cpp"
 	"source/materials/MaterialUtils.cpp"
 	"source/materials/Material.cpp"
@@ -53,10 +62,11 @@ set(
 	"source/render/Subpass.cpp"
 	"source/render/RenderPass.cpp"
 	"source/render/RendererVulkan.cpp"
+	"source/main.cpp"
 )
 
 source_group(
-    TREE "${CMAKE_CURRENT_SOURCE_DIR}/source" 
+    TREE "${CMAKE_CURRENT_SOURCE_DIR}/source"
     PREFIX "Source Files" 
     FILES ${Source_Files}
 )
@@ -71,9 +81,7 @@ find_package(Vulkan REQUIRED)
 
 set(ENGINE_PROJECT_NAME "Vk_GaussianSplatViewer")
 
-add_library( ${ENGINE_PROJECT_NAME} STATIC ${ALL_FILES})
-
-target_compile_features(${ENGINE_PROJECT_NAME} PUBLIC cxx_std_20)
+add_executable( ${ENGINE_PROJECT_NAME} ${ALL_FILES})
 
 target_include_directories(
     ${ENGINE_PROJECT_NAME} PUBLIC
@@ -83,7 +91,5 @@ target_include_directories(
 target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC Vulkan::Vulkan
 													vk-bootstrap
 													SDL3-shared
-													STB-image)
-
-
-add_library(${ENGINE_PROJECT_NAME}::${ENGINE_PROJECT_NAME} ALIAS ${ENGINE_PROJECT_NAME})
+													STB-image
+													tinyply)

@@ -1,8 +1,7 @@
 
 #include <iostream>
-#include <core/Engine.h>
-
-#include "GaussianSplatPlyLoader.h"
+#include "core/Engine.h"
+#include "3d/GaussianSplatPlyLoader.h"
 
 int main()
 {

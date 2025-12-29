@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "structs/Vertex2D.h"
+#include "../structs/geometry/Vertex2D.h"
 
 namespace entity_3d
 {

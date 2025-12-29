@@ -4,7 +4,7 @@
 #include <iostream>
 #include "renderer/subpasses/GeometryPass.h"
 #include "structs/PushConstantBlock.h"
-#include "structs/Vertex.h"
+#include "../../include/structs/geometry/Vertex.h"
 #include "structs/EngineContext.h"
 #include "vulkanapp/utils/RenderUtils.h"
 

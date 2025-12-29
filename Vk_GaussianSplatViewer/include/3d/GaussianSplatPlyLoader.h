@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdint>
 
-#include "structs/GaussianSurface.h"
+#include "../structs/geometry/GaussianSurface.h"
 
 namespace splat_loader
 {

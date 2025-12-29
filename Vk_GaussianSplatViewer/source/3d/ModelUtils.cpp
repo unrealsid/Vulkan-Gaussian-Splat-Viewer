@@ -1,7 +1,7 @@
 ﻿#include "3d/ModelUtils.h"
 
 #include <vector>
-#include "structs/Vertex2D.h"
+#include "../../include/structs/geometry/Vertex2D.h"
 
 namespace entity_3d
 {

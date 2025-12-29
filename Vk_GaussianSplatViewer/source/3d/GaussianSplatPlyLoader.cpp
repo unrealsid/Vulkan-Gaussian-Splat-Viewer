@@ -1,4 +1,4 @@
-#include "GaussianSplatPlyLoader.h"
+#include "../../include/3d/GaussianSplatPlyLoader.h"
 
 #include <fstream>
 #include <iostream>
