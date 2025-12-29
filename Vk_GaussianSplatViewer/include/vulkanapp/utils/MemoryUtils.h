@@ -4,7 +4,6 @@
 
 #include "VkBootstrapDispatch.h"
 #include "structs/Vk_Image.h"
-#include "../../structs/geometry/Vertex.h"
 #include "vulkanapp/DeviceManager.h"
 
 struct GPU_Buffer;
@@ -33,18 +32,34 @@ namespace utils
 
         static void copy_buffer(vkb::DispatchTable disp, VkQueue queue, VkCommandPool command_pool, VkBuffer srcBuffer, VkBuffer dst_buffer, VkDeviceSize size);
 
+        template <class V>
+        static void create_vertex_buffer_with_staging(EngineContext& engine_context, const std::vector<V>& vertices,
+                                                      VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer);
+        template <class V>
+        static void create_index_buffer_with_staging(EngineContext& engine_context,
+                                                     const std::vector<uint32_t>& indices,
+                                                     VkCommandPool command_pool, GPU_Buffer& out_index_buffer);
+
         template<typename V>
-        static void create_vertex_and_index_buffers(EngineContext& render_context,
+        static void create_vertex_and_index_buffers(EngineContext& engine_context,
                                                    const std::vector<V>& vertices,
                                                    const std::vector<uint32_t>& indices,
                                                    VkCommandPool command_pool,
                                                    GPU_Buffer& out_vertex_buffer, GPU_Buffer& out_index_buffer);
-        
+
+        template<typename T>
+        static void map_ubo(const EngineContext& engine_context, GPU_Buffer buffer, T ubo_data)
+        {
+            void* mapped_data;
+            vmaMapMemory(engine_context.device_manager->get_allocator(), buffer.allocation, &mapped_data);
+            memcpy(mapped_data, &ubo_data, sizeof(ubo_data));
+            vmaUnmapMemory(engine_context.device_manager->get_allocator(), buffer.allocation);
+        }
+
         //Creates a device-addressable buffer (Can be addressed via vulkan BDA)
         static void allocate_buffer_with_mapped_access(const vkb::DispatchTable& dispatch_table, VmaAllocator allocator, VkDeviceSize size, GPU_Buffer& buffer);
 
         //Creates a buffer that is persistently mapped
         static void allocate_buffer_with_random_access(const vkb::DispatchTable& dispatch_table, VmaAllocator allocator, VkDeviceSize size, GPU_Buffer& buffer);
-
     };
 }

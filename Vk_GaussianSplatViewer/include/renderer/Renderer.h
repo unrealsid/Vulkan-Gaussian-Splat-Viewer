@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include <cstdint>
 #include <memory>
 #include <vector>
 #include "renderer/RenderPass.h"
+#include "structs/geometry/GaussianSurface.h"
 
 struct EngineContext;
 struct WindowCreateParams;
@@ -29,6 +29,9 @@ namespace core::renderer
 
         template<typename V>
         void allocate_mesh_buffers(const std::vector<V>& vertices, const std::vector<uint32_t>& indices);
+
+        void allocate_gaussian_buffer(const std::vector<GaussianSurface>& gaussians) const;
+        void create_camera_buffer(uint32_t width, uint32_t height);
 
     private:
         EngineContext& engine_context;

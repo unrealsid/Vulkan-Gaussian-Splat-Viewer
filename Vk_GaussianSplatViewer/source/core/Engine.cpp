@@ -21,10 +21,12 @@ void core::Engine::create_renderer() const
     engine_context->renderer->renderer_init();
 }
 
-void core::Engine::geometry_init() const
+void core::Engine::gaussian_surface_init(const std::vector<GaussianSurface>& gaussian_surfaces) const
 {
-    auto triangle_data = entity_3d::ModelUtils::load_triangle_model();
-    engine_context->renderer->allocate_mesh_buffers(triangle_data, {0, 1, 2});
+    // auto triangle_data = entity_3d::ModelUtils::load_triangle_model();
+    // engine_context->renderer->allocate_mesh_buffers(triangle_data, {0, 1, 2});
+
+    engine_context->renderer->allocate_gaussian_buffer(gaussian_surfaces);
 }
 
 void core::Engine::create_cleanup() const
@@ -39,9 +41,6 @@ void core::Engine::init()
     
     create_window();
     create_renderer();
-
-    //TODO: Remove this later
-    geometry_init();
     create_cleanup();
 }
 

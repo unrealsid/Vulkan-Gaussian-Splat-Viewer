@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "renderer/subpasses/GeometryPass.h"
-#include "structs/PushConstantBlock.h"
+#include "../../include/structs/scene/PushConstantBlock.h"
 #include "../../include/structs/geometry/Vertex.h"
 #include "structs/EngineContext.h"
 #include "vulkanapp/utils/RenderUtils.h"
@@ -29,12 +29,6 @@ namespace core::renderer
         {
             allocate_command_buffer(i);
         }
-
-        //TODO: Need to remove this later. Causes null command buffer validation errors
-        /*for (uint32_t i = 0; i < max_frames_in_flight; i++)
-        {
-            record_subpasses(i);
-        }*/
     }
 
     void RenderPass::init_renderpass()
@@ -77,7 +71,7 @@ namespace core::renderer
 
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
         {
-            std::cout << "failed to acquire swapchain image. Error " << result << "\n";
+            //std::cout << "failed to acquire swapchain image. Error " << result << "\n";
             return;
         }
 

@@ -1,27 +1,16 @@
-
-#include <iostream>
+#include "3d/ModelUtils.h"
 #include "core/Engine.h"
-#include "3d/GaussianSplatPlyLoader.h"
+#include <iostream>
 
 int main()
 {
-    splat_loader::GaussianSplatPlyLoader ply;
-
-    if (!ply.load(R"(D:\Projects\CPP\Vk_GaussianSplat\data\truck_point_cloud.ply)"))
-    {
-        std::cerr << "Failed to load PLY\n";
-        return -1;
-    }
-
-    const auto& gaussians = ply.get_gaussians();
-
-    std::cout << "Loaded " << gaussians.size() << " gaussians\n";
-
-    int x = 0;
-    std::cin >> x;
+    std::cout << "Loading Gaussian Splat..." << "\n";
+    auto gaussians = entity_3d::ModelUtils::load_gaussian_surfaces(R"(D:\Projects\CPP\Vk_GaussianSplat\data\truck_point_cloud.ply)");
 
     core::Engine engine;
     engine.init();
+    engine.gaussian_surface_init(gaussians);
+
     engine.run();
     engine.cleanup();
     

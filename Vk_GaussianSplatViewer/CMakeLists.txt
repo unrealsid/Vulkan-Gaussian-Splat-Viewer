@@ -5,7 +5,9 @@
 	"include/structs/EngineContext.h"
 	"include/structs/GPU_Buffer.h"
 	"include/structs/LoadedImageData.h"
-	"include/structs/PushConstantBlock.h"
+	"include/structs/scene/PushConstantBlock.h"
+	"include/structs/scene/CameraData.h"
+	"include/structs/WindowCreateParams.h"
 
 	"include/structs/geometry/Vertex.h"
 	"include/structs/geometry/Vertex2D.h"
@@ -27,7 +29,7 @@
 	"include/renderer/subpasses/GeometryPass.h"
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
-	"include/structs/WindowCreateParams.h"
+
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 

@@ -1,10 +1,18 @@
 
-#include "config/Config.inl"
+
 #include "renderer/Renderer.h"
+#include "config/Config.inl"
 #include "structs/EngineContext.h"
-#include "../../include/structs/geometry/Vertex2D.h"
+#include "structs/geometry/Vertex2D.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/utils/MemoryUtils.h"
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "structs/scene/CameraData.h"
 
 namespace core::renderer
 {
@@ -57,4 +65,56 @@ namespace core::renderer
     }
 
     template void Renderer::allocate_mesh_buffers(const std::vector<Vertex2D>& vertices, const std::vector<uint32_t>& indices);
+
+    void Renderer::allocate_gaussian_buffer(const std::vector<GaussianSurface>& gaussians) const
+    {
+        utils::MemoryUtils::create_vertex_buffer_with_staging(engine_context,
+            gaussians,
+            engine_context.renderer->get_render_pass()->get_command_pool(),
+            engine_context.gaussian_buffer);
+    }
+
+
+    void Renderer::create_camera_buffer(uint32_t width, uint32_t height)
+    {
+        CameraData ubo;
+
+        // Camera position: 10 units away on the Z axis
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 10.0f);
+        glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);  // Looking at origin
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);      // Y-up
+
+        // Create view matrix
+        ubo.view = glm::lookAt(cameraPos, target, up);
+
+        // Create projection matrix (perspective)
+        float fov = glm::radians(45.0f);  // 45 degree field of view
+        float aspect = static_cast<float>(width) / static_cast<float>(height);
+        float nearPlane = 0.1f;
+        float farPlane = 100.0f;
+
+        ubo.projection = glm::perspective(fov, aspect, nearPlane, farPlane);
+
+        // IMPORTANT: Vulkan uses different clip space than OpenGL
+        // Vulkan's Y axis is flipped and Z range is [0, 1] instead of [-1, 1]
+        ubo.projection[1][1] *= -1.0f;  // Flip Y coordinate
+
+        utils::MemoryUtils::allocate_buffer_with_mapped_access(
+                engine_context.dispatch_table,
+                engine_context.device_manager->get_allocator(),
+                sizeof(CameraData),
+                engine_context.camera_data_buffer
+            );
+
+        memcpy(engine_context.camera_data_buffer.allocation_info.pMappedData, &ubo, sizeof(CameraData));
+
+        vmaFlushAllocation(
+            engine_context.device_manager->get_allocator(),
+            engine_context.camera_data_buffer .allocation,
+            0,
+            VK_WHOLE_SIZE
+        );
+    }
+
+
 }

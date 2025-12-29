@@ -1,6 +1,6 @@
 ﻿#include "materials/MaterialUtils.h"
 #include "materials/Material.h"
-#include "structs/PushConstantBlock.h"
+#include "../../include/structs/scene/PushConstantBlock.h"
 #include "vulkanapp/utils/DescriptorUtils.h"
 #include "vulkanapp/utils/FileUtils.h"
 #include "structs/EngineContext.h"
@@ -22,12 +22,14 @@ namespace material
         utils::FileUtils::loadShader(fragment_shader_path, shaderCodes[1], shaderCodeSizes[1]);
 
         auto shader_object = std::make_unique<ShaderObject>();
-        shader_object->create_shaders(engine_context.dispatch_table, shaderCodes[0], shaderCodeSizes[0], shaderCodes[1], shaderCodeSizes[1], nullptr, 0, nullptr, 0);
+        shader_object->create_shaders(engine_context.dispatch_table, shaderCodes[0], shaderCodeSizes[0], shaderCodes[1], shaderCodeSizes[1],
+            nullptr, 0,
+            &push_constant_range, 1);
 
         VkPipelineLayout pipeline_layout;
 
         //Create the pipeline layout
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo = utils::DescriptorUtils::pipeline_layout_create_info(nullptr,  0, nullptr, 0);
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo = utils::DescriptorUtils::pipeline_layout_create_info(nullptr,  0, &push_constant_range, 1);
         engine_context.dispatch_table.createPipelineLayout(&pipelineLayoutInfo, VK_NULL_HANDLE, &pipeline_layout);
 
         //Create material

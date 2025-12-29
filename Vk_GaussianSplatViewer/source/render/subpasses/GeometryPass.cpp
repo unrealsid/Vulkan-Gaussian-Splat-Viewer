@@ -3,6 +3,7 @@
 #include "structs/EngineContext.h"
 #include "structs//geometry/Vertex.h"
 #include "structs/geometry/Vertex2D.h"
+#include "structs/scene/PushConstantBlock.h"
 
 namespace core::renderer
 {
@@ -25,15 +26,19 @@ namespace core::renderer
         begin_rendering();
 
         material::ShaderObject::set_initial_state(engine_context.dispatch_table, swapchain_manager->get_extent(), *command_buffer,
-                                                                            Vertex2D::get_binding_description(), Vertex2D::get_attribute_descriptions(),
+                                                                            GaussianSurfaceDescriptor::get_binding_description(),
+                                                                            GaussianSurfaceDescriptor::get_attribute_descriptions(),
                                                                             swapchain_manager->get_extent(), {0, 0});
 
         material_to_use->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
-        VkBuffer vertex_buffers[] = {engine_context.mesh_vertices_buffer.buffer};
-
+        VkBuffer vertex_buffers[] = {engine_context.gaussian_buffer.buffer};
         VkDeviceSize offsets[] = {0};
         engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 1, vertex_buffers, offsets);
+        
+        PushConstantBlock push_constant_block = {engine_context.camera_data_buffer.buffer_address};
+        engine_context.dispatch_table.cmdPushConstants(*command_buffer, material_to_use->get_pipeline_layout(),  VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT ,
+            0, sizeof(PushConstantBlock), &push_constant_block);
 
         engine_context.dispatch_table.cmdDraw(*command_buffer, 3, 1, 0, 0);
 

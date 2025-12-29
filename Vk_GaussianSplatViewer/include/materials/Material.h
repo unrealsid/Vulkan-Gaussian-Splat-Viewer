@@ -18,7 +18,6 @@ namespace material
     {
 
     public:
-        Material() = default;
         Material(std::string material_name, EngineContext& engine_context);
 
         //load the shader code

@@ -1,8 +1,7 @@
 #include "materials/Material.h"
 #include "materials/ShaderObject.h"
 #include "structs/EngineContext.h"
-#include "structs//PushConstantBlock.h"
-#include "vulkanapp/utils/DescriptorUtils.h"
+#include "structs/scene/PushConstantBlock.h"
 #include "vulkanapp/utils/FileUtils.h"
 
 namespace material
