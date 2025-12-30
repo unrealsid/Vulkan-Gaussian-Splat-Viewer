@@ -139,8 +139,13 @@ namespace core::renderer
 
         if (depth_stencil_image)
         {
-            engine_context.dispatch_table.destroyImage(depth_stencil_image->image, nullptr);
-            depth_stencil_image = {};
+            if (depth_stencil_image->view != VK_NULL_HANDLE)
+                engine_context.dispatch_table.destroyImageView(depth_stencil_image->view, nullptr);
+
+            if (depth_stencil_image->image != VK_NULL_HANDLE)
+                vmaDestroyImage(device_manager->get_allocator(), depth_stencil_image->image, depth_stencil_image->allocation);
+
+            depth_stencil_image.reset();
         }
     }
 
@@ -173,6 +178,10 @@ namespace core::renderer
     void RenderPass::reset_subpass_command_buffers()
     {
         reset_command_pool();
+        for (auto& subpass : subpasses)
+        {
+            subpass->cleanup();
+        }
         subpasses.clear();
     }
 
