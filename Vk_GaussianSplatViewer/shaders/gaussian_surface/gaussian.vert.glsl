@@ -39,7 +39,7 @@ void main()
 	position.xy *= -1.0;
 
 	gl_Position = matrices.projection * matrices.view * position;
-	gl_PointSize = 20.0;
+	gl_PointSize = 2.0;
 
 	fragColor = in_SH * 0.28 + vec3(0.5, 0.5, 0.5);
 }
