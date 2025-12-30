@@ -3,11 +3,10 @@
 
 #include <iostream>
 #include "renderer/subpasses/GeometryPass.h"
-#include "structs/PushConstantBlock.h"
-#include "structs/Vertex.h"
+#include "structs/scene/PushConstantBlock.h"
+#include "structs/geometry/Vertex.h"
 #include "structs/EngineContext.h"
 #include "vulkanapp/utils/RenderUtils.h"
-
 
 namespace core::renderer
 {
@@ -18,23 +17,16 @@ namespace core::renderer
         swapchain_manager = engine_context.swapchain_manager.get();
         device_manager = engine_context.device_manager.get();
         depth_stencil_image = nullptr;
-        command_buffers.resize(max_frames_in_flight);
     }
 
     void RenderPass::allocate_and_record_command_buffers()
     {
-        command_buffers.resize(max_frames_in_flight);
+        command_buffers.assign(max_frames_in_flight, VK_NULL_HANDLE);
 
         for (uint32_t i = 0; i < max_frames_in_flight; i++)
         {
             allocate_command_buffer(i);
         }
-
-        //TODO: Need to remove this later. Causes null command buffer validation errors
-        /*for (uint32_t i = 0; i < max_frames_in_flight; i++)
-        {
-            record_subpasses(i);
-        }*/
     }
 
     void RenderPass::init_renderpass()
@@ -71,18 +63,59 @@ namespace core::renderer
             reset_subpass_command_buffers();
             recreate_swapchain();
             create_rendering_resources();
+            set_new_camera_aspect_ratio();
 
             return;
         }
 
         if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
         {
-            std::cout << "failed to acquire swapchain image. Error " << result << "\n";
+            //std::cout << "failed to acquire swapchain image. Error " << result << "\n";
             return;
         }
 
         record_subpasses(image_index);
         draw_frame(image_index);
+    }
+
+    void RenderPass::cleanup()
+    {
+        auto dispatch_table = engine_context.dispatch_table;
+        auto device = device_manager->get_device();
+
+        dispatch_table.deviceWaitIdle();
+
+        for (size_t i = 0; i < max_frames_in_flight; i++)
+        {
+            if (available_semaphores[i] != VK_NULL_HANDLE)
+                dispatch_table.destroySemaphore(available_semaphores[i], nullptr);
+            if (finished_semaphores[i] != VK_NULL_HANDLE)
+                dispatch_table.destroySemaphore(finished_semaphores[i], nullptr);
+            if (in_flight_fences[i] != VK_NULL_HANDLE)
+                dispatch_table.destroyFence(in_flight_fences[i], nullptr);
+        }
+
+        if (command_pool != VK_NULL_HANDLE)
+        {
+            dispatch_table.destroyCommandPool(command_pool, nullptr);
+            command_pool = VK_NULL_HANDLE;
+        }
+
+        if (depth_stencil_image)
+        {
+            if (depth_stencil_image->view != VK_NULL_HANDLE)
+                dispatch_table.destroyImageView(depth_stencil_image->view, nullptr);
+
+            if (depth_stencil_image->image != VK_NULL_HANDLE)
+                vmaDestroyImage(device_manager->get_allocator(), depth_stencil_image->image, depth_stencil_image->allocation);
+
+            depth_stencil_image.reset();
+        }
+
+        for (auto& subpass : subpasses)
+        {
+            subpass->cleanup();
+        }
     }
 
     void RenderPass::init_subpasses()
@@ -106,8 +139,13 @@ namespace core::renderer
 
         if (depth_stencil_image)
         {
-            engine_context.dispatch_table.destroyImage(depth_stencil_image->image, nullptr);
-            depth_stencil_image = {};
+            if (depth_stencil_image->view != VK_NULL_HANDLE)
+                engine_context.dispatch_table.destroyImageView(depth_stencil_image->view, nullptr);
+
+            if (depth_stencil_image->image != VK_NULL_HANDLE)
+                vmaDestroyImage(device_manager->get_allocator(), depth_stencil_image->image, depth_stencil_image->allocation);
+
+            depth_stencil_image.reset();
         }
     }
 
@@ -140,6 +178,10 @@ namespace core::renderer
     void RenderPass::reset_subpass_command_buffers()
     {
         reset_command_pool();
+        for (auto& subpass : subpasses)
+        {
+            subpass->cleanup();
+        }
         subpasses.clear();
     }
 
@@ -227,6 +269,7 @@ namespace core::renderer
             reset_subpass_command_buffers();
             recreate_swapchain();
             create_rendering_resources();
+            set_new_camera_aspect_ratio();
 
             return true;
         }
@@ -243,10 +286,10 @@ namespace core::renderer
 
     bool RenderPass::create_sync_objects()
    {
-       available_semaphores.resize(max_frames_in_flight);
-       finished_semaphores.resize(max_frames_in_flight);
-       in_flight_fences.resize(max_frames_in_flight);
-       image_in_flight.resize(swapchain_manager->get_image_count(), VK_NULL_HANDLE);
+       available_semaphores.assign(max_frames_in_flight, VK_NULL_HANDLE);
+       finished_semaphores.assign(max_frames_in_flight, VK_NULL_HANDLE);
+       in_flight_fences.assign(max_frames_in_flight, VK_NULL_HANDLE);
+       image_in_flight.assign(swapchain_manager->get_image_count(), VK_NULL_HANDLE);
 
        VkSemaphoreCreateInfo semaphore_info = {};
        semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -270,4 +313,10 @@ namespace core::renderer
 
        return true;
    }
+
+    void RenderPass::set_new_camera_aspect_ratio()
+    {
+        engine_context.renderer->get_camera()->set_aspect_ratio(static_cast<float>(
+            swapchain_manager->get_extent().width) / static_cast<float>(swapchain_manager->get_extent().height));
+    }
 }

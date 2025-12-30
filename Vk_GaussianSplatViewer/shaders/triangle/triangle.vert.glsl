@@ -33,6 +33,7 @@ void main()
 	vec4 position = vec4(inPosition, 0.0, 1.0);
 //	gl_Position = matrices.projection * matrices.view * position;
 	gl_Position = position;
+	gl_PointSize = 1.0;
 
 	fragColor = inColor;
 }

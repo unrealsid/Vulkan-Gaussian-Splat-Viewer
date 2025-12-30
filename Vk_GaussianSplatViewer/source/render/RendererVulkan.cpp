@@ -1,10 +1,18 @@
 
-#include "config/Config.inl"
+
 #include "renderer/Renderer.h"
+#include "config/Config.inl"
 #include "structs/EngineContext.h"
-#include "structs/Vertex2D.h"
+#include "structs/geometry/Vertex2D.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/utils/MemoryUtils.h"
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "structs/scene/CameraData.h"
 
 namespace core::renderer
 {
@@ -36,8 +44,28 @@ namespace core::renderer
 
     void Renderer::init_cleanup() const
     {
-        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context.swapchain_manager->cleanup()));
+        // Pushing in the order we want them to be destroyed in REVERSE
+        // LIFO means the last one pushed is the first one executed.
+
+        // 5. Device manager should be destroyed last (contains VMA allocator and VkDevice)
         vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context.device_manager->cleanup()));
+
+        // 4. Swapchain
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context.swapchain_manager->cleanup()));
+
+        // 3. Buffers should be destroyed before the device/allocator but after waiting for idle
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), engine_context.mesh_vertices_buffer)));
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), engine_context.mesh_indices_buffer)));
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), engine_context.gaussian_buffer)));
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), engine_context.camera_data_buffer)));
+
+        // 2. Render pass cleanup (includes destroying sync objects, command pool, depth image)
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(render_pass->cleanup()));
+
+        // 1. Wait for idle must be the VERY FIRST thing we do when flushing the queue.
+        // It's already called inside render_pass->cleanup(), but we can add it explicitly as the last push (first to execute)
+        // just to be sure.
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function([this]() { engine_context.dispatch_table.deviceWaitIdle(); });
     }
 
     void Renderer::cleanup()
@@ -57,4 +85,43 @@ namespace core::renderer
     }
 
     template void Renderer::allocate_mesh_buffers(const std::vector<Vertex2D>& vertices, const std::vector<uint32_t>& indices);
+
+    void Renderer::allocate_gaussian_buffer(const std::vector<GaussianSurface>& gaussians) const
+    {
+        utils::MemoryUtils::create_vertex_buffer_with_staging(engine_context,
+            gaussians,
+            engine_context.renderer->get_render_pass()->get_command_pool(),
+            engine_context.gaussian_buffer);
+    }
+
+
+    void Renderer::create_camera_buffer(uint32_t width, uint32_t height)
+    {
+        CameraData ubo{};
+
+        auto swapchain_manager = engine_context.swapchain_manager.get();
+        first_person_camera = std::make_unique<camera::FirstPersonCamera>(glm::vec3(0.0f, 0.0f, 3.0f), 45.0f,
+            static_cast<float>(swapchain_manager->get_extent().width ) / static_cast<float>(swapchain_manager->get_extent().height));
+
+        ubo.projection = first_person_camera->get_projection_matrix();
+        ubo.view = first_person_camera->get_view_matrix();
+
+        utils::MemoryUtils::allocate_buffer_with_mapped_access(
+                engine_context.dispatch_table,
+                engine_context.device_manager->get_allocator(),
+                sizeof(CameraData),
+                engine_context.camera_data_buffer
+            );
+
+        memcpy(engine_context.camera_data_buffer.allocation_info.pMappedData, &ubo, sizeof(CameraData));
+
+        vmaFlushAllocation(
+            engine_context.device_manager->get_allocator(),
+            engine_context.camera_data_buffer .allocation,
+            0,
+            VK_WHOLE_SIZE
+        );
+    }
+
+
 }

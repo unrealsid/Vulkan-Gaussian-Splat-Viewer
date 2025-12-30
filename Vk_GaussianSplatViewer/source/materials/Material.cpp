@@ -1,8 +1,7 @@
 #include "materials/Material.h"
 #include "materials/ShaderObject.h"
 #include "structs/EngineContext.h"
-#include "structs//PushConstantBlock.h"
-#include "vulkanapp/utils/DescriptorUtils.h"
+#include "structs/scene/PushConstantBlock.h"
 #include "vulkanapp/utils/FileUtils.h"
 
 namespace material
@@ -31,5 +30,19 @@ namespace material
     void Material::add_descriptor_set(VkDescriptorSet descriptor_set)
     {
         this->descriptor_set = descriptor_set;
+    }
+
+    void Material::cleanup()
+    {
+        if (pipeline_layout != VK_NULL_HANDLE)
+        {
+            engine_context.dispatch_table.destroyPipelineLayout(pipeline_layout, nullptr);
+            pipeline_layout = VK_NULL_HANDLE;
+        }
+
+        if (shader_object)
+        {
+            shader_object->destroy_shaders(engine_context.dispatch_table);
+        }
     }
 }

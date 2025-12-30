@@ -1,6 +1,9 @@
 ﻿#pragma once
 
+#include "camera/FirstPersonCamera.h"
 #include "renderer/Subpass.h"
+#include "structs/scene/CameraData.h"
+
 
 namespace core::renderer
 {
@@ -11,5 +14,10 @@ namespace core::renderer
         GeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight);
 
         void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index) override;
+
+    private:
+        camera::FirstPersonCamera* camera;
+        VkExtent2D extents{};
+        CameraData camera_data{};
     };
 }

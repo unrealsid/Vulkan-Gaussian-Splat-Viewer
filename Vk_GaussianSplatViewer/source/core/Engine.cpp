@@ -21,10 +21,10 @@ void core::Engine::create_renderer() const
     engine_context->renderer->renderer_init();
 }
 
-void core::Engine::geometry_init() const
+void core::Engine::gaussian_surface_init(const std::vector<GaussianSurface>& gaussian_surfaces) const
 {
-    auto triangle_data = entity_3d::ModelUtils::load_triangle_model();
-    engine_context->renderer->allocate_mesh_buffers(triangle_data, {0, 1, 2});
+    engine_context->renderer->allocate_gaussian_buffer(gaussian_surfaces);
+    engine_context->gaussian_count = gaussian_surfaces.size();
 }
 
 void core::Engine::create_cleanup() const
@@ -39,9 +39,6 @@ void core::Engine::init()
     
     create_window();
     create_renderer();
-
-    //TODO: Remove this later
-    geometry_init();
     create_cleanup();
 }
 
@@ -50,8 +47,8 @@ void core::Engine::run() const
     bool is_running = true;
     SDL_Event event;
 
-    auto window_manager = engine_context->window_manager.get();
     auto previous_time = std::chrono::high_resolution_clock::now();
+    auto camera = engine_context->renderer->get_camera();
 
     while (is_running)
     {
@@ -59,8 +56,9 @@ void core::Engine::run() const
         std::chrono::duration<float> elapsed = current_time - previous_time;
         double delta_time = elapsed.count();
 
-        window_manager->update_mouse_position();
-        window_manager->get_local_mouse_xy();
+        const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
+        camera->process_keyboard(keyboard_state, static_cast<float>(delta_time));
+
         
         // Process events from the OS
         while (SDL_PollEvent(&event))
@@ -68,6 +66,20 @@ void core::Engine::run() const
             if (event.type == SDL_EVENT_QUIT)
             {
                 is_running = false;
+            }
+
+            if (event.type == SDL_EVENT_MOUSE_MOTION)
+            {
+                if (event.motion.state & SDL_BUTTON_LMASK)
+                {
+                    camera->process_mouse_movement(event.motion.xrel, event.motion.yrel);
+                }
+            }
+
+            // Optional: Handle mouse wheel for FOV zoom
+            if (event.type == SDL_EVENT_MOUSE_WHEEL)
+            {
+                camera->process_mouse_scroll(event.wheel.y);
             }
         }
 

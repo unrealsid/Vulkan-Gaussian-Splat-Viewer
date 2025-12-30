@@ -19,9 +19,9 @@ struct EngineContext
     //TODO: Remove from here later. Needs proper resource allocation and storage. Only for testing
     GPU_Buffer mesh_vertices_buffer;
     GPU_Buffer mesh_indices_buffer;
-
-    //TODO: Remove later
-    bool start_rendering = false;
+    GPU_Buffer gaussian_buffer;
+    GPU_Buffer camera_data_buffer;
+    uint32_t gaussian_count = 0;
 
     vkb::InstanceDispatchTable instance_dispatch_table;
     vkb::DispatchTable dispatch_table;

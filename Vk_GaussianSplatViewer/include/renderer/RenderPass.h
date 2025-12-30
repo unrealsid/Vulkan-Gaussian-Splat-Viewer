@@ -44,6 +44,7 @@ namespace core::renderer
         void record_subpasses(uint32_t image_index);
 
         void record_commands_and_draw();
+        void cleanup();
 
     private:
         std::vector<std::unique_ptr<Subpass>> subpasses;
@@ -70,5 +71,6 @@ namespace core::renderer
         size_t current_frame = 0;
 
         bool create_sync_objects();
+        void set_new_camera_aspect_ratio();
     };
 }

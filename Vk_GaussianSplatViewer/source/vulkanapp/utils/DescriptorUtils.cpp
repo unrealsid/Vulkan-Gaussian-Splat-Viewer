@@ -6,7 +6,7 @@
 
 #include "vulkanapp/utils/ImageUtils.h"
 #include "vulkanapp/utils/DescriptorUtils.h"
-#include "structs/PushConstantBlock.h"
+#include "../../../include/structs/scene/PushConstantBlock.h"
 #include "structs/GPU_Buffer.h"
 
 #include "vulkanapp/utils/MemoryUtils.h"

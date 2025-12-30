@@ -1,9 +1,11 @@
 ﻿#pragma once
 
-#include <cstdint>
 #include <memory>
 #include <vector>
+
 #include "renderer/RenderPass.h"
+#include "structs/geometry/GaussianSurface.h"
+#include "camera/FirstPersonCamera.h"
 
 struct EngineContext;
 struct WindowCreateParams;
@@ -20,6 +22,8 @@ namespace core::renderer
         {
         }
 
+        [[nodiscard]] camera::FirstPersonCamera* get_camera() const { return first_person_camera.get(); }
+
         void renderer_init();
         void renderer_update();
 
@@ -30,11 +34,16 @@ namespace core::renderer
         template<typename V>
         void allocate_mesh_buffers(const std::vector<V>& vertices, const std::vector<uint32_t>& indices);
 
+        void allocate_gaussian_buffer(const std::vector<GaussianSurface>& gaussians) const;
+        void create_camera_buffer(uint32_t width, uint32_t height);
+
     private:
         EngineContext& engine_context;
 
         //How many images are we using for a single frame?
         uint32_t max_frames_in_flight;
+
+        std::unique_ptr<camera::FirstPersonCamera> first_person_camera;
 
         std::unique_ptr<RenderPass> render_pass;
 
