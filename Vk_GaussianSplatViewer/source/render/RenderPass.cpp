@@ -63,6 +63,7 @@ namespace core::renderer
             reset_subpass_command_buffers();
             recreate_swapchain();
             create_rendering_resources();
+            set_new_camera_aspect_ratio();
 
             return;
         }
@@ -259,6 +260,7 @@ namespace core::renderer
             reset_subpass_command_buffers();
             recreate_swapchain();
             create_rendering_resources();
+            set_new_camera_aspect_ratio();
 
             return true;
         }
@@ -302,4 +304,10 @@ namespace core::renderer
 
        return true;
    }
+
+    void RenderPass::set_new_camera_aspect_ratio()
+    {
+        engine_context.renderer->get_camera()->set_aspect_ratio(static_cast<float>(
+            swapchain_manager->get_extent().width) / static_cast<float>(swapchain_manager->get_extent().height));
+    }
 }

@@ -23,9 +23,6 @@ void core::Engine::create_renderer() const
 
 void core::Engine::gaussian_surface_init(const std::vector<GaussianSurface>& gaussian_surfaces) const
 {
-    // auto triangle_data = entity_3d::ModelUtils::load_triangle_model();
-    // engine_context->renderer->allocate_mesh_buffers(triangle_data, {0, 1, 2});
-
     engine_context->renderer->allocate_gaussian_buffer(gaussian_surfaces);
     engine_context->gaussian_count = gaussian_surfaces.size();
 }
@@ -50,7 +47,6 @@ void core::Engine::run() const
     bool is_running = true;
     SDL_Event event;
 
-    auto window_manager = engine_context->window_manager.get();
     auto previous_time = std::chrono::high_resolution_clock::now();
     auto camera = engine_context->renderer->get_camera();
 
@@ -61,7 +57,7 @@ void core::Engine::run() const
         double delta_time = elapsed.count();
 
         const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
-        camera->process_keyboard(keyboard_state, delta_time);
+        camera->process_keyboard(keyboard_state, static_cast<float>(delta_time));
 
         
         // Process events from the OS
@@ -74,7 +70,10 @@ void core::Engine::run() const
 
             if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
-                camera->process_mouse_movement(event.motion.xrel, event.motion.yrel);
+                if (event.motion.state & SDL_BUTTON_LMASK)
+                {
+                    camera->process_mouse_movement(event.motion.xrel, event.motion.yrel);
+                }
             }
 
             // Optional: Handle mouse wheel for FOV zoom

@@ -101,7 +101,7 @@ namespace core::renderer
 
         auto swapchain_manager = engine_context.swapchain_manager.get();
         first_person_camera = std::make_unique<camera::FirstPersonCamera>(glm::vec3(0.0f, 0.0f, 3.0f), 45.0f,
-            static_cast<float>(swapchain_manager->get_extent().width )/static_cast<float>(swapchain_manager->get_extent().height));
+            static_cast<float>(swapchain_manager->get_extent().width ) / static_cast<float>(swapchain_manager->get_extent().height));
 
         ubo.projection = first_person_camera->get_projection_matrix();
         ubo.view = first_person_camera->get_view_matrix();
