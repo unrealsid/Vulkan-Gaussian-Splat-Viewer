@@ -57,6 +57,12 @@ namespace camera
         if (keyboard_state[SDL_SCANCODE_LSHIFT]) {
             position -= world_up * velocity;
         }
+        if (keyboard_state[SDL_SCANCODE_Q]) {
+            position += world_up * velocity;
+        }
+        if (keyboard_state[SDL_SCANCODE_E]) {
+            position -= world_up * velocity;
+        }
     }
 
     void FirstPersonCamera::process_mouse_movement(float xoffset, float yoffset, bool constrain_pitch) {
