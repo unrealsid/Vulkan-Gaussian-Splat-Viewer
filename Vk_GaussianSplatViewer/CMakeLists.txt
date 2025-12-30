@@ -29,7 +29,7 @@
 	"include/renderer/subpasses/GeometryPass.h"
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
-
+	"include/camera/FirstPersonCamera.h"
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -65,6 +65,7 @@ set(
 	"source/render/RenderPass.cpp"
 	"source/render/RendererVulkan.cpp"
 	"source/main.cpp"
+	"source/camera/FirstPersonCamera.cpp"
 )
 
 source_group(

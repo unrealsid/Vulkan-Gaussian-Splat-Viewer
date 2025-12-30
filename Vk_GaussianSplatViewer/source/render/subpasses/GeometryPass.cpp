@@ -2,14 +2,20 @@
 #include "materials/MaterialUtils.h"
 #include "structs/EngineContext.h"
 #include "structs//geometry/Vertex.h"
+#include "structs/scene/CameraData.h"
 #include "structs/scene/PushConstantBlock.h"
 
 namespace core::renderer
 {
-    GeometryPass::GeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight): Subpass(engine_context, max_frames_in_flight)
+    GeometryPass::GeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context,
+            max_frames_in_flight)
     {
         material::MaterialUtils material_utils(engine_context);
         set_material(material_utils.create_material("default"));
+
+        camera_data = {glm::mat4{}, glm::mat4{}};
+        camera = engine_context.renderer->get_camera();
+        extents = swapchain_manager->get_extent();
     }
 
     void GeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index)
@@ -30,6 +36,11 @@ namespace core::renderer
                                                                             swapchain_manager->get_extent(), {0, 0});
 
         material_to_use->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
+
+        camera_data.projection =  camera->get_projection_matrix();
+        camera_data.view = camera->get_view_matrix();
+
+        memcpy(engine_context.camera_data_buffer.allocation_info.pMappedData, &camera_data, sizeof(CameraData));
 
         //Vertices
         VkBuffer vertex_buffers[] = {engine_context.gaussian_buffer.buffer};

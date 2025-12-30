@@ -2,8 +2,10 @@
 
 #include <memory>
 #include <vector>
+
 #include "renderer/RenderPass.h"
 #include "structs/geometry/GaussianSurface.h"
+#include "camera/FirstPersonCamera.h"
 
 struct EngineContext;
 struct WindowCreateParams;
@@ -19,6 +21,8 @@ namespace core::renderer
                                                                         render_pass(nullptr)
         {
         }
+
+        [[nodiscard]] camera::FirstPersonCamera* get_camera() const { return first_person_camera.get(); }
 
         void renderer_init();
         void renderer_update();
@@ -38,6 +42,8 @@ namespace core::renderer
 
         //How many images are we using for a single frame?
         uint32_t max_frames_in_flight;
+
+        std::unique_ptr<camera::FirstPersonCamera> first_person_camera;
 
         std::unique_ptr<RenderPass> render_pass;
 

@@ -97,23 +97,14 @@ namespace core::renderer
 
     void Renderer::create_camera_buffer(uint32_t width, uint32_t height)
     {
-        CameraData ubo;
+        CameraData ubo{};
 
-        glm::vec3 cameraPos = glm::vec3(0.0, 10.0, 0.0);
-        glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 up = glm::vec3(0.0f, 0.0f, -1.0f);
+        auto swapchain_manager = engine_context.swapchain_manager.get();
+        first_person_camera = std::make_unique<camera::FirstPersonCamera>(glm::vec3(0.0f, 0.0f, 3.0f), 45.0f,
+            static_cast<float>(swapchain_manager->get_extent().width )/static_cast<float>(swapchain_manager->get_extent().height));
 
-        ubo.view = glm::lookAt(cameraPos, target, up);
-
-        float fov = glm::radians(45.0f);
-        float aspect = static_cast<float>(width) / static_cast<float>(height);
-        float nearPlane = 0.1f;
-        float farPlane = 100.0f;
-
-        ubo.projection = glm::perspective(fov, aspect, nearPlane, farPlane);
-
-        // Flip Y for Vulkan
-        ubo.projection[1][1] *= -1.0f;
+        ubo.projection = first_person_camera->get_projection_matrix();
+        ubo.view = first_person_camera->get_view_matrix();
 
         utils::MemoryUtils::allocate_buffer_with_mapped_access(
                 engine_context.dispatch_table,

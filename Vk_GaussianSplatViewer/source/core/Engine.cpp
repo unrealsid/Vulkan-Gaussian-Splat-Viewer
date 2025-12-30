@@ -52,6 +52,7 @@ void core::Engine::run() const
 
     auto window_manager = engine_context->window_manager.get();
     auto previous_time = std::chrono::high_resolution_clock::now();
+    auto camera = engine_context->renderer->get_camera();
 
     while (is_running)
     {
@@ -59,8 +60,9 @@ void core::Engine::run() const
         std::chrono::duration<float> elapsed = current_time - previous_time;
         double delta_time = elapsed.count();
 
-        window_manager->update_mouse_position();
-        window_manager->get_local_mouse_xy();
+        const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
+        camera->process_keyboard(keyboard_state, delta_time);
+
         
         // Process events from the OS
         while (SDL_PollEvent(&event))
@@ -68,6 +70,17 @@ void core::Engine::run() const
             if (event.type == SDL_EVENT_QUIT)
             {
                 is_running = false;
+            }
+
+            if (event.type == SDL_EVENT_MOUSE_MOTION)
+            {
+                camera->process_mouse_movement(event.motion.xrel, event.motion.yrel);
+            }
+
+            // Optional: Handle mouse wheel for FOV zoom
+            if (event.type == SDL_EVENT_MOUSE_WHEEL)
+            {
+                camera->process_mouse_scroll(event.wheel.y);
             }
         }
 
