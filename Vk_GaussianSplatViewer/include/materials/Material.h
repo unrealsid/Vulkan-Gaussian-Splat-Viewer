@@ -31,7 +31,9 @@ namespace material
         [[nodiscard]] ShaderObject* get_shader_object() const { return shader_object.get(); }
         VkDescriptorSet& get_descriptor_set()  { return descriptor_set; }
         [[nodiscard]] std::string get_material_name() const { return material_name; }
-        
+
+        void cleanup();
+
     private: 
         std::unique_ptr<ShaderObject> shader_object;
         VkDescriptorSet descriptor_set;

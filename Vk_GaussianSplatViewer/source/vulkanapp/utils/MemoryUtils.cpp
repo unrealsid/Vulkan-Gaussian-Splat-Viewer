@@ -258,3 +258,13 @@ void utils::MemoryUtils::allocate_buffer_with_random_access(const vkb::DispatchT
                   VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT |
                   VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer);
 }
+
+void utils::MemoryUtils::destroy_buffer(VmaAllocator allocator, GPU_Buffer& buffer)
+{
+    if (buffer.buffer != VK_NULL_HANDLE)
+    {
+        vmaDestroyBuffer(allocator, buffer.buffer, buffer.allocation);
+        buffer.buffer = VK_NULL_HANDLE;
+        buffer.allocation = VK_NULL_HANDLE;
+    }
+}

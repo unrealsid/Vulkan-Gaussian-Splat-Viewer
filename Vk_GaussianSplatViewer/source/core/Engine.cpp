@@ -27,6 +27,7 @@ void core::Engine::gaussian_surface_init(const std::vector<GaussianSurface>& gau
     // engine_context->renderer->allocate_mesh_buffers(triangle_data, {0, 1, 2});
 
     engine_context->renderer->allocate_gaussian_buffer(gaussian_surfaces);
+    engine_context->gaussian_count = gaussian_surfaces.size();
 }
 
 void core::Engine::create_cleanup() const

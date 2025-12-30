@@ -17,6 +17,16 @@ namespace entity_3d
         };
     }
 
+    std::vector<GaussianSurface> ModelUtils::load_test_gaussian_model()
+    {
+        std::vector gaussians =
+        {
+            GaussianSurface{ .position = { 0.0, 0.0, 0.0 } }
+        };
+
+        return gaussians;
+    }
+
     std::vector<GaussianSurface> ModelUtils::load_gaussian_surfaces(const std::string& file_path)
     {
         splat_loader::GaussianSplatPlyLoader ply;

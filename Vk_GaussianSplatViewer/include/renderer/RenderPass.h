@@ -44,6 +44,7 @@ namespace core::renderer
         void record_subpasses(uint32_t image_index);
 
         void record_commands_and_draw();
+        void cleanup();
 
     private:
         std::vector<std::unique_ptr<Subpass>> subpasses;

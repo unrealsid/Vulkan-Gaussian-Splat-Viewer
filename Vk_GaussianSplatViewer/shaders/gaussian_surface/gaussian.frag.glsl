@@ -21,6 +21,12 @@ layout(push_constant) uniform PushConstants
 
 
 void main () 
-{ 
-    outColor = vec4 (fragColor, 1.0); 
+{
+    const float radius = 0.25;
+    if (length(gl_PointCoord - vec2(0.5)) > radius)
+    {
+        discard;
+    }
+
+    outColor = vec4(fragColor, 1.0);
 }

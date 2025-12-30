@@ -10,7 +10,7 @@ void vulkanapp::VulkanCleanupQueue::push_cleanup_function(std::function<void()>&
 
 void vulkanapp::VulkanCleanupQueue::flush()
 {
-    for (auto& cleanup_function : cleanup_functions)
+    for (auto& cleanup_function : std::views::reverse(cleanup_functions))
     {
         cleanup_function();
     }

@@ -65,7 +65,7 @@ namespace material
 				shader = _shader;
 			}
 
-			void destroy(VkDevice device);
+			void destroy(const vkb::DispatchTable& disp);
 		};
 
 		ShaderObject() = default;
@@ -77,7 +77,7 @@ namespace material
 			const VkDescriptorSetLayout *pSetLayouts, uint32_t setLayoutCount,
 			const VkPushConstantRange *pPushConstantRange, uint32_t pPushConstantCount);
     
-		void destroy_shaders(VkDevice device);
+		void destroy_shaders(const vkb::DispatchTable& disp);
 
 		static void bind_shader(const vkb::DispatchTable& disp, VkCommandBuffer cmd_buffer, const ShaderObject::Shader *shader);
 		void bind_material_shader(const vkb::DispatchTable& disp, VkCommandBuffer cmd_buffer) const;
@@ -124,9 +124,9 @@ namespace material
 			disp.cmdSetDepthTestEnableEXT(cmd_buffer, VK_TRUE);
 			disp.cmdSetDepthWriteEnableEXT(cmd_buffer, VK_TRUE);
 			disp.cmdSetDepthCompareOpEXT(cmd_buffer, VK_COMPARE_OP_LESS);
-			disp.cmdSetPrimitiveTopologyEXT(cmd_buffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+			disp.cmdSetPrimitiveTopologyEXT(cmd_buffer, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
 			disp.cmdSetRasterizerDiscardEnableEXT(cmd_buffer, VK_FALSE);
-			disp.cmdSetPolygonModeEXT(cmd_buffer, VK_POLYGON_MODE_FILL);
+			disp.cmdSetPolygonModeEXT(cmd_buffer, VK_POLYGON_MODE_POINT);
 			disp.cmdSetRasterizationSamplesEXT(cmd_buffer, VK_SAMPLE_COUNT_1_BIT);
 			disp.cmdSetAlphaToCoverageEnableEXT(cmd_buffer, VK_FALSE);
 			disp.cmdSetDepthBiasEnableEXT(cmd_buffer, VK_FALSE);

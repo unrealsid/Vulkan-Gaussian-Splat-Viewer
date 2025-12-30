@@ -20,6 +20,8 @@ namespace core::renderer
     class Subpass
     {
     public:
+        void cleanup();
+
         virtual ~Subpass() = default;
         explicit Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
 
@@ -54,7 +56,5 @@ namespace core::renderer
         VkRenderingAttachmentInfoKHR depth_attachment_info;
 
         std::shared_ptr<material::Material> material_to_use;
-
-        void cleanup();
     };
 }

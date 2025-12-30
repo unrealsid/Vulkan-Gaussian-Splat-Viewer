@@ -61,5 +61,7 @@ namespace utils
 
         //Creates a buffer that is persistently mapped
         static void allocate_buffer_with_random_access(const vkb::DispatchTable& dispatch_table, VmaAllocator allocator, VkDeviceSize size, GPU_Buffer& buffer);
+
+        static void destroy_buffer(VmaAllocator allocator, GPU_Buffer& buffer);
     };
 }

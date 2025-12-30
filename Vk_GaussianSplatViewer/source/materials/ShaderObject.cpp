@@ -38,9 +38,13 @@ material::ShaderObject::Shader::Shader(VkShaderStageFlagBits        stage_,
 }
 
 
-void material::ShaderObject::Shader::destroy(VkDevice device)
+void material::ShaderObject::Shader::destroy(const vkb::DispatchTable& disp)
 {
-    
+    if (shader != VK_NULL_HANDLE)
+    {
+        disp.destroyShaderEXT(shader, nullptr);
+        shader = VK_NULL_HANDLE;
+    }
 }
 
 void material::ShaderObject::build_linked_shaders(const vkb::DispatchTable& disp, ShaderObject::Shader* vert, ShaderObject::Shader* frag)
@@ -96,8 +100,16 @@ void material::ShaderObject::create_shaders(const vkb::DispatchTable& disp, char
     build_linked_shaders(disp, vert_shader.get(), frag_shader.get());
 }
 
-void material::ShaderObject::destroy_shaders(VkDevice device)
+void material::ShaderObject::destroy_shaders(const vkb::DispatchTable& disp)
 {
+    if (vert_shader)
+    {
+        vert_shader->destroy(disp);
+    }
+    if (frag_shader)
+    {
+        frag_shader->destroy(disp);
+    }
 }
 
 void material::ShaderObject::bind_shader(const vkb::DispatchTable& disp, VkCommandBuffer cmd_buffer, const ShaderObject::Shader* shader)

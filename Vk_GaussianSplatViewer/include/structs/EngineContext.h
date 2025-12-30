@@ -21,6 +21,7 @@ struct EngineContext
     GPU_Buffer mesh_indices_buffer;
     GPU_Buffer gaussian_buffer;
     GPU_Buffer camera_data_buffer;
+    uint32_t gaussian_count = 0;
 
     vkb::InstanceDispatchTable instance_dispatch_table;
     vkb::DispatchTable dispatch_table;

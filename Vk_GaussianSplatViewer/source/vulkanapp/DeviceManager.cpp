@@ -43,6 +43,8 @@ bool vulkanapp::DeviceManager::device_init()
     VkPhysicalDeviceFeatures features = {};
     features.geometryShader = VK_FALSE;
     features.tessellationShader = VK_FALSE;
+    features.largePoints = VK_TRUE;
+    features.fillModeNonSolid = VK_TRUE;
 
     surface = engine_context.window_manager->create_surface_sdl3(instance_ret.value().instance, nullptr);
 
@@ -140,6 +142,12 @@ bool vulkanapp::DeviceManager::init_queues()
 
 void vulkanapp::DeviceManager::cleanup()
 {
+    if (vma_allocator != VK_NULL_HANDLE)
+    {
+        vmaDestroyAllocator(vma_allocator);
+        vma_allocator = VK_NULL_HANDLE;
+    }
+
     if(instance.debug_messenger)
     {
         engine_context.instance_dispatch_table.destroyDebugUtilsMessengerEXT(instance.debug_messenger, nullptr);

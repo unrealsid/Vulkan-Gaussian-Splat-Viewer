@@ -31,4 +31,18 @@ namespace material
     {
         this->descriptor_set = descriptor_set;
     }
+
+    void Material::cleanup()
+    {
+        if (pipeline_layout != VK_NULL_HANDLE)
+        {
+            engine_context.dispatch_table.destroyPipelineLayout(pipeline_layout, nullptr);
+            pipeline_layout = VK_NULL_HANDLE;
+        }
+
+        if (shader_object)
+        {
+            shader_object->destroy_shaders(engine_context.dispatch_table);
+        }
+    }
 }

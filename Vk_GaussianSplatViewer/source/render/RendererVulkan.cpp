@@ -44,8 +44,28 @@ namespace core::renderer
 
     void Renderer::init_cleanup() const
     {
-        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context.swapchain_manager->cleanup()));
+        // Pushing in the order we want them to be destroyed in REVERSE
+        // LIFO means the last one pushed is the first one executed.
+
+        // 5. Device manager should be destroyed last (contains VMA allocator and VkDevice)
         vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context.device_manager->cleanup()));
+
+        // 4. Swapchain
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context.swapchain_manager->cleanup()));
+
+        // 3. Buffers should be destroyed before the device/allocator but after waiting for idle
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), engine_context.mesh_vertices_buffer)));
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), engine_context.mesh_indices_buffer)));
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), engine_context.gaussian_buffer)));
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), engine_context.camera_data_buffer)));
+
+        // 2. Render pass cleanup (includes destroying sync objects, command pool, depth image)
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(render_pass->cleanup()));
+
+        // 1. Wait for idle must be the VERY FIRST thing we do when flushing the queue.
+        // It's already called inside render_pass->cleanup(), but we can add it explicitly as the last push (first to execute)
+        // just to be sure.
+        vulkanapp::VulkanCleanupQueue::push_cleanup_function([this]() { engine_context.dispatch_table.deviceWaitIdle(); });
     }
 
     void Renderer::cleanup()
@@ -79,25 +99,21 @@ namespace core::renderer
     {
         CameraData ubo;
 
-        // Camera position: 10 units away on the Z axis
-        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 10.0f);
-        glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);  // Looking at origin
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);      // Y-up
+        glm::vec3 cameraPos = glm::vec3(0.0, 10.0, 0.0);
+        glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 up = glm::vec3(0.0f, 0.0f, -1.0f);
 
-        // Create view matrix
         ubo.view = glm::lookAt(cameraPos, target, up);
 
-        // Create projection matrix (perspective)
-        float fov = glm::radians(45.0f);  // 45 degree field of view
+        float fov = glm::radians(45.0f);
         float aspect = static_cast<float>(width) / static_cast<float>(height);
         float nearPlane = 0.1f;
         float farPlane = 100.0f;
 
         ubo.projection = glm::perspective(fov, aspect, nearPlane, farPlane);
 
-        // IMPORTANT: Vulkan uses different clip space than OpenGL
-        // Vulkan's Y axis is flipped and Z range is [0, 1] instead of [-1, 1]
-        ubo.projection[1][1] *= -1.0f;  // Flip Y coordinate
+        // Flip Y for Vulkan
+        ubo.projection[1][1] *= -1.0f;
 
         utils::MemoryUtils::allocate_buffer_with_mapped_access(
                 engine_context.dispatch_table,

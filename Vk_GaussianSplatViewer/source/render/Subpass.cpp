@@ -156,5 +156,9 @@ namespace core::renderer
 
     void Subpass::cleanup()
     {
+        if (material_to_use)
+        {
+            material_to_use->cleanup();
+        }
     }
 }
