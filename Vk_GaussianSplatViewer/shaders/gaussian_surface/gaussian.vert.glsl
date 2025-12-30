@@ -35,6 +35,9 @@ void main()
 	//ModelTransform model_transform = ModelTransform(pc.model_transform_address);
 
 	vec4 position = vec4(in_position, 1.0);
+	//Flipping for getting scene right
+	position.xy *= -1.0;
+
 	gl_Position = matrices.projection * matrices.view * position;
 	gl_PointSize = 20.0;
 

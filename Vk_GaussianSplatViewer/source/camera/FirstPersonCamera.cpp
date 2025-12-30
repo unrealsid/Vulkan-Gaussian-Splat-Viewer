@@ -64,7 +64,7 @@ namespace camera
         yoffset *= mouse_sensitivity;
 
         yaw += xoffset;
-        pitch += yoffset;
+        pitch -= yoffset;
 
         if (constrain_pitch) {
             if (pitch > 89.0f) pitch = 89.0f;
