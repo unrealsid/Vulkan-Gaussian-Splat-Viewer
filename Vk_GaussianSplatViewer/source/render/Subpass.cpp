@@ -129,23 +129,21 @@ namespace core::renderer
         engine_context.dispatch_table.cmdEndRenderingKHR(active_command_buffer);
     }
 
-    void Subpass::end_command_buffer_recording(uint32_t image)
+    void Subpass::end_command_buffer_recording(uint32_t image, bool last_subpass)
     {
-        utils::ImageUtils::image_layout_transition
-        (
-             active_command_buffer,                            // Command buffer
-             engine_context.swapchain_manager->get_images()[image].image,    // Swapchain image
-             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
-             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
-             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
-             0,                                        // Destination access mask
-             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
-             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
-              VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
-
-        if (engine_context.dispatch_table.endCommandBuffer(active_command_buffer) != VK_SUCCESS)
+        if (last_subpass)
         {
-            std::cout << "failed to record command buffer\n";
+            utils::ImageUtils::image_layout_transition
+            (
+                 active_command_buffer,                            // Command buffer
+                 engine_context.swapchain_manager->get_images()[image].image,    // Swapchain image
+                 VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
+                 VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
+                 VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
+                 0,                                        // Destination access mask
+                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
+                 VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
+                  VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
         }
     }
 

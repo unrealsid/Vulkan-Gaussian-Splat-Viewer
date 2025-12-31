@@ -64,3 +64,19 @@ if(NOT TINYPLY_FOUND)
 	message(STATUS "Using Tiny Ply via FetchContent")
 	FetchContent_MakeAvailable(TINYPLY)
 endif()
+
+#imgui
+find_package(Imgui QUIET)
+if(Imgui_FOUND)
+	message(STATUS "Using ImgUI via find_package")
+endif()
+if(NOT Imgui_FOUND)
+	FetchContent_Declare(
+			Imgui
+			GIT_REPOSITORY "https://github.com/unrealsid/imgui-cmake.git"
+			GIT_SHALLOW TRUE
+			GIT_PROGRESS TRUE
+	)
+	message(STATUS "Using Imgui via FetchContent")
+	FetchContent_MakeAvailable(Imgui)
+endif()

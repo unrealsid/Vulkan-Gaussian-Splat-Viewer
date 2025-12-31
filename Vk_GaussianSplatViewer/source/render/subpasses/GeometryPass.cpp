@@ -18,11 +18,8 @@ namespace core::renderer
         extents = swapchain_manager->get_extent();
     }
 
-    void GeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index)
+    void GeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, bool is_last)
     {
-        engine_context.dispatch_table.resetCommandBuffer(*command_buffer, 0);
-
-        begin_command_buffer_recording();
         set_present_image_transition(image_index, PresentationImageType::SwapChain);
         set_present_image_transition(current_frame, PresentationImageType::DepthStencil);
         setup_color_attachment(image_index, { {0.0f, 0.0f, 0.0f, 1.0f} });
@@ -55,6 +52,6 @@ namespace core::renderer
         engine_context.dispatch_table.cmdDraw(*command_buffer, engine_context.gaussian_count, 1, 0, 0);
 
         end_rendering();
-        end_command_buffer_recording(image_index);
+        end_command_buffer_recording(image_index, is_last);
     }
  }

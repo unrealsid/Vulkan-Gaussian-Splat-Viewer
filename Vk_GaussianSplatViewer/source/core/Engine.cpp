@@ -8,6 +8,8 @@
 #include "renderer/RenderPass.h"
 #include "structs/WindowCreateParams.h"
 
+#include <imgui_impl_sdl3.h>
+
 void core::Engine::create_window() const
 {
     engine_context->window_manager = std::make_unique<platform::WindowManager>(*engine_context);
@@ -57,12 +59,19 @@ void core::Engine::run() const
         double delta_time = elapsed.count();
 
         const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
-        camera->process_keyboard(keyboard_state, static_cast<float>(delta_time));
-
+        ImGuiIO& io = ImGui::GetIO();
+        
+        if (!io.WantCaptureKeyboard)
+        {
+            camera->process_keyboard(keyboard_state, static_cast<float>(delta_time));
+        }
         
         // Process events from the OS
         while (SDL_PollEvent(&event))
         {
+            if (ImGui_ImplSDL3_ProcessEvent(&event))
+                continue;
+
             if (event.type == SDL_EVENT_QUIT)
             {
                 is_running = false;
@@ -70,7 +79,7 @@ void core::Engine::run() const
 
             if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
-                if (event.motion.state & SDL_BUTTON_LMASK)
+                if (!io.WantCaptureMouse && (event.motion.state & SDL_BUTTON_RMASK))
                 {
                     camera->process_mouse_movement(event.motion.xrel, event.motion.yrel);
                 }
@@ -79,7 +88,10 @@ void core::Engine::run() const
             // Optional: Handle mouse wheel for FOV zoom
             if (event.type == SDL_EVENT_MOUSE_WHEEL)
             {
-                camera->process_mouse_scroll(event.wheel.y);
+                if (!io.WantCaptureMouse)
+                {
+                    camera->process_mouse_scroll(event.wheel.y);
+                }
             }
         }
 
