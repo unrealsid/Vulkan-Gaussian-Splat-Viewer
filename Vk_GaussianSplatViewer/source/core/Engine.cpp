@@ -44,11 +44,69 @@ void core::Engine::init()
     create_cleanup();
 }
 
+void core::Engine::handle_input(bool& is_running, camera::FirstPersonCamera* camera, double delta_time)
+{
+    SDL_Event event;
+
+    const ImGuiIO& io = ImGui::GetIO();
+
+    // Process events from the OS
+    while (SDL_PollEvent(&event))
+    {
+        // 1. Always pass events to ImGui
+        ImGui_ImplSDL3_ProcessEvent(&event);
+
+        if (event.type == SDL_EVENT_QUIT)
+        {
+            is_running = false;
+            continue;
+        }
+
+        const bool imgui_wants_mouse    = io.WantCaptureMouse;
+        const bool imgui_wants_keyboard = io.WantCaptureKeyboard;
+
+        if (event.type == SDL_EVENT_MOUSE_MOTION)
+        {
+            if (!imgui_wants_mouse &&
+                (event.motion.state & SDL_BUTTON_RMASK))
+            {
+                camera->process_mouse_movement(
+                    event.motion.xrel,
+                    event.motion.yrel
+                );
+            }
+        }
+
+        // 3. Mouse wheel → zoom only if ImGui does NOT want mouse
+        if (event.type == SDL_EVENT_MOUSE_WHEEL)
+        {
+            if (!imgui_wants_mouse)
+            {
+                camera->process_mouse_scroll(event.wheel.y);
+            }
+        }
+
+        // Optional: Handle mouse wheel for FOV zoom
+        if (event.type == SDL_EVENT_MOUSE_WHEEL)
+        {
+            if (!io.WantCaptureMouse)
+            {
+                camera->process_mouse_scroll(event.wheel.y);
+            }
+        }
+    }
+
+    const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
+    if (!io.WantCaptureKeyboard)
+    {
+        camera->process_keyboard(keyboard_state, static_cast<float>(delta_time));
+    }
+}
+
 void core::Engine::run() const
 {
     bool is_running = true;
-    SDL_Event event;
-
+   
     auto previous_time = std::chrono::high_resolution_clock::now();
     auto camera = engine_context->renderer->get_camera();
 
@@ -58,42 +116,7 @@ void core::Engine::run() const
         std::chrono::duration<float> elapsed = current_time - previous_time;
         double delta_time = elapsed.count();
 
-        const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
-        ImGuiIO& io = ImGui::GetIO();
-        
-        if (!io.WantCaptureKeyboard)
-        {
-            camera->process_keyboard(keyboard_state, static_cast<float>(delta_time));
-        }
-        
-        // Process events from the OS
-        while (SDL_PollEvent(&event))
-        {
-            if (ImGui_ImplSDL3_ProcessEvent(&event))
-                continue;
-
-            if (event.type == SDL_EVENT_QUIT)
-            {
-                is_running = false;
-            }
-
-            if (event.type == SDL_EVENT_MOUSE_MOTION)
-            {
-                if (!io.WantCaptureMouse && (event.motion.state & SDL_BUTTON_RMASK))
-                {
-                    camera->process_mouse_movement(event.motion.xrel, event.motion.yrel);
-                }
-            }
-
-            // Optional: Handle mouse wheel for FOV zoom
-            if (event.type == SDL_EVENT_MOUSE_WHEEL)
-            {
-                if (!io.WantCaptureMouse)
-                {
-                    camera->process_mouse_scroll(event.wheel.y);
-                }
-            }
-        }
+        handle_input(is_running, camera, delta_time);
 
         // update();
 
