@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "renderer/subpasses/GeometryPass.h"
+#include "renderer/subpasses/ImGuiPass.h"
 #include "structs/scene/PushConstantBlock.h"
 #include "structs/geometry/Vertex.h"
 #include "structs/EngineContext.h"
@@ -41,10 +42,27 @@ namespace core::renderer
         engine_context.dispatch_table.deviceWaitIdle();
 
         auto command_buffer = get_command_buffer(current_frame);
-        for (const auto& subpass : subpasses)
+
+        engine_context.dispatch_table.resetCommandBuffer(*command_buffer, 0);
+
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        if (engine_context.dispatch_table.beginCommandBuffer(*command_buffer, &begin_info) != VK_SUCCESS)
         {
-            subpass->init_pass_new_frame(*command_buffer, depth_stencil_image.get(), current_frame);
-            subpass->record_commands(command_buffer, image_index);
+            std::cout << "failed to begin recording command buffer\n";
+            return;
+        }
+
+        for (size_t i = 0; i < subpasses.size(); ++i)
+        {
+            subpasses[i]->init_pass_new_frame(*command_buffer, depth_stencil_image.get(), current_frame);
+            subpasses[i]->record_commands(command_buffer, image_index, i == subpasses.size() - 1);
+        }
+
+        if (engine_context.dispatch_table.endCommandBuffer(*command_buffer) != VK_SUCCESS)
+        {
+            std::cout << "failed to record command buffer\n";
         }
     }
 
@@ -121,6 +139,7 @@ namespace core::renderer
     void RenderPass::init_subpasses()
     {
         subpasses.emplace_back(std::make_unique<GeometryPass>(engine_context, max_frames_in_flight));
+        subpasses.emplace_back(std::make_unique<ImGuiPass>(engine_context, max_frames_in_flight));
     }
 
     void RenderPass::create_command_pool()

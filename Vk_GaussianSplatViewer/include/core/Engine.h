@@ -28,5 +28,9 @@ namespace core
 
         //Orders and stores cleanup function for resource clear
         void create_cleanup() const;
+
+        static void process_input(bool& is_running,
+                                 camera::FirstPersonCamera* camera,
+                                 double delta_time);
     };
 }

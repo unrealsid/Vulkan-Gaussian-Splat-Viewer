@@ -13,7 +13,7 @@ namespace core::renderer
     public:
         GeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight);
 
-        void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index) override;
+        void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, bool is_last) override;
 
     private:
         camera::FirstPersonCamera* camera;

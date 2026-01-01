@@ -58,10 +58,10 @@ namespace camera
             position -= world_up * velocity;
         }
         if (keyboard_state[SDL_SCANCODE_Q]) {
-            position += world_up * velocity;
+            position -= world_up * velocity;
         }
         if (keyboard_state[SDL_SCANCODE_E]) {
-            position -= world_up * velocity;
+            position += world_up * velocity;
         }
     }
 

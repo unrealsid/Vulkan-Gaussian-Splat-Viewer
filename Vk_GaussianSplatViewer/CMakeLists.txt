@@ -27,6 +27,7 @@
 	"include/materials/MaterialUtils.h"
 	"include/materials/ShaderObject.h"
 	"include/renderer/subpasses/GeometryPass.h"
+	"include/renderer/subpasses/ImGuiPass.h"
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
 	"include/camera/FirstPersonCamera.h"
@@ -60,6 +61,7 @@ set(
 	"source/materials/MaterialUtils.cpp"
 	"source/materials/Material.cpp"
 	"source/render/subpasses/GeometryPass.cpp"
+	"source/render/subpasses/ImGuiPass.cpp"
 	"source/render/Renderer.cpp"
 	"source/render/Subpass.cpp"
 	"source/render/RenderPass.cpp"
@@ -95,4 +97,5 @@ target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC Vulkan::Vulkan
 													vk-bootstrap
 													SDL3-shared
 													STB-image
-													tinyply)
+													tinyply
+													imgui::imgui)

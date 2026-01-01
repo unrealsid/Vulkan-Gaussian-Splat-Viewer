@@ -5,7 +5,7 @@
 int main()
 {
     std::cout << "Loading Gaussian Splat..." << "\n";
-    auto gaussians = entity_3d::ModelUtils::load_gaussian_surfaces(R"(D:\Projects\CPP\Vk_GaussianSplat\data\truck_point_cloud.ply)");; //entity_3d::ModelUtils::load_test_gaussian_model();
+    auto gaussians = entity_3d::ModelUtils::load_test_gaussian_model();//entity_3d::ModelUtils::load_gaussian_surfaces(R"(D:\Projects\CPP\Vk_GaussianSplat\data\point_cloud_truck_30k.ply)"); 
 
     core::Engine engine;
     engine.init();

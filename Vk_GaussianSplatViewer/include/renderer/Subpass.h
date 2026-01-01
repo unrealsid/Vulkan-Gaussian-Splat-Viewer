@@ -20,7 +20,7 @@ namespace core::renderer
     class Subpass
     {
     public:
-        void cleanup();
+        virtual void cleanup();
 
         virtual ~Subpass() = default;
         explicit Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
@@ -33,9 +33,9 @@ namespace core::renderer
         void setup_depth_attachment(VkClearValue clear_value);
         void begin_rendering();
         void end_rendering();
-        void end_command_buffer_recording(uint32_t image);
+        void end_command_buffer_recording(uint32_t image, bool last_subpass = true);
 
-        virtual void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index) = 0;
+        virtual void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, bool is_last) = 0;
 
         void set_material(const std::shared_ptr<material::Material>& material);
 
