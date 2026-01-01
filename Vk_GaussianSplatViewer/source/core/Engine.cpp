@@ -44,7 +44,7 @@ void core::Engine::init()
     create_cleanup();
 }
 
-void core::Engine::handle_input(bool& is_running, camera::FirstPersonCamera* camera, double delta_time)
+void core::Engine::process_input(bool& is_running, camera::FirstPersonCamera* camera, double delta_time)
 {
     SDL_Event event;
 
@@ -85,15 +85,6 @@ void core::Engine::handle_input(bool& is_running, camera::FirstPersonCamera* cam
                 camera->process_mouse_scroll(event.wheel.y);
             }
         }
-
-        // Optional: Handle mouse wheel for FOV zoom
-        if (event.type == SDL_EVENT_MOUSE_WHEEL)
-        {
-            if (!io.WantCaptureMouse)
-            {
-                camera->process_mouse_scroll(event.wheel.y);
-            }
-        }
     }
 
     const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
@@ -116,7 +107,7 @@ void core::Engine::run() const
         std::chrono::duration<float> elapsed = current_time - previous_time;
         double delta_time = elapsed.count();
 
-        handle_input(is_running, camera, delta_time);
+        process_input(is_running, camera, delta_time);
 
         // update();
 
