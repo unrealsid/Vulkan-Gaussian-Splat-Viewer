@@ -23,6 +23,13 @@ void core::Engine::create_renderer() const
     engine_context->renderer->renderer_init();
 }
 
+void core::Engine::create_input() const
+{
+    // Initialize input manager
+    engine_context->input_manager = std::make_unique<input::InputManager>();
+    engine_context->input_manager->set_camera_mouse_button(SDL_BUTTON_RIGHT);
+}
+
 void core::Engine::gaussian_surface_init(const std::vector<GaussianSurface>& gaussian_surfaces) const
 {
     engine_context->renderer->allocate_gaussian_buffer(gaussian_surfaces);
@@ -40,58 +47,14 @@ void core::Engine::init()
     engine_context = std::make_unique<EngineContext>();
     
     create_window();
+    create_input();
     create_renderer();
     create_cleanup();
 }
 
-void core::Engine::process_input(bool& is_running, camera::FirstPersonCamera* camera, double delta_time)
+void core::Engine::process_input(bool& is_running, camera::FirstPersonCamera* camera, double delta_time) const
 {
-    SDL_Event event;
-
-    const ImGuiIO& io = ImGui::GetIO();
-
-    // Process events from the OS
-    while (SDL_PollEvent(&event))
-    {
-        // 1. Always pass events to ImGui
-        ImGui_ImplSDL3_ProcessEvent(&event);
-
-        if (event.type == SDL_EVENT_QUIT)
-        {
-            is_running = false;
-            continue;
-        }
-
-        const bool imgui_wants_mouse    = io.WantCaptureMouse;
-        const bool imgui_wants_keyboard = io.WantCaptureKeyboard;
-
-        if (event.type == SDL_EVENT_MOUSE_MOTION)
-        {
-            if (!imgui_wants_mouse &&
-                (event.motion.state & SDL_BUTTON_RMASK))
-            {
-                camera->process_mouse_movement(
-                    event.motion.xrel,
-                    event.motion.yrel
-                );
-            }
-        }
-
-        // 3. Mouse wheel → zoom only if ImGui does NOT want mouse
-        if (event.type == SDL_EVENT_MOUSE_WHEEL)
-        {
-            if (!imgui_wants_mouse)
-            {
-                camera->process_mouse_scroll(event.wheel.y);
-            }
-        }
-    }
-
-    const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
-    if (!io.WantCaptureKeyboard)
-    {
-        camera->process_keyboard(keyboard_state, static_cast<float>(delta_time));
-    }
+    engine_context->input_manager->process_input(is_running, camera, delta_time);
 }
 
 void core::Engine::run() const

@@ -87,13 +87,16 @@ namespace splat_loader
             f_dc_arr[i].resize(vertex_count);
         }
 
-        for (int i = 0; i < 4; ++i)
-            rotation[i].resize(vertex_count);
+        for (auto & i : rotation)
+        {
+            i.resize(vertex_count);
+        }
 
-        for (int i = 0; i < 45; ++i)
-            f_rest_arr[i].resize(vertex_count);
+        for (auto & i : f_rest_arr)
+        {
+            i.resize(vertex_count);
+        }
 
-        // --- Bulk copy once per property ---
         copy_property(x,  xs.data(), vertex_count);
         copy_property(y,  ys.data(), vertex_count);
         copy_property(z,  zs.data(), vertex_count);

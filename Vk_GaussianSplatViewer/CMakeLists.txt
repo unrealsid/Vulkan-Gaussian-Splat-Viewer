@@ -15,6 +15,8 @@
 	"include/structs/Vk_Image.h"
 	
 	"include/platform/WindowManager.h"
+	"include/platform/input/InputManager.h"
+
 	"include/core/Engine.h"
 	"include/config/Config.inl"
 	"include/renderer/Subpass.h"
@@ -31,6 +33,8 @@
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
 	"include/camera/FirstPersonCamera.h"
+
+
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -44,9 +48,12 @@ set(
 	"source/vulkanapp/SwapchainManager.cpp"
 	"source/vulkanapp/VulkanCleanupQueue.cpp"
 	"source/vulkanapp/feature_activator/VulkanFeatureActivator.cpp"
+
 	"source/platform/WindowManager.cpp"
+	"source/platform/input/InputManager.cpp"
+
 	"source/core/Engine.cpp"
-	
+
 	"source/vulkanapp/utils/DescriptorUtils.cpp"
 	"source/vulkanapp/utils/FileUtils.cpp"
 	"source/vulkanapp/utils/ImageUtils.cpp"
@@ -68,6 +75,7 @@ set(
 	"source/render/RendererVulkan.cpp"
 	"source/main.cpp"
 	"source/camera/FirstPersonCamera.cpp"
+
 )
 
 source_group(
