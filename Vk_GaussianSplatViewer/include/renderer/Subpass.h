@@ -20,15 +20,13 @@ namespace core::renderer
     class Subpass
     {
     public:
-        virtual void cleanup();
-
         virtual ~Subpass() = default;
         explicit Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
 
         void init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame);
 
-        void begin_command_buffer_recording();
-        void set_present_image_transition(uint32_t image_id, PresentationImageType presentation_image_type);
+        void begin_command_buffer_recording() const;
+        void set_present_image_transition(uint32_t image_id, PresentationImageType presentation_image_type) const;
         void setup_color_attachment(uint32_t image, VkClearValue clear_value);
         void setup_depth_attachment(VkClearValue clear_value);
         void begin_rendering();
@@ -38,6 +36,8 @@ namespace core::renderer
         virtual void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, bool is_last) = 0;
 
         void set_material(const std::shared_ptr<material::Material>& material);
+
+        virtual void cleanup();
 
     protected:
         EngineContext& engine_context;

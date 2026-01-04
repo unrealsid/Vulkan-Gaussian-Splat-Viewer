@@ -1,11 +1,12 @@
 ﻿#pragma once
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
 #include "renderer/RenderPass.h"
-#include "structs/geometry/GaussianSurface.h"
 #include "camera/FirstPersonCamera.h"
+#include "structs/scene/CommonSceneData.h"
 
 struct EngineContext;
 struct WindowCreateParams;
@@ -31,10 +32,6 @@ namespace core::renderer
 
         [[nodiscard]] RenderPass* get_render_pass() const { return render_pass.get(); }
 
-        template<typename V>
-        void allocate_mesh_buffers(const std::vector<V>& vertices, const std::vector<uint32_t>& indices);
-
-        void allocate_gaussian_buffer(const std::vector<GaussianSurface>& gaussians) const;
         void create_camera_buffer(uint32_t width, uint32_t height);
 
     private:
@@ -46,6 +43,7 @@ namespace core::renderer
         std::unique_ptr<camera::FirstPersonCamera> first_person_camera;
 
         std::unique_ptr<RenderPass> render_pass;
+        std::unique_ptr<CommonSceneData> common_scene_data;
 
         void init_vulkan();
 

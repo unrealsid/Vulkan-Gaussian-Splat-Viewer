@@ -7,6 +7,7 @@
 #include "vulkanapp/utils/DescriptorUtils.h"
 #include "vulkanapp/utils/Vk_Utils.h"
 #include "structs/GPU_Buffer.h"
+#include "structs/geometry/GaussianSurface.h"
 #include "structs/geometry/Vertex.h"
 #include "structs/geometry/Vertex2D.h"
 #include "vulkanapp/DeviceManager.h"

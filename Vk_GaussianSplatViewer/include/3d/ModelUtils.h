@@ -11,7 +11,7 @@ namespace entity_3d
         public:
         static std::vector<Vertex2D> load_triangle_model();
 
-        static std::vector<GaussianSurface> load_test_gaussian_model();
+        static std::vector<GaussianSurface> load_placeholder_gaussian_model();
 
         static std::vector<GaussianSurface> load_gaussian_surfaces(const std::string& file_path);
     };

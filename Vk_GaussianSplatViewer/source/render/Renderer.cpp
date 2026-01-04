@@ -15,8 +15,10 @@ namespace core::renderer
 
         init_vulkan();
 
+        common_scene_data = std::make_unique<CommonSceneData>();
+        
         create_camera_buffer(window_width, window_height);
-        render_pass = std::make_unique<RenderPass>(engine_context, 2);
+        render_pass = std::make_unique<RenderPass>(engine_context, *common_scene_data, 2);
         render_pass->init_renderpass();
 
 

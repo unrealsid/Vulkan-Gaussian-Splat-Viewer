@@ -23,17 +23,14 @@ void core::Engine::create_renderer() const
     engine_context->renderer->renderer_init();
 }
 
-void core::Engine::create_input() const
+void core::Engine::create_ui_and_input() const
 {
+    //Init UI Action manager
+    engine_context->ui_action_manager = std::make_unique<ui::UIActionManager>();
+
     // Initialize input manager
     engine_context->input_manager = std::make_unique<input::InputManager>();
     engine_context->input_manager->set_camera_mouse_button(SDL_BUTTON_RIGHT);
-}
-
-void core::Engine::gaussian_surface_init(const std::vector<GaussianSurface>& gaussian_surfaces) const
-{
-    engine_context->renderer->allocate_gaussian_buffer(gaussian_surfaces);
-    engine_context->gaussian_count = gaussian_surfaces.size();
 }
 
 void core::Engine::create_cleanup() const
@@ -47,7 +44,7 @@ void core::Engine::init()
     engine_context = std::make_unique<EngineContext>();
     
     create_window();
-    create_input();
+    create_ui_and_input();
     create_renderer();
     create_cleanup();
 }

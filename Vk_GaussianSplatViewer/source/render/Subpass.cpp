@@ -22,7 +22,7 @@ namespace core::renderer
         depth_stencil_image = p_depth_stencil_image;
     }
 
-    void Subpass::begin_command_buffer_recording()
+    void Subpass::begin_command_buffer_recording() const
     {
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -34,7 +34,7 @@ namespace core::renderer
         }
     }
 
-    void Subpass::set_present_image_transition(uint32_t image_id, PresentationImageType presentation_image_type)
+    void Subpass::set_present_image_transition(uint32_t image_id, PresentationImageType presentation_image_type) const
     {
 
         switch (presentation_image_type)

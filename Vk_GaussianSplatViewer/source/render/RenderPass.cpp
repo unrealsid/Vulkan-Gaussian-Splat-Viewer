@@ -11,13 +11,15 @@
 
 namespace core::renderer
 {
-    RenderPass::RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
+    RenderPass::RenderPass(EngineContext& engine_context, CommonSceneData& p_common_scene_data, uint32_t max_frames_in_flight) :
         engine_context(engine_context),
         max_frames_in_flight(max_frames_in_flight)
     {
         swapchain_manager = engine_context.swapchain_manager.get();
         device_manager = engine_context.device_manager.get();
         depth_stencil_image = nullptr;
+        command_pool = nullptr;
+        common_scene_data = &p_common_scene_data;
     }
 
     void RenderPass::allocate_and_record_command_buffers()
@@ -33,7 +35,7 @@ namespace core::renderer
     void RenderPass::init_renderpass()
     {
         create_sync_objects();
-        create_rendering_resources();
+        create_renderpass_resources();
     }
 
     void RenderPass::record_subpasses(uint32_t image_index)
@@ -80,7 +82,7 @@ namespace core::renderer
 
             reset_subpass_command_buffers();
             recreate_swapchain();
-            create_rendering_resources();
+            create_renderpass_resources();
             set_new_camera_aspect_ratio();
 
             return;
@@ -138,7 +140,7 @@ namespace core::renderer
 
     void RenderPass::init_subpasses()
     {
-        subpasses.emplace_back(std::make_unique<GeometryPass>(engine_context, max_frames_in_flight));
+        subpasses.emplace_back(std::make_unique<GeometryPass>(engine_context, max_frames_in_flight, *common_scene_data));
         subpasses.emplace_back(std::make_unique<ImGuiPass>(engine_context, max_frames_in_flight));
     }
 
@@ -159,10 +161,14 @@ namespace core::renderer
         if (depth_stencil_image)
         {
             if (depth_stencil_image->view != VK_NULL_HANDLE)
+            {
                 engine_context.dispatch_table.destroyImageView(depth_stencil_image->view, nullptr);
+            }
 
             if (depth_stencil_image->image != VK_NULL_HANDLE)
+            {
                 vmaDestroyImage(device_manager->get_allocator(), depth_stencil_image->image, depth_stencil_image->allocation);
+            }
 
             depth_stencil_image.reset();
         }
@@ -171,7 +177,9 @@ namespace core::renderer
     VkCommandBuffer* RenderPass::get_command_buffer(uint32_t image_id)
     {
         if (image_id < command_buffers.size())
+        {
             return &command_buffers[image_id];
+        }
 
         return nullptr;
     }
@@ -213,10 +221,10 @@ namespace core::renderer
         swapchain_manager->recreate_swapchain(window_width, window_height);
     }
 
-    void RenderPass::create_rendering_resources()
+    void RenderPass::create_renderpass_resources()
     {
-        init_subpasses();
         create_command_pool();
+        init_subpasses();
         create_depth_stencil_image();
 
         allocate_and_record_command_buffers();
@@ -287,7 +295,7 @@ namespace core::renderer
 
             reset_subpass_command_buffers();
             recreate_swapchain();
-            create_rendering_resources();
+            create_renderpass_resources();
             set_new_camera_aspect_ratio();
 
             return true;
@@ -333,7 +341,7 @@ namespace core::renderer
        return true;
    }
 
-    void RenderPass::set_new_camera_aspect_ratio()
+    void RenderPass::set_new_camera_aspect_ratio() const
     {
         engine_context.renderer->get_camera()->set_aspect_ratio(static_cast<float>(
             swapchain_manager->get_extent().width) / static_cast<float>(swapchain_manager->get_extent().height));

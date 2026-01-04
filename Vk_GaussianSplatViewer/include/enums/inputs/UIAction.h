@@ -1,0 +1,9 @@
+#pragma once
+
+enum class UIAction
+{
+    ALLOCATE_SPLAT_MEMORY,
+    LOAD_GAUSSIAN_SPLAT,
+    LOAD_POINT_CLOUD,
+    TOGGLE_VIEW
+};

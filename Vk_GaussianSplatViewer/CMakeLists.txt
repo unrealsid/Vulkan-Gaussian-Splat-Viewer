@@ -8,6 +8,7 @@
 	"include/structs/scene/PushConstantBlock.h"
 	"include/structs/scene/CameraData.h"
 	"include/structs/WindowCreateParams.h"
+	"include/structs/scene/GeometryData.h"
 
 	"include/structs/geometry/Vertex.h"
 	"include/structs/geometry/Vertex2D.h"
@@ -34,7 +35,7 @@
 	"include/renderer/RenderPass.h"
 	"include/camera/FirstPersonCamera.h"
 
-
+	"include/platform/input/UIActionManager.h"
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -51,6 +52,7 @@ set(
 
 	"source/platform/WindowManager.cpp"
 	"source/platform/input/InputManager.cpp"
+	"source/platform/input/UIActionManager.cpp"
 
 	"source/core/Engine.cpp"
 
