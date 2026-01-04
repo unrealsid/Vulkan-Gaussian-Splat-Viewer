@@ -19,7 +19,6 @@
 
 	"include/core/Engine.h"
 	"include/config/Config.inl"
-	"include/renderer/Subpass.h"
 
 	"include/3d/ModelUtils.h"
 	"include/3d/GaussianSplatPlyLoader.h"
@@ -28,13 +27,17 @@
 	"include/materials/Material.h"
 	"include/materials/MaterialUtils.h"
 	"include/materials/ShaderObject.h"
+
 	"include/renderer/subpasses/GeometryPass.h"
 	"include/renderer/subpasses/ImGuiPass.h"
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
 	"include/camera/FirstPersonCamera.h"
+	"include/renderer/Subpass.h"
+	"include/renderer/GPU_BufferContainer.h"
 
 
+	"include/platform/input/UIActionManager.h"
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -51,6 +54,7 @@ set(
 
 	"source/platform/WindowManager.cpp"
 	"source/platform/input/InputManager.cpp"
+	"source/platform/input/UIActionManager.cpp"
 
 	"source/core/Engine.cpp"
 
@@ -75,7 +79,7 @@ set(
 	"source/render/RendererVulkan.cpp"
 	"source/main.cpp"
 	"source/camera/FirstPersonCamera.cpp"
-
+	"source/render/GPU_BufferContainer.cpp"
 )
 
 source_group(

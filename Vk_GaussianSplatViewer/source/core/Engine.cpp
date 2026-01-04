@@ -23,22 +23,24 @@ void core::Engine::create_renderer() const
     engine_context->renderer->renderer_init();
 }
 
-void core::Engine::create_input() const
+void core::Engine::create_ui_and_input() const
 {
+    //Init UI Action manager
+    engine_context->ui_action_manager = std::make_unique<ui::UIActionManager>();
+
     // Initialize input manager
     engine_context->input_manager = std::make_unique<input::InputManager>();
     engine_context->input_manager->set_camera_mouse_button(SDL_BUTTON_RIGHT);
 }
 
-void core::Engine::gaussian_surface_init(const std::vector<GaussianSurface>& gaussian_surfaces) const
+void core::Engine::create_buffer_container() const
 {
-    engine_context->renderer->allocate_gaussian_buffer(gaussian_surfaces);
-    engine_context->gaussian_count = gaussian_surfaces.size();
+    engine_context->buffer_container = std::make_unique<core::renderer::GPU_BufferContainer>(*engine_context);
 }
 
 void core::Engine::create_cleanup() const
 {
-    engine_context->renderer->init_cleanup();
+    engine_context->renderer->cleanup_init();
     vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context->window_manager->destroy_window_sdl3()));
 }
 
@@ -47,7 +49,8 @@ void core::Engine::init()
     engine_context = std::make_unique<EngineContext>();
     
     create_window();
-    create_input();
+    create_ui_and_input();
+    create_buffer_container();
     create_renderer();
     create_cleanup();
 }
@@ -55,6 +58,11 @@ void core::Engine::init()
 void core::Engine::process_input(bool& is_running, camera::FirstPersonCamera* camera, double delta_time) const
 {
     engine_context->input_manager->process_input(is_running, camera, delta_time);
+}
+
+void core::Engine::process_ui_actions() const
+{
+    engine_context->ui_action_manager->process_queued_actions();
 }
 
 void core::Engine::run() const
@@ -71,6 +79,8 @@ void core::Engine::run() const
         double delta_time = elapsed.count();
 
         process_input(is_running, camera, delta_time);
+
+        process_ui_actions();
 
         // update();
 

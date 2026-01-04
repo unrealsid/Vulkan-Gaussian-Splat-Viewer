@@ -1,11 +1,12 @@
 ﻿#pragma once
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
 #include "renderer/RenderPass.h"
-#include "structs/geometry/GaussianSurface.h"
 #include "camera/FirstPersonCamera.h"
+#include "GPU_BufferContainer.h"
 
 struct EngineContext;
 struct WindowCreateParams;
@@ -27,15 +28,11 @@ namespace core::renderer
         void renderer_init();
         void renderer_update();
 
-        void init_cleanup() const;
+        void cleanup_init() const;
 
         [[nodiscard]] RenderPass* get_render_pass() const { return render_pass.get(); }
 
-        template<typename V>
-        void allocate_mesh_buffers(const std::vector<V>& vertices, const std::vector<uint32_t>& indices);
-
-        void allocate_gaussian_buffer(const std::vector<GaussianSurface>& gaussians) const;
-        void create_camera_buffer(uint32_t width, uint32_t height);
+        void create_camera_and_buffer();
 
     private:
         EngineContext& engine_context;
@@ -51,7 +48,6 @@ namespace core::renderer
 
         void create_swapchain() const;
         void create_device() const;
-
 
         void cleanup();
     };

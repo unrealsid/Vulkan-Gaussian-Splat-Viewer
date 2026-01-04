@@ -15,6 +15,11 @@ namespace core::renderer
         device_manager = engine_context.device_manager.get();
     }
 
+    void Subpass::frame_pre_recording()
+    {
+
+    }
+
     void Subpass::init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame)
     {
         current_frame = p_frame;
@@ -22,7 +27,7 @@ namespace core::renderer
         depth_stencil_image = p_depth_stencil_image;
     }
 
-    void Subpass::begin_command_buffer_recording()
+    void Subpass::begin_command_buffer_recording() const
     {
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -34,7 +39,7 @@ namespace core::renderer
         }
     }
 
-    void Subpass::set_present_image_transition(uint32_t image_id, PresentationImageType presentation_image_type)
+    void Subpass::set_present_image_transition(uint32_t image_id, PresentationImageType presentation_image_type) const
     {
 
         switch (presentation_image_type)

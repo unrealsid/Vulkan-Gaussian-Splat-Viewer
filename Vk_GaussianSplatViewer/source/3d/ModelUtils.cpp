@@ -17,7 +17,7 @@ namespace entity_3d
         };
     }
 
-    std::vector<GaussianSurface> ModelUtils::load_test_gaussian_model()
+    std::vector<GaussianSurface> ModelUtils::load_placeholder_gaussian_model()
     {
         std::vector gaussians =
         {

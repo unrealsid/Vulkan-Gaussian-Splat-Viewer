@@ -2,6 +2,7 @@
 
 #include "Subpass.h"
 #include "structs/Vk_Image.h"
+#include "GPU_BufferContainer.h"
 
 struct EngineContext;
 
@@ -18,7 +19,7 @@ namespace core::renderer
     public:
         RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
         void allocate_and_record_command_buffers();
-        void init_renderpass();
+        void renderpass_init();
         void init_subpasses();
 
         [[nodiscard]] uint32_t get_max_frames_in_flight() const { return max_frames_in_flight; }
@@ -37,11 +38,12 @@ namespace core::renderer
 
         void reset_subpass_command_buffers();
         void recreate_swapchain();
-        void create_rendering_resources();
+        void create_renderpass_resources(bool is_init);
 
         bool draw_frame(uint32_t image_index);
 
         void record_subpasses(uint32_t image_index);
+        void recreate_render_resources();
 
         void record_commands_and_draw();
         void cleanup();
@@ -63,6 +65,8 @@ namespace core::renderer
 
         VkCommandPool command_pool;
 
+        GPU_BufferContainer* common_scene_data;
+
         //Store created Depth Stencils
         std::unique_ptr<Vk_Image> depth_stencil_image;
 
@@ -71,6 +75,6 @@ namespace core::renderer
         size_t current_frame = 0;
 
         bool create_sync_objects();
-        void set_new_camera_aspect_ratio();
+        void set_new_camera_aspect_ratio() const;
     };
 }
