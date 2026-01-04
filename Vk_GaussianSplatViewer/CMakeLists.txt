@@ -8,7 +8,6 @@
 	"include/structs/scene/PushConstantBlock.h"
 	"include/structs/scene/CameraData.h"
 	"include/structs/WindowCreateParams.h"
-	"include/structs/scene/GeometryData.h"
 
 	"include/structs/geometry/Vertex.h"
 	"include/structs/geometry/Vertex2D.h"
@@ -20,7 +19,6 @@
 
 	"include/core/Engine.h"
 	"include/config/Config.inl"
-	"include/renderer/Subpass.h"
 
 	"include/3d/ModelUtils.h"
 	"include/3d/GaussianSplatPlyLoader.h"
@@ -29,11 +27,15 @@
 	"include/materials/Material.h"
 	"include/materials/MaterialUtils.h"
 	"include/materials/ShaderObject.h"
+
 	"include/renderer/subpasses/GeometryPass.h"
 	"include/renderer/subpasses/ImGuiPass.h"
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
 	"include/camera/FirstPersonCamera.h"
+	"include/renderer/Subpass.h"
+	"include/renderer/GPU_BufferContainer.h"
+
 
 	"include/platform/input/UIActionManager.h"
 )
@@ -77,7 +79,7 @@ set(
 	"source/render/RendererVulkan.cpp"
 	"source/main.cpp"
 	"source/camera/FirstPersonCamera.cpp"
-
+	"source/render/GPU_BufferContainer.cpp"
 )
 
 source_group(

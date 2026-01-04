@@ -40,7 +40,7 @@ namespace core::renderer
         pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
-        pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+        pool_info.poolSizeCount = static_cast<uint32_t>(IM_ARRAYSIZE(pool_sizes));
         pool_info.pPoolSizes = pool_sizes;
 
         if (engine_context.dispatch_table.createDescriptorPool(&pool_info, nullptr, &imgui_pool) != VK_SUCCESS)
@@ -79,6 +79,8 @@ namespace core::renderer
 
         ImGui_ImplVulkan_Init(&init_info);
     }
+
+#pragma optimize("", off)
 
     void ImGuiPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, bool is_last)
     {
@@ -121,12 +123,20 @@ namespace core::renderer
         // }
 
 
-        static int counter = 0;
-
         ImGui::Begin("Gaussian Splat Loader");
 
-        if (ImGui::Button("Load New Splat"))
-            counter++;
+        ImGui::Text("Load Gaussian Splat/PointCloud");
+
+        static char text_buffer[256] = "";
+        ImGui::PushItemWidth(-1);
+        ImGui::InputText("##filepath", text_buffer, IM_ARRAYSIZE(text_buffer));
+        ImGui::PopItemWidth();
+
+        if (ImGui::Button("Load File", ImVec2(-1, 0)))
+        {
+            engine_context.ui_action_manager->queue_string_action(UIAction::ALLOCATE_SPLAT_MEMORY, text_buffer);
+        }
+
         ImGui::End();
 
         ImGui::Render();
@@ -135,6 +145,9 @@ namespace core::renderer
         end_rendering();
         end_command_buffer_recording(image_index, is_last);
     }
+
+
+#pragma optimize("", on)
 
     void ImGuiPass::cleanup()
     {

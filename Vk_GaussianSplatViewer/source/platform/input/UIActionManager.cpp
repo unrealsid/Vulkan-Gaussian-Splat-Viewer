@@ -1,11 +1,9 @@
-//
-// Created by Sid on 1/3/2026.
-//
-
 #include "platform/input/UIActionManager.h"
 
 namespace ui
 {
+    // ===== Register actions =====
+
     void UIActionManager::register_action(UIAction action, const UIActionCallback& callback)
     {
         action_callbacks[action].push_back(callback);
@@ -58,67 +56,129 @@ namespace ui
         string_callbacks.erase(action);
     }
 
-    // ===== Trigger actions =====
+    // ===== Queue actions (deferred execution) =====
 
-    void UIActionManager::trigger_action(UIAction action)
+    void UIActionManager::queue_action(UIAction action)
     {
-        auto it = action_callbacks.find(action);
-        if (it != action_callbacks.end())
+        action_queue.push(QueuedAction(action));
+    }
+
+    void UIActionManager::queue_bool_action(UIAction action, bool value)
+    {
+        action_queue.push(QueuedBoolAction(action, value));
+    }
+
+    void UIActionManager::queue_int_action(UIAction action, int value)
+    {
+        action_queue.push(QueuedIntAction(action, value));
+    }
+
+    void UIActionManager::queue_float_action(UIAction action, float value)
+    {
+        action_queue.push(QueuedFloatAction(action, value));
+    }
+
+    void UIActionManager::queue_string_action(UIAction action, const std::string& value)
+    {
+        action_queue.push(QueuedStringAction(action, value));
+    }
+
+    // ===== Process queued actions =====
+
+    void UIActionManager::process_queued_actions()
+    {
+        while (!action_queue.empty())
         {
-            for (auto& callback : it->second)
-            {
-                callback();
-            }
+            execute_queued_action(action_queue.front());
+            action_queue.pop();
         }
     }
 
-    void UIActionManager::trigger_bool_action(UIAction action, bool value)
+    void UIActionManager::clear_queued_actions()
     {
-        auto it = bool_callbacks.find(action);
-        if (it != bool_callbacks.end())
+        while (!action_queue.empty())
         {
-            for (auto& callback : it->second)
-            {
-                callback(value);
-            }
+            action_queue.pop();
         }
     }
 
-    void UIActionManager::trigger_int_action(UIAction action, int value)
+    bool UIActionManager::has_queued_actions() const
     {
-        auto it = int_callbacks.find(action);
-        if (it != int_callbacks.end())
-        {
-            for (auto& callback : it->second)
-            {
-                callback(value);
-            }
-        }
+        return !action_queue.empty();
     }
 
-    void UIActionManager::trigger_float_action(UIAction action, float value)
+    size_t UIActionManager::get_queued_action_count() const
     {
-        auto it = float_callbacks.find(action);
-        if (it != float_callbacks.end())
-        {
-            for (auto& callback : it->second)
-            {
-                callback(value);
-            }
-        }
+        return action_queue.size();
     }
 
-    void UIActionManager::trigger_string_action(UIAction action, const std::string& value)
+    // ===== Execute queued action helper =====
+
+    void UIActionManager::execute_queued_action(const QueuedActionVariant& queued_action)
     {
-        auto it = string_callbacks.find(action);
-        if (it != string_callbacks.end())
+        std::visit([this](auto&& arg)
         {
-            for (auto& callback : it->second)
+            using T = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<T, QueuedAction>)
             {
-                callback(value);
+                auto it = action_callbacks.find(arg.action);
+                if (it != action_callbacks.end())
+                {
+                    for (auto& callback : it->second)
+                    {
+                        callback();
+                    }
+                }
             }
-        }
+            else if constexpr (std::is_same_v<T, QueuedBoolAction>)
+            {
+                auto it = bool_callbacks.find(arg.action);
+                if (it != bool_callbacks.end())
+                {
+                    for (auto& callback : it->second)
+                    {
+                        callback(arg.value);
+                    }
+                }
+            }
+            else if constexpr (std::is_same_v<T, QueuedIntAction>)
+            {
+                auto it = int_callbacks.find(arg.action);
+                if (it != int_callbacks.end())
+                {
+                    for (auto& callback : it->second)
+                    {
+                        callback(arg.value);
+                    }
+                }
+            }
+            else if constexpr (std::is_same_v<T, QueuedFloatAction>)
+            {
+                auto it = float_callbacks.find(arg.action);
+                if (it != float_callbacks.end())
+                {
+                    for (auto& callback : it->second)
+                    {
+                        callback(arg.value);
+                    }
+                }
+            }
+            else if constexpr (std::is_same_v<T, QueuedStringAction>)
+            {
+                auto it = string_callbacks.find(arg.action);
+                if (it != string_callbacks.end())
+                {
+                    for (auto& callback : it->second)
+                    {
+                        callback(arg.value);
+                    }
+                }
+            }
+        }, queued_action);
     }
+
+    // ===== Query if actions are registered =====
 
     bool UIActionManager::has_action(UIAction action) const
     {
@@ -154,5 +214,6 @@ namespace ui
         int_callbacks.clear();
         float_callbacks.clear();
         string_callbacks.clear();
+        clear_queued_actions();
     }
-} // ui
+} // namespace ui

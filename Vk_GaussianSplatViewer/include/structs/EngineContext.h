@@ -9,6 +9,7 @@
 #include "platform/input/UIActionManager.h"
 #include "renderer/Renderer.h"
 #include "vulkanapp/DeviceManager.h"
+#include "renderer/GPU_BufferContainer.h"
 
 struct EngineContext
 {
@@ -16,6 +17,8 @@ struct EngineContext
     std::unique_ptr<vulkanapp::DeviceManager> device_manager;
     std::unique_ptr<vulkanapp::SwapchainManager> swapchain_manager;
     std::unique_ptr<core::renderer::Renderer> renderer;
+
+    std::unique_ptr<core::renderer::GPU_BufferContainer> buffer_container;
 
     std::unique_ptr<input::InputManager> input_manager;
     std::unique_ptr<ui::UIActionManager> ui_action_manager;

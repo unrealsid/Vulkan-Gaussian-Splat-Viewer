@@ -23,6 +23,7 @@ namespace core
         void create_window() const;
         void create_renderer() const;
         void create_ui_and_input() const;
+        void create_buffer_container() const;
 
         //Orders and stores cleanup function for resource clear
         void create_cleanup() const;
@@ -30,5 +31,7 @@ namespace core
         void process_input(bool& is_running,
                              camera::FirstPersonCamera* camera,
                              double delta_time) const;
+
+        void process_ui_actions() const;
     };
 }

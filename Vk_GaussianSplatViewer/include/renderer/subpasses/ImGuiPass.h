@@ -19,6 +19,6 @@ namespace core::renderer
 
     private:
         void init_imgui();
-        VkDescriptorPool imgui_pool;
+        VkDescriptorPool imgui_pool{};
     };
 }

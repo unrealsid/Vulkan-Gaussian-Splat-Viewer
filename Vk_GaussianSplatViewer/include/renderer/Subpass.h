@@ -23,6 +23,9 @@ namespace core::renderer
         virtual ~Subpass() = default;
         explicit Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
 
+        //Called before a frame is recorded
+       virtual void frame_pre_recording();
+
         void init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame);
 
         void begin_command_buffer_recording() const;

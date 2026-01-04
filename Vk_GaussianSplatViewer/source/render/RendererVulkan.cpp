@@ -6,6 +6,7 @@
 #include "structs/geometry/Vertex2D.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/utils/MemoryUtils.h"
+#include "renderer/GPU_BufferContainer.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -42,7 +43,7 @@ namespace core::renderer
         engine_context.device_manager->init_queues();
     }
 
-    void Renderer::init_cleanup() const
+    void Renderer::cleanup_init() const
     {
         // Pushing in the order we want them to be destroyed in REVERSE
         // LIFO means the last one pushed is the first one executed.
@@ -62,38 +63,17 @@ namespace core::renderer
         vulkanapp::VulkanCleanupQueue::push_cleanup_function([this]() { engine_context.dispatch_table.deviceWaitIdle(); });
     }
 
+    void Renderer::create_camera_and_buffer()
+    {
+        auto swapchain_manager = engine_context.swapchain_manager.get();
+        first_person_camera = std::make_unique<camera::FirstPersonCamera>(glm::vec3(0.0f, 0.0f, 3.0f), 45.0f,
+                                                                          static_cast<float>(swapchain_manager->get_extent().width ) / static_cast<float>(swapchain_manager->get_extent().height));
+
+        engine_context.buffer_container->allocate_camera_buffer(*first_person_camera);
+    }
+
     void Renderer::cleanup()
     {
         vulkanapp::VulkanCleanupQueue::flush();
     }
-
-    void Renderer::create_camera_buffer(uint32_t width, uint32_t height)
-    {
-        CameraData ubo{};
-
-        auto swapchain_manager = engine_context.swapchain_manager.get();
-        first_person_camera = std::make_unique<camera::FirstPersonCamera>(glm::vec3(0.0f, 0.0f, 3.0f), 45.0f,
-            static_cast<float>(swapchain_manager->get_extent().width ) / static_cast<float>(swapchain_manager->get_extent().height));
-
-        ubo.projection = first_person_camera->get_projection_matrix();
-        ubo.view = first_person_camera->get_view_matrix();
-
-        utils::MemoryUtils::allocate_buffer_with_mapped_access(
-                engine_context.dispatch_table,
-                engine_context.device_manager->get_allocator(),
-                sizeof(CameraData),
-                common_scene_data->camera_data_buffer
-            );
-
-        memcpy(common_scene_data->camera_data_buffer.allocation_info.pMappedData, &ubo, sizeof(CameraData));
-
-        vmaFlushAllocation(
-            engine_context.device_manager->get_allocator(),
-            common_scene_data->camera_data_buffer .allocation,
-            0,
-            VK_WHOLE_SIZE
-        );
-    }
-
-
 }

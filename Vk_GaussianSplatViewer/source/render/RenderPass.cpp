@@ -11,7 +11,7 @@
 
 namespace core::renderer
 {
-    RenderPass::RenderPass(EngineContext& engine_context, CommonSceneData& p_common_scene_data, uint32_t max_frames_in_flight) :
+    RenderPass::RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
         engine_context(engine_context),
         max_frames_in_flight(max_frames_in_flight)
     {
@@ -19,7 +19,6 @@ namespace core::renderer
         device_manager = engine_context.device_manager.get();
         depth_stencil_image = nullptr;
         command_pool = nullptr;
-        common_scene_data = &p_common_scene_data;
     }
 
     void RenderPass::allocate_and_record_command_buffers()
@@ -32,16 +31,21 @@ namespace core::renderer
         }
     }
 
-    void RenderPass::init_renderpass()
+    void RenderPass::renderpass_init()
     {
         create_sync_objects();
-        create_renderpass_resources();
+        create_renderpass_resources(true);
     }
 
     void RenderPass::record_subpasses(uint32_t image_index)
     {
         //TODO: Need better sync -- works for now, though
         engine_context.dispatch_table.deviceWaitIdle();
+
+        for (auto & subpasse : subpasses)
+        {
+            subpasse->frame_pre_recording();
+        }
 
         auto command_buffer = get_command_buffer(current_frame);
 
@@ -78,12 +82,7 @@ namespace core::renderer
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            dispatch_table.deviceWaitIdle();
-
-            reset_subpass_command_buffers();
-            recreate_swapchain();
-            create_renderpass_resources();
-            set_new_camera_aspect_ratio();
+            recreate_render_resources();
 
             return;
         }
@@ -96,6 +95,16 @@ namespace core::renderer
 
         record_subpasses(image_index);
         draw_frame(image_index);
+    }
+
+    void RenderPass::recreate_render_resources()
+    {
+        engine_context.dispatch_table.deviceWaitIdle();
+
+        reset_subpass_command_buffers();
+        recreate_swapchain();
+        create_renderpass_resources(false);
+        set_new_camera_aspect_ratio();
     }
 
     void RenderPass::cleanup()
@@ -140,7 +149,7 @@ namespace core::renderer
 
     void RenderPass::init_subpasses()
     {
-        subpasses.emplace_back(std::make_unique<GeometryPass>(engine_context, max_frames_in_flight, *common_scene_data));
+        subpasses.emplace_back(std::make_unique<GeometryPass>(engine_context, max_frames_in_flight));
         subpasses.emplace_back(std::make_unique<ImGuiPass>(engine_context, max_frames_in_flight));
     }
 
@@ -205,11 +214,11 @@ namespace core::renderer
     void RenderPass::reset_subpass_command_buffers()
     {
         reset_command_pool();
-        for (auto& subpass : subpasses)
-        {
-            subpass->cleanup();
-        }
-        subpasses.clear();
+        // for (auto& subpass : subpasses)
+        // {
+        //     subpass->cleanup();
+        // }
+        // subpasses.clear();
     }
 
     void RenderPass::recreate_swapchain()
@@ -221,10 +230,13 @@ namespace core::renderer
         swapchain_manager->recreate_swapchain(window_width, window_height);
     }
 
-    void RenderPass::create_renderpass_resources()
+    void RenderPass::create_renderpass_resources(bool is_init)
     {
         create_command_pool();
-        init_subpasses();
+
+        if (is_init)
+            init_subpasses();
+
         create_depth_stencil_image();
 
         allocate_and_record_command_buffers();
@@ -291,12 +303,7 @@ namespace core::renderer
         VkResult result = dispatch_table.queuePresentKHR(device_manager->get_present_queue(), &present_info);
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
-            dispatch_table.deviceWaitIdle();
-
-            reset_subpass_command_buffers();
-            recreate_swapchain();
-            create_renderpass_resources();
-            set_new_camera_aspect_ratio();
+            recreate_render_resources();
 
             return true;
         }

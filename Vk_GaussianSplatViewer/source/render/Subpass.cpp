@@ -15,6 +15,11 @@ namespace core::renderer
         device_manager = engine_context.device_manager.get();
     }
 
+    void Subpass::frame_pre_recording()
+    {
+
+    }
+
     void Subpass::init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame)
     {
         current_frame = p_frame;

@@ -6,7 +6,7 @@
 
 #include "renderer/RenderPass.h"
 #include "camera/FirstPersonCamera.h"
-#include "structs/scene/CommonSceneData.h"
+#include "GPU_BufferContainer.h"
 
 struct EngineContext;
 struct WindowCreateParams;
@@ -28,11 +28,11 @@ namespace core::renderer
         void renderer_init();
         void renderer_update();
 
-        void init_cleanup() const;
+        void cleanup_init() const;
 
         [[nodiscard]] RenderPass* get_render_pass() const { return render_pass.get(); }
 
-        void create_camera_buffer(uint32_t width, uint32_t height);
+        void create_camera_and_buffer();
 
     private:
         EngineContext& engine_context;
@@ -43,13 +43,11 @@ namespace core::renderer
         std::unique_ptr<camera::FirstPersonCamera> first_person_camera;
 
         std::unique_ptr<RenderPass> render_pass;
-        std::unique_ptr<CommonSceneData> common_scene_data;
 
         void init_vulkan();
 
         void create_swapchain() const;
         void create_device() const;
-
 
         void cleanup();
     };

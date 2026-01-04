@@ -33,9 +33,14 @@ void core::Engine::create_ui_and_input() const
     engine_context->input_manager->set_camera_mouse_button(SDL_BUTTON_RIGHT);
 }
 
+void core::Engine::create_buffer_container() const
+{
+    engine_context->buffer_container = std::make_unique<core::renderer::GPU_BufferContainer>(*engine_context);
+}
+
 void core::Engine::create_cleanup() const
 {
-    engine_context->renderer->init_cleanup();
+    engine_context->renderer->cleanup_init();
     vulkanapp::VulkanCleanupQueue::push_cleanup_function(CLEANUP_FUNCTION(engine_context->window_manager->destroy_window_sdl3()));
 }
 
@@ -45,6 +50,7 @@ void core::Engine::init()
     
     create_window();
     create_ui_and_input();
+    create_buffer_container();
     create_renderer();
     create_cleanup();
 }
@@ -52,6 +58,11 @@ void core::Engine::init()
 void core::Engine::process_input(bool& is_running, camera::FirstPersonCamera* camera, double delta_time) const
 {
     engine_context->input_manager->process_input(is_running, camera, delta_time);
+}
+
+void core::Engine::process_ui_actions() const
+{
+    engine_context->ui_action_manager->process_queued_actions();
 }
 
 void core::Engine::run() const
@@ -68,6 +79,8 @@ void core::Engine::run() const
         double delta_time = elapsed.count();
 
         process_input(is_running, camera, delta_time);
+
+        process_ui_actions();
 
         // update();
 
