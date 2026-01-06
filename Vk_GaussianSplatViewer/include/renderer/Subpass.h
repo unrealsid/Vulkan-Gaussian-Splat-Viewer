@@ -15,7 +15,7 @@ namespace vulkanapp
     class DeviceManager;
 }
 
-namespace core::renderer
+namespace core::rendering
 {
     class Subpass
     {

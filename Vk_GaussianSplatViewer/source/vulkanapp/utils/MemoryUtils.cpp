@@ -10,7 +10,9 @@
 #include "structs/geometry/GaussianSurface.h"
 #include "structs/geometry/Vertex.h"
 #include "structs/geometry/Vertex2D.h"
+#include "structs/scene/CameraData.h"
 #include "vulkanapp/DeviceManager.h"
+#include "structs/EngineContext.h"
 
 void utils::MemoryUtils::create_vma_allocator(vulkanapp::DeviceManager& device_manager)
 {
@@ -172,7 +174,7 @@ void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine
     // Create Vertex Buffer (Device Local) using VMA
     create_buffer(engine_context.dispatch_table, device_manager->get_allocator(), vertexBufferSize,
                   VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                  VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO,VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, out_vertex_buffer);
+                  VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, out_vertex_buffer);
 
     // Copy from Staging Vertex Buffer to Device Local Vertex Buffer
     copy_buffer(engine_context.dispatch_table, device_manager->get_graphics_queue(), command_pool, staging_vertex_buffer.buffer, out_vertex_buffer.buffer, vertexBufferSize);
@@ -182,8 +184,9 @@ void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine
     vmaDestroyBuffer(device_manager->get_allocator(), staging_vertex_buffer.buffer, staging_vertex_buffer.allocation);
 }
 
-//Specilizations
-template void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine_context, const std::vector<GaussianSurface>& vertices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer);
+//Specializations
+template void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine_context, const std::vector<glm::vec4>& vertices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer);
+template void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine_context, const std::vector<float>& vertices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer);
 
 template <typename V>
 void utils::MemoryUtils::create_index_buffer_with_staging(EngineContext& engine_context, const std::vector<uint32_t>& indices, VkCommandPool command_pool, GPU_Buffer& out_index_buffer)
@@ -227,6 +230,17 @@ void utils::MemoryUtils::create_vertex_and_index_buffers(
 
     create_index_buffer_with_staging<V>(engine_context, indices, command_pool, out_index_buffer);
 }
+
+template <typename T>
+void utils::MemoryUtils::map_ubo(const EngineContext& engine_context, GPU_Buffer buffer, T ubo_data)
+{
+    void* mapped_data;
+    vmaMapMemory(engine_context.device_manager->get_allocator(), buffer.allocation, &mapped_data);
+    memcpy(mapped_data, &ubo_data, sizeof(ubo_data));
+    vmaUnmapMemory(engine_context.device_manager->get_allocator(), buffer.allocation);
+}
+
+template void utils::MemoryUtils::map_ubo(const EngineContext& engine_context, GPU_Buffer buffer, const CameraData& ubo_data);
 
 //Instantiations
 template void utils::MemoryUtils::create_vertex_and_index_buffers<Vertex>(

@@ -8,6 +8,7 @@
 #include "vulkanapp/utils/MemoryUtils.h"
 #include "structs/GPU_Buffer.h"
 #include "vulkanapp/DeviceManager.h"
+#include "structs/EngineContext.h"
 
 LoadedImageData utils::ImageUtils::load_image_data(const std::string& filePath, int desired_channels)
 {

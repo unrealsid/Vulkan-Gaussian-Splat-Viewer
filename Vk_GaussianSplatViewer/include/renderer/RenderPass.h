@@ -2,7 +2,6 @@
 
 #include "Subpass.h"
 #include "structs/Vk_Image.h"
-#include "GPU_BufferContainer.h"
 
 struct EngineContext;
 
@@ -12,8 +11,10 @@ namespace vulkanapp
     class DeviceManager;
 }
 
-namespace core::renderer
+namespace core::rendering
 {
+    class GPU_BufferContainer;
+
     class RenderPass
     {
     public:

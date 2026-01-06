@@ -3,17 +3,16 @@
 
 #include "VkBootstrapDispatch.h"
 #include "structs/Vk_Image.h"
-#include "vulkanapp/DeviceManager.h"
+
+namespace vulkanapp
+{
+    class DeviceManager;
+}
 
 struct GPU_Buffer;
 struct EngineContext;
 struct MaterialParams;
 struct VMAAllocator;
-
-namespace vulkan
-{
-    class DeviceManager;
-}
 
 namespace utils
 {
@@ -47,13 +46,7 @@ namespace utils
                                                    GPU_Buffer& out_vertex_buffer, GPU_Buffer& out_index_buffer);
 
         template<typename T>
-        static void map_ubo(const EngineContext& engine_context, GPU_Buffer buffer, T ubo_data)
-        {
-            void* mapped_data;
-            vmaMapMemory(engine_context.device_manager->get_allocator(), buffer.allocation, &mapped_data);
-            memcpy(mapped_data, &ubo_data, sizeof(ubo_data));
-            vmaUnmapMemory(engine_context.device_manager->get_allocator(), buffer.allocation);
-        }
+        static void map_ubo(const EngineContext& engine_context, GPU_Buffer buffer, T ubo_data);
 
         //Creates a device-addressable buffer (Can be addressed via vulkan BDA)
         static void allocate_buffer_with_mapped_access(const vkb::DispatchTable& dispatch_table, VmaAllocator allocator, VkDeviceSize size, GPU_Buffer& buffer);

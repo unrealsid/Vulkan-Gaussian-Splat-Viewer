@@ -17,17 +17,45 @@ namespace entity_3d
         };
     }
 
-    std::vector<GaussianSurface> ModelUtils::load_placeholder_gaussian_model()
+    std::vector<glm::vec4> ModelUtils::load_gaussian_bounding_box()
     {
-        std::vector gaussians =
-        {
-            GaussianSurface{ .position = { 0.0, 0.0, 0.0 } }
+        std::vector<glm::vec4> cube = {
+            // Back
+            {-1.f, -1.f, -1.f, 1.f}, { 1.f, -1.f, -1.f, 1.f}, { 1.f,  1.f, -1.f, 1.f},
+            { 1.f,  1.f, -1.f, 1.f}, {-1.f,  1.f, -1.f, 1.f}, {-1.f, -1.f, -1.f, 1.f},
+
+            // Front
+            {-1.f, -1.f,  1.f, 1.f}, { 1.f, -1.f,  1.f, 1.f}, { 1.f,  1.f,  1.f, 1.f},
+            { 1.f,  1.f,  1.f, 1.f}, {-1.f,  1.f,  1.f, 1.f}, {-1.f, -1.f,  1.f, 1.f},
+
+            // Bottom
+            {-1.f, -1.f, -1.f, 1.f}, { 1.f, -1.f, -1.f, 1.f}, { 1.f, -1.f,  1.f, 1.f},
+            { 1.f, -1.f,  1.f, 1.f}, {-1.f, -1.f,  1.f, 1.f}, {-1.f, -1.f, -1.f, 1.f},
+
+            // Top
+            {-1.f,  1.f, -1.f, 1.f}, { 1.f,  1.f, -1.f, 1.f}, { 1.f,  1.f,  1.f, 1.f},
+            { 1.f,  1.f,  1.f, 1.f}, {-1.f,  1.f,  1.f, 1.f}, {-1.f,  1.f, -1.f, 1.f},
+
+            // Left
+            {-1.f, -1.f, -1.f, 1.f}, {-1.f,  1.f, -1.f, 1.f}, {-1.f,  1.f,  1.f, 1.f},
+            {-1.f,  1.f,  1.f, 1.f}, {-1.f, -1.f,  1.f, 1.f}, {-1.f, -1.f, -1.f, 1.f},
+
+            // Right
+            { 1.f, -1.f, -1.f, 1.f}, { 1.f,  1.f, -1.f, 1.f}, { 1.f,  1.f,  1.f, 1.f},
+            { 1.f,  1.f,  1.f, 1.f}, { 1.f, -1.f,  1.f, 1.f}, { 1.f, -1.f, -1.f, 1.f},
         };
 
-        return gaussians;
+        return cube;
     }
 
-    std::vector<GaussianSurface> ModelUtils::load_gaussian_surfaces(const std::string& file_path)
+    splat_loader::GaussianSplatPlyLoader ModelUtils::load_placeholder_gaussian_model()
+    {
+        splat_loader::GaussianSplatPlyLoader ply;
+
+        return ply;
+    }
+
+    splat_loader::GaussianSplatPlyLoader ModelUtils::load_gaussian_surfaces(const std::string& file_path)
     {
         splat_loader::GaussianSplatPlyLoader ply;
 
@@ -37,6 +65,6 @@ namespace entity_3d
             return {};
         }
 
-        return ply.get_gaussians();
+        return ply;
     }
 }

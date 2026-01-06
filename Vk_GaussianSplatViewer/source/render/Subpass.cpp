@@ -4,7 +4,7 @@
 #include "vulkanapp/utils/ImageUtils.h"
 #include "vulkanapp/utils/RenderUtils.h"
 
-namespace core::renderer
+namespace core::rendering
 {
     Subpass::Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
                     engine_context(engine_context),

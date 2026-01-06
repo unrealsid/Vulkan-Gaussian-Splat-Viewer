@@ -1,14 +1,25 @@
 ﻿#include "renderer/Renderer.h"
-
 #include <iostream>
 #include <ostream>
-
 #include "config/Config.inl"
 #include "renderer/RenderPass.h"
 #include "structs/EngineContext.h"
 
-namespace core::renderer
+namespace core::rendering
 {
+    Renderer::Renderer(EngineContext& engine_context, const uint32_t p_max_frames_in_flight):
+        engine_context(engine_context),
+        max_frames_in_flight(p_max_frames_in_flight),
+        render_pass(nullptr)
+    {
+
+    }
+
+    camera::FirstPersonCamera* Renderer::get_camera() const
+    {
+        return first_person_camera.get();
+    }
+
     void Renderer::renderer_init()
     {
         std::cout << "Renderer Setup" << std::endl;

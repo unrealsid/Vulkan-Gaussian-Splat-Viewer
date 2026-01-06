@@ -12,6 +12,7 @@
 	"include/structs/geometry/Vertex.h"
 	"include/structs/geometry/Vertex2D.h"
 	"include/structs/geometry/GaussianSurface.h"
+	"include/structs/geometry/GaussianSurface.cpp"
 	"include/structs/Vk_Image.h"
 	
 	"include/platform/WindowManager.h"

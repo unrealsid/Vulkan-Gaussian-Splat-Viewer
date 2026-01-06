@@ -83,10 +83,11 @@ namespace material
 		void bind_material_shader(const vkb::DispatchTable& disp, VkCommandBuffer cmd_buffer) const;
 
 		template<size_t N>
-		static void set_initial_state(vkb::DispatchTable& disp, VkExtent2D viewport_extent, VkCommandBuffer cmd_buffer, VkVertexInputBindingDescription2EXT
-		                              vertex_input_binding, std::array<VkVertexInputAttributeDescription2EXT, N> input_attribute_description,
-		                              VkExtent2D scissor_extents,
-		                              VkOffset2D scissor_offset);
+		static void set_initial_state(vkb::DispatchTable& disp, VkExtent2D viewport_extent, VkCommandBuffer cmd_buffer,
+									const std::array<VkVertexInputBindingDescription2EXT, N>& vertex_input_binding,
+									const std::array<VkVertexInputAttributeDescription2EXT, N>& input_attribute_description,
+		                            VkExtent2D scissor_extents,
+		                            VkOffset2D scissor_offset);
 
 	private:
 		static void build_linked_shaders(const vkb::DispatchTable& disp, ShaderObject::Shader* vert, ShaderObject::Shader* frag);
@@ -97,8 +98,9 @@ namespace material
 
 	template <size_t N>
 	void ShaderObject::set_initial_state(vkb::DispatchTable& disp, VkExtent2D viewport_extent, VkCommandBuffer cmd_buffer,
-	                                     VkVertexInputBindingDescription2EXT vertex_input_binding,
-	                                     std::array<VkVertexInputAttributeDescription2EXT, N> input_attribute_description, VkExtent2D scissor_extents, VkOffset2D scissor_offset)
+										 const std::array<VkVertexInputBindingDescription2EXT, N>& vertex_input_binding,
+	                                     const std::array<VkVertexInputAttributeDescription2EXT, N>& input_attribute_description,
+	                                     VkExtent2D scissor_extents, VkOffset2D scissor_offset)
 	{
 		{
 			// Set viewport and scissor
@@ -124,9 +126,9 @@ namespace material
 			disp.cmdSetDepthTestEnableEXT(cmd_buffer, VK_TRUE);
 			disp.cmdSetDepthWriteEnableEXT(cmd_buffer, VK_TRUE);
 			disp.cmdSetDepthCompareOpEXT(cmd_buffer, VK_COMPARE_OP_LESS);
-			disp.cmdSetPrimitiveTopologyEXT(cmd_buffer, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+			disp.cmdSetPrimitiveTopologyEXT(cmd_buffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN); //VK_PRIMITIVE_TOPOLOGY_POINT_LIST for point
 			disp.cmdSetRasterizerDiscardEnableEXT(cmd_buffer, VK_FALSE);
-			disp.cmdSetPolygonModeEXT(cmd_buffer, VK_POLYGON_MODE_POINT);
+			disp.cmdSetPolygonModeEXT(cmd_buffer, VK_POLYGON_MODE_FILL); //VK_POLYGON_MODE_POINT for point
 			disp.cmdSetRasterizationSamplesEXT(cmd_buffer, VK_SAMPLE_COUNT_1_BIT);
 			disp.cmdSetAlphaToCoverageEnableEXT(cmd_buffer, VK_FALSE);
 			disp.cmdSetDepthBiasEnableEXT(cmd_buffer, VK_FALSE);
@@ -148,17 +150,17 @@ namespace material
 		//Vertex input
 		{
 			// Get the vertex binding and attribute descriptions
-			auto bindingDescription = vertex_input_binding;  //Vertex::get_binding_description();
-			auto attributeDescriptions = input_attribute_description; //Vertex::get_attribute_descriptions();
+			// auto bindingDescription = vertex_input_binding;  //Vertex::get_binding_description();
+			// auto attributeDescriptions = input_attribute_description; //Vertex::get_attribute_descriptions();
 
 			// Set the vertex input state using the descriptions
 			disp.cmdSetVertexInputEXT
 			(
 				cmd_buffer,
-				1,                                                          // bindingCount = 1 (we have one vertex buffer binding)
-				&bindingDescription,                                        // pVertexBindingDescriptions
-				attributeDescriptions.size(),								// attributeCount
-				attributeDescriptions.data()                                // pVertexAttributeDescriptions
+				vertex_input_binding.size(),                                                          // bindingCount = 1 (we have one vertex buffer binding)
+				vertex_input_binding.data(),                                        // pVertexBindingDescriptions
+				input_attribute_description.size(),								// attributeCount
+				input_attribute_description.data()                                // pVertexAttributeDescriptions
 			);
 		}
 	};

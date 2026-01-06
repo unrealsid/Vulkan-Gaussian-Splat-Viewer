@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-namespace core::renderer
+namespace core::rendering
 {
     ImGuiPass::ImGuiPass(EngineContext& engine_context, uint32_t max_frames_in_flight)
         : Subpass(engine_context, max_frames_in_flight)

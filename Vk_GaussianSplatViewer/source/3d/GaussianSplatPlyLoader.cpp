@@ -4,7 +4,9 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <cmath>
 #include <tinyply.h>
+#include <glm/detail/func_geometric.inl>
 
 using namespace tinyply;
 
@@ -13,12 +15,17 @@ namespace splat_loader
     namespace
     {
         template<typename T>
-        inline void copy_property(
+        void copy_property(
             const std::shared_ptr<PlyData>& data,
             T* dst,
             size_t count)
         {
             std::memcpy(dst, data->buffer.get(), sizeof(T) * count);
+        }
+
+        float sigmoid(float x)
+        {
+            return 1.0f / (1.0f + std::exp(-x));
         }
     }
 
@@ -69,9 +76,9 @@ namespace splat_loader
         ply_file.read(file);
 
         const size_t vertex_count = x->count;
-        gaussians.resize(vertex_count);
+        count = vertex_count;
 
-        // --- Allocate SoA buffers ---
+        // --- Allocate temporary SoA buffers ---
         std::vector<float> xs(vertex_count), ys(vertex_count), zs(vertex_count);
         std::vector<float> nxs(vertex_count), nys(vertex_count), nzs(vertex_count);
         std::vector<float> opacity_arr(vertex_count);
@@ -122,33 +129,29 @@ namespace splat_loader
         for (int i = 0; i < 45; ++i)
             copy_property(f_rest[i], f_rest_arr[i].data(), vertex_count);
 
-        GaussianSurface* out = gaussians.data();
+        positions.resize(vertex_count);
+        scales.resize(vertex_count);
+        colors.resize(vertex_count);
+        quaternions.resize(vertex_count);
+        alphas.resize(vertex_count);
 
         for (size_t i = 0; i < vertex_count; ++i)
         {
-            auto& g = out[i];
+            positions[i] = glm::vec4(xs[i], ys[i], zs[i], 1.0f);
 
-            g.position[0] = xs[i];
-            g.position[1] = ys[i];
-            g.position[2] = zs[i];
+            scales[i] = glm::vec4(
+                std::exp(scale[0][i]),
+                std::exp(scale[1][i]),
+                std::exp(scale[2][i]),
+                1.0f
+            );
 
-            g.normal[0] = nxs[i];
-            g.normal[1] = nys[i];
-            g.normal[2] = nzs[i];
+            colors[i] = glm::vec4(f_dc_arr[0][i], f_dc_arr[1][i], f_dc_arr[2][i], 1.0f);
 
-            for (int c = 0; c < 3; ++c)
-                g.f_dc[c] = f_dc_arr[c][i];
+            glm::vec4 quat(rotation[0][i], rotation[1][i], rotation[2][i], rotation[3][i]);
+            quaternions[i] = glm::normalize(quat);
 
-            for (int c = 0; c < 45; ++c)
-                g.f_rest[c] = f_rest_arr[c][i];
-
-            g.opacity = opacity_arr[i];
-
-            for (int c = 0; c < 3; ++c)
-                g.scale[c] = scale[c][i];
-
-            for (int c = 0; c < 4; ++c)
-                g.rotation[c] = rotation[c][i];
+            alphas[i] = sigmoid(opacity_arr[i]);
         }
 
         return true;

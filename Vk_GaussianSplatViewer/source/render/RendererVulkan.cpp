@@ -13,9 +13,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "structs/scene/CameraData.h"
+#include "renderer/RenderPass.h"
 
-namespace core::renderer
+namespace core::rendering
 {
     void Renderer::init_vulkan()
     {
@@ -61,6 +61,11 @@ namespace core::renderer
         // It's already called inside render_pass->cleanup(), but we can add it explicitly as the last push (first to execute)
         // just to be sure.
         vulkanapp::VulkanCleanupQueue::push_cleanup_function([this]() { engine_context.dispatch_table.deviceWaitIdle(); });
+    }
+
+    RenderPass* Renderer::get_render_pass() const
+    {
+        return render_pass.get();
     }
 
     void Renderer::create_camera_and_buffer()

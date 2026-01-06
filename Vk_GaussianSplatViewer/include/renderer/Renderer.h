@@ -2,35 +2,33 @@
 
 #include <iostream>
 #include <memory>
-#include <vector>
-
 #include "renderer/RenderPass.h"
-#include "camera/FirstPersonCamera.h"
-#include "GPU_BufferContainer.h"
+
+namespace camera
+{
+    class FirstPersonCamera;
+}
 
 struct EngineContext;
 struct WindowCreateParams;
 
-namespace core::renderer
+namespace core::rendering
 {
+    class RenderPass;
+
     class Renderer
     {
     public:
-        explicit Renderer(EngineContext& engine_context, const uint32_t p_max_frames_in_flight = 2) :
-                                                                        engine_context(engine_context),
-                                                                        max_frames_in_flight(p_max_frames_in_flight),
-                                                                        render_pass(nullptr)
-        {
-        }
+        explicit Renderer(EngineContext& engine_context, uint32_t p_max_frames_in_flight = 2);
 
-        [[nodiscard]] camera::FirstPersonCamera* get_camera() const { return first_person_camera.get(); }
+        [[nodiscard]] camera::FirstPersonCamera* get_camera() const;
 
         void renderer_init();
         void renderer_update();
 
         void cleanup_init() const;
 
-        [[nodiscard]] RenderPass* get_render_pass() const { return render_pass.get(); }
+        [[nodiscard]] RenderPass* get_render_pass() const;
 
         void create_camera_and_buffer();
 

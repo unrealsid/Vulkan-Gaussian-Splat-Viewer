@@ -19,7 +19,7 @@ void core::Engine::create_window() const
 
 void core::Engine::create_renderer() const
 {
-    engine_context->renderer = std::make_unique<renderer::Renderer>(*engine_context);
+    engine_context->renderer = std::make_unique<rendering::Renderer>(*engine_context);
     engine_context->renderer->renderer_init();
 }
 
@@ -35,7 +35,7 @@ void core::Engine::create_ui_and_input() const
 
 void core::Engine::create_buffer_container() const
 {
-    engine_context->buffer_container = std::make_unique<core::renderer::GPU_BufferContainer>(*engine_context);
+    engine_context->buffer_container = std::make_unique<core::rendering::GPU_BufferContainer>(*engine_context);
 }
 
 void core::Engine::create_cleanup() const

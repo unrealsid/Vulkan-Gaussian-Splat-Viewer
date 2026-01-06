@@ -6,7 +6,7 @@
 #include <backends/imgui_impl_sdl3.h>
 #include <imgui_impl_vulkan.h>
 
-namespace core::renderer
+namespace core::rendering
 {
     class ImGuiPass : public Subpass
     {

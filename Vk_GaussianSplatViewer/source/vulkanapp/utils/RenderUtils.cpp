@@ -3,6 +3,7 @@
 #include "VkBootstrap.h"
 #include "vulkanapp/DeviceManager.h"
 #include "structs/Vk_Image.h"
+#include "structs/EngineContext.h"
 
 bool utils::RenderUtils::create_command_pool(const EngineContext& engine_context, VkCommandPool& out_command_pool)
 {

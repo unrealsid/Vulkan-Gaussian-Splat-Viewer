@@ -4,12 +4,12 @@
 #include <iostream>
 #include "renderer/subpasses/GeometryPass.h"
 #include "renderer/subpasses/ImGuiPass.h"
-#include "structs/scene/PushConstantBlock.h"
+#include "renderer/GPU_BufferContainer.h"
 #include "structs/geometry/Vertex.h"
 #include "structs/EngineContext.h"
 #include "vulkanapp/utils/RenderUtils.h"
 
-namespace core::renderer
+namespace core::rendering
 {
     RenderPass::RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
         engine_context(engine_context),

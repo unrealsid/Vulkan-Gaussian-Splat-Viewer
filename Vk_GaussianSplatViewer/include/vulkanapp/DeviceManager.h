@@ -3,8 +3,6 @@
 #include <vma/vk_mem_alloc.h>
 #include <VkBootstrap.h>
 
-#include "structs/EngineContext.h"
-
 struct EngineContext;
 
 //Manages instance, device and queues

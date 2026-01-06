@@ -37,13 +37,13 @@ namespace camera
         void set_fov(float field_of_view);
 
         // Getters
-        glm::vec3 get_position() const;
-        glm::vec3 get_front() const;
-        glm::vec3 get_up() const;
-        glm::vec3 get_right() const;
-        float get_fov() const;
-        float get_yaw() const;
-        float get_pitch() const;
+        [[nodiscard]] glm::vec3 get_position() const;
+        [[nodiscard]] glm::vec3 get_front() const;
+        [[nodiscard]] glm::vec3 get_up() const;
+        [[nodiscard]] glm::vec3 get_right() const;
+        [[nodiscard]] float get_fov() const;
+        [[nodiscard]] float get_yaw() const;
+        [[nodiscard]] float get_pitch() const;
 
     private:
         void update_camera_vectors();

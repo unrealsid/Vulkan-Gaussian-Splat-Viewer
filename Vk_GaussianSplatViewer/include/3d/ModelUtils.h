@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include <string>
 
+#include "GaussianSplatPlyLoader.h"
 #include "structs/geometry/Vertex2D.h"
-#include "structs/geometry/GaussianSurface.h"
 
 namespace entity_3d
 {
@@ -11,8 +11,10 @@ namespace entity_3d
         public:
         static std::vector<Vertex2D> load_triangle_model();
 
-        static std::vector<GaussianSurface> load_placeholder_gaussian_model();
+        static std::vector<glm::vec4> load_gaussian_bounding_box();
 
-        static std::vector<GaussianSurface> load_gaussian_surfaces(const std::string& file_path);
+        static splat_loader::GaussianSplatPlyLoader load_placeholder_gaussian_model();
+
+        static splat_loader::GaussianSplatPlyLoader load_gaussian_surfaces(const std::string& file_path);
     };
 }
