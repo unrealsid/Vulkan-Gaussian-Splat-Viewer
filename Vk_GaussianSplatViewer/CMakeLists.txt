@@ -29,16 +29,17 @@
 	"include/materials/MaterialUtils.h"
 	"include/materials/ShaderObject.h"
 
-	"include/renderer/subpasses/GeometryPass.h"
+	"include/renderer/subpasses/ForwardGeometryPass.h"
 	"include/renderer/subpasses/ImGuiPass.h"
+	"include/renderer/subpasses/TranslucencyPass.h"
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
-	"include/camera/FirstPersonCamera.h"
 	"include/renderer/Subpass.h"
 	"include/renderer/GPU_BufferContainer.h"
-
+	"include/camera/FirstPersonCamera.h"
 
 	"include/platform/input/UIActionManager.h"
+	"include/structs/Types.h"
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -72,15 +73,20 @@ set(
 	"source/materials/ShaderObject.cpp"
 	"source/materials/MaterialUtils.cpp"
 	"source/materials/Material.cpp"
-	"source/render/subpasses/GeometryPass.cpp"
-	"source/render/subpasses/ImGuiPass.cpp"
-	"source/render/Renderer.cpp"
-	"source/render/Subpass.cpp"
-	"source/render/RenderPass.cpp"
-	"source/render/RendererVulkan.cpp"
+
+	"source/renderer/subpasses/ForwardGeometryPass.cpp"
+	"source/renderer/subpasses/ImGuiPass.cpp"
+	"source/renderer/subpasses/TranslucencyPass.cpp"
+
+	"source/renderer/Renderer.cpp"
+	"source/renderer/Subpass.cpp"
+	"source/renderer/RenderPass.cpp"
+	"source/renderer/RendererVulkan.cpp"
+	"source/renderer/GPU_BufferContainer.cpp"
+
 	"source/main.cpp"
 	"source/camera/FirstPersonCamera.cpp"
-	"source/render/GPU_BufferContainer.cpp"
+
 )
 
 source_group(

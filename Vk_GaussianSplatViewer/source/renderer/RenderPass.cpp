@@ -2,17 +2,18 @@
 #include "renderer/RenderPass.h"
 
 #include <iostream>
-#include "renderer/subpasses/GeometryPass.h"
+#include "renderer/subpasses/ForwardGeometryPass.h"
 #include "renderer/subpasses/ImGuiPass.h"
 #include "renderer/GPU_BufferContainer.h"
 #include "structs/geometry/Vertex.h"
 #include "structs/EngineContext.h"
+#include "structs/scene/PushConstantBlock.h"
 #include "vulkanapp/utils/RenderUtils.h"
 
 namespace core::rendering
 {
     RenderPass::RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
-        engine_context(engine_context),
+        engine_context(engine_context), common_scene_data(nullptr),
         max_frames_in_flight(max_frames_in_flight)
     {
         swapchain_manager = engine_context.swapchain_manager.get();
@@ -54,16 +55,19 @@ namespace core::rendering
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
+
         if (engine_context.dispatch_table.beginCommandBuffer(*command_buffer, &begin_info) != VK_SUCCESS)
         {
             std::cout << "failed to begin recording command buffer\n";
             return;
         }
 
-        for (size_t i = 0; i < subpasses.size(); ++i)
+        PushConstantBlock push_constant_block{};
+
+        for (const auto & subpass : subpasses)
         {
-            subpasses[i]->init_pass_new_frame(*command_buffer, depth_stencil_image.get(), current_frame);
-            subpasses[i]->record_commands(command_buffer, image_index, i == subpasses.size() - 1);
+            subpass->init_pass_new_frame(*command_buffer, depth_stencil_image.get(), current_frame);
+            subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects);
         }
 
         if (engine_context.dispatch_table.endCommandBuffer(*command_buffer) != VK_SUCCESS)
@@ -149,8 +153,13 @@ namespace core::rendering
 
     void RenderPass::init_subpasses()
     {
-        subpasses.emplace_back(std::make_unique<GeometryPass>(engine_context, max_frames_in_flight));
+        subpasses.emplace_back(std::make_unique<ForwardGeometryPass>(engine_context, max_frames_in_flight));
         subpasses.emplace_back(std::make_unique<ImGuiPass>(engine_context, max_frames_in_flight));
+
+        for (const auto& subpass : subpasses)
+        {
+            subpass->subpass_init(subpass_shader_objects);
+        }
     }
 
     void RenderPass::create_command_pool()
@@ -211,6 +220,11 @@ namespace core::rendering
                                                        *depth_stencil_image);
     }
 
+    void RenderPass::create_subpass_shader_objects()
+    {
+
+    }
+
     void RenderPass::reset_subpass_command_buffers()
     {
         reset_command_pool();
@@ -235,7 +249,9 @@ namespace core::rendering
         create_command_pool();
 
         if (is_init)
+        {
             init_subpasses();
+        }
 
         create_depth_stencil_image();
 

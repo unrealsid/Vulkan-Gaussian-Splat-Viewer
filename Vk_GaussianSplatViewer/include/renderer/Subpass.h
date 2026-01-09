@@ -1,11 +1,15 @@
 ﻿#pragma once
 
 #include <memory>
+#include <unordered_map>
+
 #include "enums/PresentationImageType.h"
 #include "materials/Material.h"
 #include "platform/WindowManager.h"
+#include "structs/Types.h"
 #include "structs/Vk_Image.h"
 
+struct PushConstantBlock;
 struct EngineContext;
 struct WindowCreateParams;
 
@@ -23,9 +27,19 @@ namespace core::rendering
         virtual ~Subpass() = default;
         explicit Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
 
-        //Called before a frame is recorded
-       virtual void frame_pre_recording();
+        //Initializes the subpass and the associated material for the subpass if necessary
+        virtual void subpass_init(SubpassShaderList& subpass_shaders) = 0;
 
+        //Called before a frame is recorded
+        virtual void frame_pre_recording() = 0;
+
+        //Record commands into the buffer. Place draw commands here
+        virtual void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constants, SubpassShaderList& subpass_shaders) = 0;
+
+        //Cleanup pass
+        virtual void cleanup();
+
+        //Initialize parameters for a new frame. Runs at the start of every new frame
         void init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame);
 
         void begin_command_buffer_recording() const;
@@ -34,13 +48,9 @@ namespace core::rendering
         void setup_depth_attachment(VkClearValue clear_value);
         void begin_rendering();
         void end_rendering();
-        void end_command_buffer_recording(uint32_t image, bool last_subpass = true);
-
-        virtual void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, bool is_last) = 0;
+        void end_command_buffer_recording(uint32_t image) const;
 
         void set_material(const std::shared_ptr<material::Material>& material);
-
-        virtual void cleanup();
 
     protected:
         EngineContext& engine_context;
@@ -57,7 +67,5 @@ namespace core::rendering
 
         VkRenderingAttachmentInfoKHR color_attachment_info;
         VkRenderingAttachmentInfoKHR depth_attachment_info;
-
-        std::shared_ptr<material::Material> material_to_use;
     };
 }

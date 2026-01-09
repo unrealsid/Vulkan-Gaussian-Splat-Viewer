@@ -7,17 +7,12 @@
 namespace core::rendering
 {
     Subpass::Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
-                    engine_context(engine_context),
-                    max_frames_in_flight(max_frames_in_flight),
-                    active_command_buffer(nullptr), depth_stencil_image(nullptr)
+        engine_context(engine_context),
+        max_frames_in_flight(max_frames_in_flight),
+        active_command_buffer(nullptr), depth_stencil_image(nullptr), color_attachment_info({}), depth_attachment_info({})
     {
         swapchain_manager = engine_context.swapchain_manager.get();
         device_manager = engine_context.device_manager.get();
-    }
-
-    void Subpass::frame_pre_recording()
-    {
-
     }
 
     void Subpass::init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame)
@@ -134,34 +129,28 @@ namespace core::rendering
         engine_context.dispatch_table.cmdEndRenderingKHR(active_command_buffer);
     }
 
-    void Subpass::end_command_buffer_recording(uint32_t image, bool last_subpass)
+    void Subpass::end_command_buffer_recording(uint32_t image) const
     {
-        if (last_subpass)
-        {
-            utils::ImageUtils::image_layout_transition
-            (
-                 active_command_buffer,                            // Command buffer
-                 engine_context.swapchain_manager->get_images()[image].image,    // Swapchain image
-                 VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
-                 VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
-                 VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
-                 0,                                        // Destination access mask
-                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
-                 VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
-                  VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
-        }
+        utils::ImageUtils::image_layout_transition
+        (
+             active_command_buffer,                            // Command buffer
+             engine_context.swapchain_manager->get_images()[image].image,    // Swapchain image
+             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
+             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
+             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
+             0,                                        // Destination access mask
+             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
+             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
+              VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
     }
 
     void Subpass::set_material(const std::shared_ptr<material::Material>& material)
     {
-        material_to_use = material;
+
     }
 
     void Subpass::cleanup()
     {
-        if (material_to_use)
-        {
-            material_to_use->cleanup();
-        }
+
     }
 }

@@ -71,7 +71,7 @@ void utils::MemoryUtils::create_buffer(vkb::DispatchTable dispatch_table, VmaAll
         throw std::runtime_error("failed to create buffer with VMA!");
     }
 
-    out_buffer.buffer_address = MemoryUtils::get_buffer_device_address(dispatch_table, out_buffer.buffer);
+    out_buffer.buffer_address = get_buffer_device_address(dispatch_table, out_buffer.buffer);
 }
 
 VkResult utils::MemoryUtils::map_persistent_data(VmaAllocator vmaAllocator, VmaAllocation allocation, const VmaAllocationInfo& allocationInfo, const void* data, VkDeviceSize

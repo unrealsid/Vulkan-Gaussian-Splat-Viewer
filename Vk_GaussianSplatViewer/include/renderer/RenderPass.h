@@ -2,6 +2,7 @@
 
 #include "Subpass.h"
 #include "structs/Vk_Image.h"
+#include "structs/Types.h"
 
 struct EngineContext;
 
@@ -36,6 +37,9 @@ namespace core::rendering
         void allocate_command_buffer(uint32_t image);
 
         void create_depth_stencil_image();
+
+        //Creates subpass specific shader objects (Post process/Transclucency or whatever)
+        void create_subpass_shader_objects();
 
         void reset_subpass_command_buffers();
         void recreate_swapchain();
@@ -77,5 +81,9 @@ namespace core::rendering
 
         bool create_sync_objects();
         void set_new_camera_aspect_ratio() const;
+
+        //Subpass dependent shader objects
+        //Individual subpasses initialize their own subpass shader objects if needed
+        SubpassShaderList subpass_shader_objects;
     };
 }

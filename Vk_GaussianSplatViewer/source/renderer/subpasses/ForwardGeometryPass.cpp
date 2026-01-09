@@ -1,4 +1,4 @@
-﻿#include "renderer/subpasses/GeometryPass.h"
+﻿#include "renderer/subpasses/ForwardGeometryPass.h"
 
 #include "3d/ModelUtils.h"
 #include "materials/MaterialUtils.h"
@@ -10,20 +10,26 @@
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/utils/MemoryUtils.h"
 #include "renderer/GPU_BufferContainer.h"
+#include "structs/Types.h"
 
 namespace core::rendering
 {
-    GeometryPass::GeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight)
-    {
-        material::MaterialUtils material_utils(engine_context);
-        set_material(material_utils.create_material("default"));
+    ForwardGeometryPass::ForwardGeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight), camera(nullptr){}
 
+    void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders)
+    {
+        //Assign a material for this subpass
+        material::MaterialUtils material_utils(engine_context);
+        subpass_shaders[ShaderObjectType::OpaquePass] = material_utils.create_material("opaque_pass");
+
+        //Setup pass camera
         camera_data = {glm::mat4{}, glm::mat4{}};
         camera = engine_context.renderer->get_camera();
         extents = swapchain_manager->get_extent();
 
         load_cube_model(engine_context);
 
+        //Placeholder scene initialization
         auto gaussian_surfaces = std::vector<glm::vec4>{ {0.0, 0.0, 0.0, 1.0} };
         auto alphas = std::vector<float>{ 0.0 };
 
@@ -36,11 +42,11 @@ namespace core::rendering
 
         //Register new event to allocate memory when a new model is loaded
         engine_context.ui_action_manager->register_string_action(UIAction::ALLOCATE_SPLAT_MEMORY,
-             [this, &engine_context](const std::string& code)
+             [this](const std::string& code)
              {
                  engine_context.dispatch_table.deviceWaitIdle();
 
-                 std::string str = R"(D:\Projects\CPP\Vk_GaussianSplat\data\point_cloud_truck_30k.ply)";
+                 std::string str = R"(D:\Data\point_cloud_truck_30k.ply)";
                  auto gaussian_surfaces = entity_3d::ModelUtils::load_gaussian_surfaces(str);
                  //entity_3d::ModelUtils::load_placeholder_gaussian_model();
 
@@ -60,7 +66,7 @@ namespace core::rendering
              });
     }
 
-    void GeometryPass::load_cube_model(const EngineContext& engine_context)
+    void ForwardGeometryPass::load_cube_model(const EngineContext& engine_context)
     {
         buffer_container = engine_context.buffer_container.get();
         cube =  entity_3d::ModelUtils::load_gaussian_bounding_box();
@@ -69,12 +75,9 @@ namespace core::rendering
     }
 
 
-    void GeometryPass::frame_pre_recording()
-    {
+    void ForwardGeometryPass::frame_pre_recording(){ }
 
-    }
-
-    void GeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, bool is_last)
+    void ForwardGeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders)
     {
         const auto* cube_buffer = buffer_container->get_buffer("cube_buffer");
         const auto* positions = buffer_container->get_buffer("positions");
@@ -95,7 +98,7 @@ namespace core::rendering
                                                                             GaussianSurfaceDescriptor::get_attribute_descriptions(),
                                                                             swapchain_manager->get_extent(), {0, 0});
 
-        material_to_use->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
+        subpass_shaders[ShaderObjectType::OpaquePass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
         camera_data.projection =  camera->get_projection_matrix();
         camera_data.view = camera->get_view_matrix();
@@ -109,7 +112,7 @@ namespace core::rendering
         engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 1, vertex_buffers, offsets);
 
         //Push Constants
-        PushConstantBlock push_constant_block = {
+        push_constant_block = {
             .scene_buffer_address = buffer_container->camera_data_buffer.buffer_address,
             .positions_buffer_address = positions->buffer_address,
             .scales_buffer_address = scales->buffer_address,
@@ -117,16 +120,16 @@ namespace core::rendering
             .quaternions_buffer_address = quaternions->buffer_address,
             .alpha_buffer_address = alphas->buffer_address
         };
-        engine_context.dispatch_table.cmdPushConstants(*command_buffer, material_to_use->get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        engine_context.dispatch_table.cmdPushConstants(*command_buffer, subpass_shaders[ShaderObjectType::OpaquePass]->get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(PushConstantBlock), &push_constant_block);
 
         engine_context.dispatch_table.cmdDraw(*command_buffer, cube_vertex_count, buffer_container->gaussian_count, 0, 0);
 
         end_rendering();
-        end_command_buffer_recording(image_index, is_last);
+        end_command_buffer_recording(image_index);
     }
 
-    void GeometryPass::cleanup()
+    void ForwardGeometryPass::cleanup()
     {
         Subpass::cleanup();
 

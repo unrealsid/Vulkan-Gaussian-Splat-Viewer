@@ -2,6 +2,8 @@
 #include "structs/EngineContext.h"
 #include "vulkanapp/DeviceManager.h"
 #include "vulkanapp/SwapchainManager.h"
+#include "structs/scene/PushConstantBlock.h"
+#include "structs/Types.h"
 #include <iostream>
 
 
@@ -10,12 +12,22 @@ namespace core::rendering
     ImGuiPass::ImGuiPass(EngineContext& engine_context, uint32_t max_frames_in_flight)
         : Subpass(engine_context, max_frames_in_flight)
     {
-        init_imgui();
+
     }
 
     ImGuiPass::~ImGuiPass()
     {
         ImGuiPass::cleanup();
+    }
+
+    void ImGuiPass::frame_pre_recording()
+    {
+
+    }
+
+    void ImGuiPass::subpass_init(SubpassShaderList& subpass_shaders)
+    {
+        init_imgui();
     }
 
     void ImGuiPass::init_imgui()
@@ -80,9 +92,9 @@ namespace core::rendering
         ImGui_ImplVulkan_Init(&init_info);
     }
 
-#pragma optimize("", off)
 
-    void ImGuiPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, bool is_last)
+
+    void ImGuiPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders)
     {
         setup_color_attachment(image_index, { {0.0f, 0.0f, 0.0f, 1.0f} });
         color_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; // Don't clear what GeometryPass did
@@ -143,11 +155,8 @@ namespace core::rendering
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *command_buffer);
 
         end_rendering();
-        end_command_buffer_recording(image_index, is_last);
+        end_command_buffer_recording(image_index);
     }
-
-
-#pragma optimize("", on)
 
     void ImGuiPass::cleanup()
     {
