@@ -20,8 +20,12 @@ namespace core::rendering
     {
         swapchain_manager = engine_context.swapchain_manager.get();
         device_manager = engine_context.device_manager.get();
+        buffer_container = engine_context.buffer_container.get();
+        camera = engine_context.renderer->get_camera();
+
         depth_stencil_image = nullptr;
         command_pool = nullptr;
+        camera_data = {glm::mat4{}, glm::mat4{}};
     }
 
     void RenderPass::allocate_and_record_command_buffers()
@@ -50,13 +54,15 @@ namespace core::rendering
             subpasse->frame_pre_recording();
         }
 
+        //Map data for push constants/descriptors that need it
+        map_cpu_data();
+
         auto command_buffer = get_command_buffer(current_frame);
 
         engine_context.dispatch_table.resetCommandBuffer(*command_buffer, 0);
 
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
 
         if (engine_context.dispatch_table.beginCommandBuffer(*command_buffer, &begin_info) != VK_SUCCESS)
         {
@@ -368,5 +374,19 @@ namespace core::rendering
     {
         engine_context.renderer->get_camera()->set_aspect_ratio(static_cast<float>(
             swapchain_manager->get_extent().width) / static_cast<float>(swapchain_manager->get_extent().height));
+    }
+
+    void RenderPass::map_camera_data()
+    {
+        camera_data.projection =  camera->get_projection_matrix();
+        camera_data.view = camera->get_view_matrix();
+        camera_data.camera_position = glm::vec4(camera->get_position(), 1.0);
+
+        memcpy(buffer_container->camera_data_buffer.allocation_info.pMappedData, &camera_data, sizeof(CameraData));
+    }
+
+    void RenderPass::map_cpu_data()
+    {
+        map_camera_data();
     }
 }

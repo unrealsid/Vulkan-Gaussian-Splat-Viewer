@@ -1,9 +1,10 @@
 ﻿#pragma once
 
 #include "Subpass.h"
+#include "camera/FirstPersonCamera.h"
 #include "structs/Vk_Image.h"
-#include "../common/Types.h"
-
+#include "common/Types.h"
+#include "structs/scene/CameraData.h"
 struct EngineContext;
 
 namespace vulkanapp
@@ -77,11 +78,24 @@ namespace core::rendering
 
         size_t current_frame = 0;
 
-        bool create_sync_objects();
-        void set_new_camera_aspect_ratio() const;
+        //Stores camera data on the cpu
+        CameraData camera_data{};
+
+        //References a camera
+        camera::FirstPersonCamera* camera;
 
         //Subpass dependent shader objects
         //Individual subpasses initialize their own subpass shader objects if needed
         SubpassShaderList subpass_shader_objects;
+
+        //Stores a reference to the buffer container
+        GPU_BufferContainer* buffer_container;
+
+        bool create_sync_objects();
+        void set_new_camera_aspect_ratio() const;
+        void map_camera_data();
+
+        //Maps cpu -> gpu data
+        void map_cpu_data();
     };
 }

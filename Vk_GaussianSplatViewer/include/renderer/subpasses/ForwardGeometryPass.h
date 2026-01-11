@@ -3,7 +3,6 @@
 #include "camera/FirstPersonCamera.h"
 #include "renderer/Subpass.h"
 #include "structs/geometry/GaussianSurface.h"
-#include "structs/scene/CameraData.h"
 
 /*
  * Used to draw opaque geometry
@@ -24,9 +23,7 @@ namespace core::rendering
         void cleanup() override;
 
     private:
-        camera::FirstPersonCamera* camera;
         VkExtent2D extents{};
-        CameraData camera_data{};
 
         GPU_BufferContainer* buffer_container{};
         std::vector<glm::vec4> cube;

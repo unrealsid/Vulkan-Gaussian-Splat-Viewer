@@ -15,7 +15,7 @@
 
 namespace core::rendering
 {
-    ForwardGeometryPass::ForwardGeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight), camera(nullptr){}
+    ForwardGeometryPass::ForwardGeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight){}
 
     void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders)
     {
@@ -25,9 +25,6 @@ namespace core::rendering
             shader_root_path + "/opaque/object.vert.spv",
             shader_root_path + "/opaque/opaque.frag.spv");
 
-        //Setup pass camera
-        camera_data = {glm::mat4{}, glm::mat4{}};
-        camera = engine_context.renderer->get_camera();
         extents = swapchain_manager->get_extent();
 
         load_cube_model(engine_context);
@@ -102,12 +99,6 @@ namespace core::rendering
                                                                             swapchain_manager->get_extent(), {0, 0});
 
         subpass_shaders[ShaderObjectType::OpaquePass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
-
-        camera_data.projection =  camera->get_projection_matrix();
-        camera_data.view = camera->get_view_matrix();
-        camera_data.camera_position = glm::vec4(camera->get_position(), 1.0);
-
-        memcpy(buffer_container->camera_data_buffer.allocation_info.pMappedData, &camera_data, sizeof(CameraData));
 
         //Vertices
         VkBuffer vertex_buffers[] = { cube_buffer->buffer};
