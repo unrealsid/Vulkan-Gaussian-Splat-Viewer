@@ -1,6 +1,7 @@
 ﻿#include "renderer/subpasses/ForwardGeometryPass.h"
 
 #include "3d/ModelUtils.h"
+#include "config/Config.inl"
 #include "materials/MaterialUtils.h"
 #include "structs/EngineContext.h"
 #include "structs//geometry/Vertex.h"
@@ -10,7 +11,7 @@
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/utils/MemoryUtils.h"
 #include "renderer/GPU_BufferContainer.h"
-#include "structs/Types.h"
+#include "../../../include/common/Types.h"
 
 namespace core::rendering
 {
@@ -18,9 +19,11 @@ namespace core::rendering
 
     void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders)
     {
-        //Assign a material for this subpass
+        //Assign a material for this subpass and shaders
         material::MaterialUtils material_utils(engine_context);
-        subpass_shaders[ShaderObjectType::OpaquePass] = material_utils.create_material("opaque_pass");
+        subpass_shaders[ShaderObjectType::OpaquePass] = material_utils.create_material("opaque_pass",
+            shader_root_path + "/opaque/object.vert.spv",
+            shader_root_path + "/opaque/opaque.frag.spv");
 
         //Setup pass camera
         camera_data = {glm::mat4{}, glm::mat4{}};

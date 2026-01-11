@@ -5,6 +5,8 @@
 #include "renderer/subpasses/ForwardGeometryPass.h"
 #include "renderer/subpasses/ImGuiPass.h"
 #include "renderer/GPU_BufferContainer.h"
+#include "renderer/subpasses/ScreenspacePass.h"
+#include "renderer/subpasses/TranslucencyPass.h"
 #include "structs/geometry/Vertex.h"
 #include "structs/EngineContext.h"
 #include "structs/scene/PushConstantBlock.h"
@@ -153,7 +155,10 @@ namespace core::rendering
 
     void RenderPass::init_subpasses()
     {
+        //Order matters. First render an opaque geometry pass, then translucency, then the screenspace pass that combines results from the first two passes and lastly the IMGui pass for UI
         subpasses.emplace_back(std::make_unique<ForwardGeometryPass>(engine_context, max_frames_in_flight));
+        subpasses.emplace_back(std::make_unique<TranslucencyPass>(engine_context, max_frames_in_flight));
+        subpasses.emplace_back(std::make_unique<ScreenspacePass>(engine_context, max_frames_in_flight));
         subpasses.emplace_back(std::make_unique<ImGuiPass>(engine_context, max_frames_in_flight));
 
         for (const auto& subpass : subpasses)
@@ -218,11 +223,6 @@ namespace core::rendering
                                                        swapchain_manager->get_extent(),
                                                         device_manager->get_allocator(),
                                                        *depth_stencil_image);
-    }
-
-    void RenderPass::create_subpass_shader_objects()
-    {
-
     }
 
     void RenderPass::reset_subpass_command_buffers()

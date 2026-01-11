@@ -11,18 +11,11 @@ namespace material
     {
     public:
 
-        MaterialUtils(EngineContext& engine_context) : engine_context(engine_context)
-        {
-            vertex_shader_path = R"(D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders\gaussian_surface\gaussian.vert.spv)";
-            fragment_shader_path = R"(D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders\gaussian_surface\gaussian.frag.spv)";
-        }
+        MaterialUtils(EngineContext& engine_context) : engine_context(engine_context){}
 
-        [[nodiscard]] std::shared_ptr<Material> create_material(const std::string& name) const;
+        [[nodiscard]] std::shared_ptr<Material> create_material(const std::string& name, const std::string& vertex_shader_path, const std::string& fragment_shader_path) const;
 
     private:
         EngineContext& engine_context;
-        std::string vertex_shader_path;
-        std::string fragment_shader_path;
-
     };
 }

@@ -6,7 +6,7 @@
 #include "enums/PresentationImageType.h"
 #include "materials/Material.h"
 #include "platform/WindowManager.h"
-#include "structs/Types.h"
+#include "../common/Types.h"
 #include "structs/Vk_Image.h"
 
 struct PushConstantBlock;

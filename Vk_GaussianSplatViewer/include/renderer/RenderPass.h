@@ -2,7 +2,7 @@
 
 #include "Subpass.h"
 #include "structs/Vk_Image.h"
-#include "structs/Types.h"
+#include "../common/Types.h"
 
 struct EngineContext;
 
@@ -22,6 +22,7 @@ namespace core::rendering
         RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
         void allocate_and_record_command_buffers();
         void renderpass_init();
+
         void init_subpasses();
 
         [[nodiscard]] uint32_t get_max_frames_in_flight() const { return max_frames_in_flight; }
@@ -37,9 +38,6 @@ namespace core::rendering
         void allocate_command_buffer(uint32_t image);
 
         void create_depth_stencil_image();
-
-        //Creates subpass specific shader objects (Post process/Transclucency or whatever)
-        void create_subpass_shader_objects();
 
         void reset_subpass_command_buffers();
         void recreate_swapchain();

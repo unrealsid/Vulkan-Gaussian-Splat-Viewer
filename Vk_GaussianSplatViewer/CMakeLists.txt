@@ -32,6 +32,8 @@
 	"include/renderer/subpasses/ForwardGeometryPass.h"
 	"include/renderer/subpasses/ImGuiPass.h"
 	"include/renderer/subpasses/TranslucencyPass.h"
+	"include/renderer/subpasses/ScreenspacePass.h"
+
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
 	"include/renderer/Subpass.h"
@@ -39,7 +41,7 @@
 	"include/camera/FirstPersonCamera.h"
 
 	"include/platform/input/UIActionManager.h"
-	"include/structs/Types.h"
+	"include/common/Types.h"
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -77,6 +79,7 @@ set(
 	"source/renderer/subpasses/ForwardGeometryPass.cpp"
 	"source/renderer/subpasses/ImGuiPass.cpp"
 	"source/renderer/subpasses/TranslucencyPass.cpp"
+	"source/renderer/subpasses/ScreenspacePass.cpp"
 
 	"source/renderer/Renderer.cpp"
 	"source/renderer/Subpass.cpp"
@@ -86,7 +89,6 @@ set(
 
 	"source/main.cpp"
 	"source/camera/FirstPersonCamera.cpp"
-
 )
 
 source_group(

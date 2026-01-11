@@ -3,7 +3,7 @@
 #include "vulkanapp/DeviceManager.h"
 #include "vulkanapp/SwapchainManager.h"
 #include "structs/scene/PushConstantBlock.h"
-#include "structs/Types.h"
+#include "../../../include/common/Types.h"
 #include <iostream>
 
 

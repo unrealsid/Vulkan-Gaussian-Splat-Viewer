@@ -10,6 +10,6 @@ namespace utils
     class FileUtils
     {
     public:
-        static void loadShader(const std::string& filename, char* &code, size_t &size);
+        static void load_shader(const std::string& filename, char* &code, size_t &size);
     };
 }

@@ -1,6 +1,6 @@
 #include "vulkanapp/utils/FileUtils.h"
 
-void utils::FileUtils::loadShader(const std::string& filename, char*& code, size_t& size)
+void utils::FileUtils::load_shader(const std::string& filename, char*& code, size_t& size)
 {
     std::ifstream is(filename, std::ios::binary | std::ios::in | std::ios::ate);
     if (is.is_open())

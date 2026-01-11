@@ -7,7 +7,7 @@
 
 namespace material
 {
-    std::shared_ptr<Material> MaterialUtils::create_material(const std::string& name) const
+    std::shared_ptr<Material> MaterialUtils::create_material(const std::string& name, const std::string& vertex_shader_path, const std::string& fragment_shader_path) const
     {
         //Setup push constants
         VkPushConstantRange push_constant_range{};
@@ -18,8 +18,8 @@ namespace material
         size_t shaderCodeSizes[2]{};
         char* shaderCodes[2]{};
 
-        utils::FileUtils::loadShader(vertex_shader_path, shaderCodes[0], shaderCodeSizes[0]);
-        utils::FileUtils::loadShader(fragment_shader_path, shaderCodes[1], shaderCodeSizes[1]);
+        utils::FileUtils::load_shader(vertex_shader_path, shaderCodes[0], shaderCodeSizes[0]);
+        utils::FileUtils::load_shader(fragment_shader_path, shaderCodes[1], shaderCodeSizes[1]);
 
         auto shader_object = std::make_unique<ShaderObject>();
         shader_object->create_shaders(engine_context.dispatch_table, shaderCodes[0], shaderCodeSizes[0], shaderCodes[1], shaderCodeSizes[1],
