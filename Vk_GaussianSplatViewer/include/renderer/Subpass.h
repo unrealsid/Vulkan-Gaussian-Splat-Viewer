@@ -21,6 +21,8 @@ namespace vulkanapp
 
 namespace core::rendering
 {
+    class GPU_BufferContainer;
+
     class Subpass
     {
     public:
@@ -28,13 +30,18 @@ namespace core::rendering
         explicit Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
 
         //Initializes the subpass and the associated material for the subpass if necessary
-        virtual void subpass_init(SubpassShaderList& subpass_shaders) = 0;
+        virtual void subpass_init(SubpassShaderList& subpass_shaders,
+                                  GPU_BufferContainer& buffer_container) = 0;
 
         //Called before a frame is recorded
         virtual void frame_pre_recording() = 0;
 
         //Record commands into the buffer. Place draw commands here
-        virtual void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constants, SubpassShaderList& subpass_shaders) = 0;
+        virtual void record_commands(VkCommandBuffer* command_buffer,
+                                        uint32_t image_index,
+                                        PushConstantBlock& push_constants,
+                                        SubpassShaderList& subpass_shaders,
+                                        GPU_BufferContainer& buffer_container) = 0;
 
         //Cleanup pass
         virtual void cleanup();

@@ -17,7 +17,7 @@ namespace core::rendering
 {
     ForwardGeometryPass::ForwardGeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight){}
 
-    void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders)
+    void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container)
     {
         //Assign a material for this subpass and shaders
         material::MaterialUtils material_utils(engine_context);
@@ -33,16 +33,16 @@ namespace core::rendering
         auto gaussian_surfaces = std::vector<glm::vec4>{ {0.0, 0.0, 0.0, 1.0} };
         auto alphas = std::vector<float>{ 0.0 };
 
-        buffer_container->allocate_gaussian_buffer("positions", gaussian_surfaces);
-        buffer_container->allocate_gaussian_buffer("scales", gaussian_surfaces);
-        buffer_container->allocate_gaussian_buffer("colors", gaussian_surfaces);
-        buffer_container->allocate_gaussian_buffer("quaternions", gaussian_surfaces);
-        buffer_container->allocate_gaussian_buffer("alpha", alphas);
-        buffer_container->gaussian_count = 1;
+        buffer_container.allocate_gaussian_buffer("positions", gaussian_surfaces);
+        buffer_container.allocate_gaussian_buffer("scales", gaussian_surfaces);
+        buffer_container.allocate_gaussian_buffer("colors", gaussian_surfaces);
+        buffer_container.allocate_gaussian_buffer("quaternions", gaussian_surfaces);
+        buffer_container.allocate_gaussian_buffer("alpha", alphas);
+        buffer_container.gaussian_count = 1;
 
         //Register new event to allocate memory when a new model is loaded
         engine_context.ui_action_manager->register_string_action(UIAction::ALLOCATE_SPLAT_MEMORY,
-             [this](const std::string& code)
+             [this, &buffer_container](const std::string& code)
              {
                  engine_context.dispatch_table.deviceWaitIdle();
 
@@ -56,19 +56,19 @@ namespace core::rendering
                  const auto& quaternions = gaussian_surfaces.get_quaternions();
                  const auto& alpha = gaussian_surfaces.get_alphas();
 
-                 buffer_container->allocate_gaussian_buffer("positions", positions);
-                 buffer_container->allocate_gaussian_buffer("scales", scales);
-                 buffer_container->allocate_gaussian_buffer("colors", colors);
-                 buffer_container->allocate_gaussian_buffer("quaternions", quaternions);
-                 buffer_container->allocate_gaussian_buffer("alpha", alpha);
+                 buffer_container.allocate_gaussian_buffer("positions", positions);
+                 buffer_container.allocate_gaussian_buffer("scales", scales);
+                 buffer_container.allocate_gaussian_buffer("colors", colors);
+                 buffer_container.allocate_gaussian_buffer("quaternions", quaternions);
+                 buffer_container.allocate_gaussian_buffer("alpha", alpha);
 
-                 buffer_container->gaussian_count = gaussian_surfaces.get_count();
+                 buffer_container.gaussian_count = gaussian_surfaces.get_count();
              });
     }
 
     void ForwardGeometryPass::load_cube_model(const EngineContext& engine_context)
     {
-        buffer_container = engine_context.buffer_container.get();
+        auto buffer_container = engine_context.buffer_container.get();
         cube =  entity_3d::ModelUtils::load_gaussian_bounding_box();
         cube_vertex_count = cube.size();
         buffer_container->allocate_gaussian_buffer("cube_buffer", cube);
@@ -77,14 +77,15 @@ namespace core::rendering
 
     void ForwardGeometryPass::frame_pre_recording(){ }
 
-    void ForwardGeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders)
+    void ForwardGeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class
+                                              GPU_BufferContainer& buffer_container)
     {
-        const auto* cube_buffer = buffer_container->get_buffer("cube_buffer");
-        const auto* positions = buffer_container->get_buffer("positions");
-        const auto* scales = buffer_container->get_buffer("scales");
-        const auto* colors = buffer_container->get_buffer("colors");
-        const auto* quaternions = buffer_container->get_buffer("quaternions");
-        const auto* alphas = buffer_container->get_buffer("alpha");
+        const auto* cube_buffer = buffer_container.get_buffer("cube_buffer");
+        const auto* positions = buffer_container.get_buffer("positions");
+        const auto* scales = buffer_container.get_buffer("scales");
+        const auto* colors = buffer_container.get_buffer("colors");
+        const auto* quaternions = buffer_container.get_buffer("quaternions");
+        const auto* alphas = buffer_container.get_buffer("alpha");
 
         set_present_image_transition(image_index, PresentationImageType::SwapChain);
         set_present_image_transition(current_frame, PresentationImageType::DepthStencil);
@@ -107,17 +108,12 @@ namespace core::rendering
 
         //Push Constants
         push_constant_block = {
-            .scene_buffer_address = buffer_container->camera_data_buffer.buffer_address,
-            .positions_buffer_address = positions->buffer_address,
-            .scales_buffer_address = scales->buffer_address,
-            .colors_buffer_address = colors->buffer_address,
-            .quaternions_buffer_address = quaternions->buffer_address,
-            .alpha_buffer_address = alphas->buffer_address
+            .scene_buffer_address = buffer_container.camera_data_buffer.buffer_address,
         };
         engine_context.dispatch_table.cmdPushConstants(*command_buffer, subpass_shaders[ShaderObjectType::OpaquePass]->get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0, sizeof(PushConstantBlock), &push_constant_block);
 
-        engine_context.dispatch_table.cmdDraw(*command_buffer, cube_vertex_count, buffer_container->gaussian_count, 0, 0);
+        engine_context.dispatch_table.cmdDraw(*command_buffer, cube_vertex_count, buffer_container.gaussian_count, 0, 0);
 
         end_rendering();
         end_command_buffer_recording(image_index);
@@ -127,6 +123,6 @@ namespace core::rendering
     {
         Subpass::cleanup();
 
-        buffer_container->destroy_buffers();
+        engine_context.buffer_container->destroy_buffers();
     }
 }

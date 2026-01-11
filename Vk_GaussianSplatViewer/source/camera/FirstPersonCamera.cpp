@@ -28,7 +28,6 @@ namespace camera
 
     glm::mat4 FirstPersonCamera::get_view_matrix() const {
         glm::mat4 view = glm::lookAt(position, position + front, up);
-        view[1][1] *= -1;
         return view;
     }
 

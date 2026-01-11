@@ -25,7 +25,7 @@ namespace core::rendering
 
     }
 
-    void ImGuiPass::subpass_init(SubpassShaderList& subpass_shaders)
+    void ImGuiPass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container)
     {
         init_imgui();
     }
@@ -94,7 +94,8 @@ namespace core::rendering
 
 
 
-    void ImGuiPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders)
+    void ImGuiPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class
+                                    GPU_BufferContainer& buffer_container)
     {
         setup_color_attachment(image_index, { {0.0f, 0.0f, 0.0f, 1.0f} });
         color_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; // Don't clear what GeometryPass did

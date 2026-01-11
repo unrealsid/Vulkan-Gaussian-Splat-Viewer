@@ -75,7 +75,7 @@ namespace core::rendering
         for (const auto & subpass : subpasses)
         {
             subpass->init_pass_new_frame(*command_buffer, depth_stencil_image.get(), current_frame);
-            subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects);
+            subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects, *(engine_context.buffer_container));
         }
 
         if (engine_context.dispatch_table.endCommandBuffer(*command_buffer) != VK_SUCCESS)
@@ -169,7 +169,7 @@ namespace core::rendering
 
         for (const auto& subpass : subpasses)
         {
-            subpass->subpass_init(subpass_shader_objects);
+            subpass->subpass_init(subpass_shader_objects, *(engine_context.buffer_container));
         }
     }
 

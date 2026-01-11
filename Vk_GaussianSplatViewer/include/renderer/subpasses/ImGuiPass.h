@@ -14,9 +14,10 @@ namespace core::rendering
         ImGuiPass(EngineContext& engine_context, uint32_t max_frames_in_flight);
         ~ImGuiPass() override;
 
-        void subpass_init(SubpassShaderList& subpass_shaders) override;
+        void subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container) override;
         void frame_pre_recording() override;
-        void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders) override;
+        void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class
+                             GPU_BufferContainer& buffer_container) override;
         void cleanup() override;
 
     private:

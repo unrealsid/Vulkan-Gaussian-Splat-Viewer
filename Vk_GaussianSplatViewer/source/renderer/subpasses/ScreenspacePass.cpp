@@ -5,7 +5,7 @@
 #include <ostream>
 
 #include "structs/scene/PushConstantBlock.h"
-#include "../../../include/common/Types.h"
+#include "common/Types.h"
 #include "config/Config.inl"
 #include "materials/MaterialUtils.h"
 
@@ -13,7 +13,7 @@ namespace core::rendering
 {
     ScreenspacePass::ScreenspacePass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight){ }
 
-    void ScreenspacePass::subpass_init(SubpassShaderList& subpass_shaders)
+    void ScreenspacePass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container)
     {
         //Assign a material for this subpass and shaders
         material::MaterialUtils material_utils(engine_context);
@@ -29,7 +29,7 @@ namespace core::rendering
     }
 
     void ScreenspacePass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index,
-        PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders)
+                                          PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class GPU_BufferContainer& buffer_container)
     {
 
     }
