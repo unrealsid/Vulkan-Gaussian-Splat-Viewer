@@ -23,7 +23,7 @@ namespace core::rendering
     void TranslucencyPass::frame_pre_recording(){}
 
     void TranslucencyPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class
-                                           GPU_BufferContainer& buffer_container){ }
+                                           GPU_BufferContainer& buffer_container, Vk_Image& depth_image){ }
 
     void TranslucencyPass::cleanup(){ }
 }

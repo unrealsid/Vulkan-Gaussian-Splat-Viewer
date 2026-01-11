@@ -5,13 +5,12 @@
 #include "materials/MaterialUtils.h"
 #include "structs/EngineContext.h"
 #include "structs//geometry/Vertex.h"
-#include "structs/scene/CameraData.h"
 #include "structs/scene/PushConstantBlock.h"
 #include "enums/inputs/UIAction.h"
 #include "vulkanapp/VulkanCleanupQueue.h"
 #include "vulkanapp/utils/MemoryUtils.h"
 #include "renderer/GPU_BufferContainer.h"
-#include "../../../include/common/Types.h"
+#include "common/Types.h"
 
 namespace core::rendering
 {
@@ -40,7 +39,7 @@ namespace core::rendering
         buffer_container.allocate_gaussian_buffer("alpha", alphas);
         buffer_container.gaussian_count = 1;
 
-        //Register new event to allocate memory when a new model is loaded
+        //Register a new event to allocate memory when a new model is loaded
         engine_context.ui_action_manager->register_string_action(UIAction::ALLOCATE_SPLAT_MEMORY,
              [this, &buffer_container](const std::string& code)
              {
@@ -77,8 +76,11 @@ namespace core::rendering
 
     void ForwardGeometryPass::frame_pre_recording(){ }
 
-    void ForwardGeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class
-                                              GPU_BufferContainer& buffer_container)
+    void ForwardGeometryPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index,
+                                              PushConstantBlock& push_constant_block,
+                                              SubpassShaderList& subpass_shaders,
+                                              GPU_BufferContainer& buffer_container,
+                                              Vk_Image& depth_image)
     {
         const auto* cube_buffer = buffer_container.get_buffer("cube_buffer");
         const auto* positions = buffer_container.get_buffer("positions");
@@ -87,17 +89,18 @@ namespace core::rendering
         const auto* quaternions = buffer_container.get_buffer("quaternions");
         const auto* alphas = buffer_container.get_buffer("alpha");
 
-        set_present_image_transition(image_index, PresentationImageType::SwapChain);
-        set_present_image_transition(current_frame, PresentationImageType::DepthStencil);
         setup_color_attachment(image_index, { {0.0f, 0.0f, 0.0f, 1.0f} });
-        setup_depth_attachment({ {1.0f, 0} });
+        setup_depth_attachment(depth_image, { {1.0f, 0} }); //Clear depth
 
         begin_rendering();
 
-        material::ShaderObject::set_initial_state(engine_context.dispatch_table, swapchain_manager->get_extent(), *command_buffer,
+        //Set initial state of render pass
+        material::ShaderObject::set_initial_state(engine_context.dispatch_table, swapchain_manager->get_extent(),
+                                                                            *command_buffer,
                                                                             GaussianSurfaceDescriptor::get_binding_descriptions(),
                                                                             GaussianSurfaceDescriptor::get_attribute_descriptions(),
-                                                                            swapchain_manager->get_extent(), {0, 0});
+                                                                            swapchain_manager->get_extent(),
+                                                                            {0, 0});
 
         subpass_shaders[ShaderObjectType::OpaquePass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
@@ -110,13 +113,13 @@ namespace core::rendering
         push_constant_block = {
             .scene_buffer_address = buffer_container.camera_data_buffer.buffer_address,
         };
-        engine_context.dispatch_table.cmdPushConstants(*command_buffer, subpass_shaders[ShaderObjectType::OpaquePass]->get_pipeline_layout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0, sizeof(PushConstantBlock), &push_constant_block);
+        engine_context.dispatch_table.cmdPushConstants(*command_buffer, subpass_shaders[ShaderObjectType::OpaquePass]->get_pipeline_layout(),
+                                                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                                                0, sizeof(PushConstantBlock), &push_constant_block);
 
         engine_context.dispatch_table.cmdDraw(*command_buffer, cube_vertex_count, buffer_container.gaussian_count, 0, 0);
 
         end_rendering();
-        end_command_buffer_recording(image_index);
     }
 
     void ForwardGeometryPass::cleanup()

@@ -30,7 +30,7 @@ namespace core::rendering
         template<typename  N>
         void allocate_gaussian_buffer(const std::string& buffer_name, const std::vector<N>& gaussian_parameters);
 
-        void set_buffer(const std::string& buffer_name, GPU_Buffer& buffer);
+        void set_buffer(const std::string& buffer_name, const GPU_Buffer& buffer);
 
         GPU_Buffer* get_buffer(const std::string& buffer_name);
 

@@ -6,7 +6,7 @@
 #include "enums/PresentationImageType.h"
 #include "materials/Material.h"
 #include "platform/WindowManager.h"
-#include "../common/Types.h"
+#include "common/Types.h"
 #include "structs/Vk_Image.h"
 
 struct PushConstantBlock;
@@ -38,26 +38,23 @@ namespace core::rendering
 
         //Record commands into the buffer. Place draw commands here
         virtual void record_commands(VkCommandBuffer* command_buffer,
-                                        uint32_t image_index,
-                                        PushConstantBlock& push_constants,
-                                        SubpassShaderList& subpass_shaders,
-                                        GPU_BufferContainer& buffer_container) = 0;
+                                     uint32_t image_index,
+                                     PushConstantBlock& push_constants,
+                                     SubpassShaderList& subpass_shaders,
+                                     GPU_BufferContainer& buffer_container,
+                                     Vk_Image& depth_image) = 0;
 
         //Cleanup pass
         virtual void cleanup();
 
         //Initialize parameters for a new frame. Runs at the start of every new frame
-        void init_pass_new_frame(VkCommandBuffer p_command_buffer, Vk_Image* p_depth_stencil_image, uint32_t p_frame);
+        void init_pass_new_frame(VkCommandBuffer p_command_buffer, uint32_t p_frame);
 
         void begin_command_buffer_recording() const;
-        void set_present_image_transition(uint32_t image_id, PresentationImageType presentation_image_type) const;
         void setup_color_attachment(uint32_t image, VkClearValue clear_value);
-        void setup_depth_attachment(VkClearValue clear_value);
+        void setup_depth_attachment(const Vk_Image& depth_image, VkClearValue clear_value);
         void begin_rendering();
         void end_rendering();
-        void end_command_buffer_recording(uint32_t image) const;
-
-        void set_material(const std::shared_ptr<material::Material>& material);
 
     protected:
         EngineContext& engine_context;
@@ -69,7 +66,6 @@ namespace core::rendering
 
         //Which command buffer are we currently using?
         VkCommandBuffer active_command_buffer;
-        Vk_Image* depth_stencil_image;
         uint32_t current_frame = 0;
 
         VkRenderingAttachmentInfoKHR color_attachment_info;

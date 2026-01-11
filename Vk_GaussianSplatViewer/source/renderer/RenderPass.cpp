@@ -10,6 +10,7 @@
 #include "structs/geometry/Vertex.h"
 #include "structs/EngineContext.h"
 #include "structs/scene/PushConstantBlock.h"
+#include "vulkanapp/utils/ImageUtils.h"
 #include "vulkanapp/utils/RenderUtils.h"
 
 namespace core::rendering
@@ -70,13 +71,20 @@ namespace core::rendering
             return;
         }
 
+        //Set Initial images to optimal layout so they can be written to
+        set_present_image_transition(image_index, *command_buffer, PresentationImageType::SwapChain);
+        set_present_image_transition(image_index, *command_buffer, PresentationImageType::DepthStencil);
+
         PushConstantBlock push_constant_block{};
 
         for (const auto & subpass : subpasses)
         {
-            subpass->init_pass_new_frame(*command_buffer, depth_stencil_image.get(), current_frame);
-            subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects, *(engine_context.buffer_container));
+            subpass->init_pass_new_frame(*command_buffer, current_frame);
+            subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects, *(engine_context.buffer_container), *depth_stencil_image);
         }
+
+        //Allow the image to change to present mode so the presentation engine can use it
+        finish_image_transition_recording(image_index, *command_buffer);
 
         if (engine_context.dispatch_table.endCommandBuffer(*command_buffer) != VK_SUCCESS)
         {
@@ -388,5 +396,61 @@ namespace core::rendering
     void RenderPass::map_cpu_data()
     {
         map_camera_data();
+    }
+
+    void RenderPass::set_present_image_transition(uint32_t image_id, const VkCommandBuffer command_buffer, PresentationImageType presentation_image_type) const
+    {
+        switch (presentation_image_type)
+        {
+
+        case PresentationImageType::SwapChain:
+            {
+                auto swapchain_ref = engine_context.swapchain_manager.get();
+                auto image = swapchain_ref->get_images()[image_id];
+
+                utils::ImageUtils::image_layout_transition(command_buffer,
+                                                image.image,
+                                                VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+                                                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                                0,
+                                                VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+                                                VK_IMAGE_LAYOUT_UNDEFINED,
+                                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                                VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+                break;
+            }
+
+        case PresentationImageType::DepthStencil:
+            {
+                utils::ImageUtils::image_layout_transition(command_buffer,
+                                              depth_stencil_image->image,
+                                             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+                                             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+                                             0,
+                                             VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                                             VK_IMAGE_LAYOUT_UNDEFINED,
+                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                              VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 });
+
+                break;
+            }
+        default:
+            std::cout << "Unsupported presentation image type\n";
+        }
+    }
+
+    void RenderPass::finish_image_transition_recording(uint32_t image, VkCommandBuffer command_buffer) const
+    {
+        utils::ImageUtils::image_layout_transition
+        (
+             command_buffer,                            // Command buffer
+             engine_context.swapchain_manager->get_images()[image].image,    // Swapchain image
+             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
+             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
+             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
+             0,                                        // Destination access mask
+             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
+             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
+              VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
     }
 }

@@ -38,7 +38,7 @@ namespace core::rendering
         );
     }
 
-    void GPU_BufferContainer::set_buffer(const std::string& buffer_name, GPU_Buffer& buffer)
+    void GPU_BufferContainer::set_buffer(const std::string& buffer_name, const GPU_Buffer& buffer)
     {
         gaussian_buffers[buffer_name] = buffer;
     }

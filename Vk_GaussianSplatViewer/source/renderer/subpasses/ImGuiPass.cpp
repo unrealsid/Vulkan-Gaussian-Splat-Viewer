@@ -95,7 +95,7 @@ namespace core::rendering
 
 
     void ImGuiPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class
-                                    GPU_BufferContainer& buffer_container)
+                                    GPU_BufferContainer& buffer_container, Vk_Image& depth_image)
     {
         setup_color_attachment(image_index, { {0.0f, 0.0f, 0.0f, 1.0f} });
         color_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; // Don't clear what GeometryPass did
@@ -156,7 +156,6 @@ namespace core::rendering
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *command_buffer);
 
         end_rendering();
-        end_command_buffer_recording(image_index);
     }
 
     void ImGuiPass::cleanup()
