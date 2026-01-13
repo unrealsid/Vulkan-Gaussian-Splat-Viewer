@@ -13,7 +13,7 @@ namespace core::rendering
 {
     ScreenspacePass::ScreenspacePass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight){ }
 
-    void ScreenspacePass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container)
+    void ScreenspacePass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container, EngineRenderTargets& render_targets)
     {
         //Assign a material for this subpass and shaders
         material::MaterialUtils material_utils(engine_context);
@@ -29,8 +29,9 @@ namespace core::rendering
     }
 
     void ScreenspacePass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index,
-                                          PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class GPU_BufferContainer& buffer_container, Vk_Image
-                                          & depth_image)
+                                          PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class GPU_BufferContainer& buffer_container, EngineRenderTargets
+                                          &
+                                          render_targets)
     {
 
     }

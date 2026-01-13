@@ -8,12 +8,12 @@
 	"include/structs/scene/PushConstantBlock.h"
 	"include/structs/scene/CameraData.h"
 	"include/structs/WindowCreateParams.h"
-
 	"include/structs/geometry/Vertex.h"
 	"include/structs/geometry/Vertex2D.h"
 	"include/structs/geometry/GaussianSurface.h"
 	"include/structs/geometry/GaussianSurface.cpp"
 	"include/structs/Vk_Image.h"
+	"include/structs/EngineRenderTargets.h"
 	
 	"include/platform/WindowManager.h"
 	"include/platform/input/InputManager.h"
@@ -25,6 +25,9 @@
 	"include/3d/GaussianSplatPlyLoader.h"
 
 	"include/enums/PresentationImageType.h"
+	"include/enums/inputs/InputAction.h"
+	"include/enums/inputs/UIAction.h"
+
 	"include/materials/Material.h"
 	"include/materials/MaterialUtils.h"
 	"include/materials/ShaderObject.h"

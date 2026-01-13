@@ -4,6 +4,7 @@
 #include "camera/FirstPersonCamera.h"
 #include "structs/Vk_Image.h"
 #include "common/Types.h"
+#include "structs/EngineRenderTargets.h"
 #include "structs/scene/CameraData.h"
 struct EngineContext;
 
@@ -31,7 +32,6 @@ namespace core::rendering
         VkCommandBuffer* get_command_buffer(uint32_t image_id);
 
         [[nodiscard]] VkCommandPool get_command_pool() const { return command_pool; }
-        [[nodiscard]] Vk_Image* get_depth_stencil_image() const { return depth_stencil_image.get(); }
 
         void create_command_pool();
         void reset_command_pool();
@@ -69,11 +69,6 @@ namespace core::rendering
 
         VkCommandPool command_pool;
 
-        GPU_BufferContainer* common_scene_data;
-
-        //Store created Depth Stencils
-        std::unique_ptr<Vk_Image> depth_stencil_image;
-
         uint32_t max_frames_in_flight{};
 
         size_t current_frame = 0;
@@ -91,6 +86,8 @@ namespace core::rendering
         //Stores a reference to the buffer container
         GPU_BufferContainer* buffer_container;
 
+        EngineRenderTargets engine_render_targets;
+
         bool create_sync_objects();
         void set_new_camera_aspect_ratio() const;
         void map_camera_data();
@@ -98,7 +95,6 @@ namespace core::rendering
         //Maps cpu -> gpu data
         void map_cpu_data();
 
-        void set_present_image_transition(uint32_t image_id, VkCommandBuffer command_buffer, PresentationImageType presentation_image_type) const;
         void finish_image_transition_recording(uint32_t image, VkCommandBuffer command_buffer) const;
     };
 }

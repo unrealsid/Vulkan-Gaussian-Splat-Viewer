@@ -11,12 +11,13 @@
 #include "vulkanapp/utils/MemoryUtils.h"
 #include "renderer/GPU_BufferContainer.h"
 #include "common/Types.h"
+#include "vulkanapp/utils/ImageUtils.h"
 
 namespace core::rendering
 {
     ForwardGeometryPass::ForwardGeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight){}
 
-    void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container)
+    void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container, EngineRenderTargets& render_targets)
     {
         //Assign a material for this subpass and shaders
         material::MaterialUtils material_utils(engine_context);
@@ -25,6 +26,9 @@ namespace core::rendering
             shader_root_path + "/opaque/opaque.frag.spv");
 
         extents = swapchain_manager->get_extent();
+
+        //Assign images to the render target
+        render_targets.swapchain_images = swapchain_manager->get_images();
 
         load_cube_model(engine_context);
 
@@ -80,7 +84,7 @@ namespace core::rendering
                                               PushConstantBlock& push_constant_block,
                                               SubpassShaderList& subpass_shaders,
                                               GPU_BufferContainer& buffer_container,
-                                              Vk_Image& depth_image)
+                                              EngineRenderTargets& render_targets)
     {
         const auto* cube_buffer = buffer_container.get_buffer("cube_buffer");
         const auto* positions = buffer_container.get_buffer("positions");
@@ -90,7 +94,30 @@ namespace core::rendering
         const auto* alphas = buffer_container.get_buffer("alpha");
 
         setup_color_attachment(image_index, { {0.0f, 0.0f, 0.0f, 1.0f} });
-        setup_depth_attachment(depth_image, { {1.0f, 0} }); //Clear depth
+        setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
+
+        auto image = render_targets.swapchain_images[image_index];
+
+        //Set layout transition for swapchain image
+        utils::ImageUtils::image_layout_transition(*command_buffer, image.image,
+                                                VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+                                                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                                0,
+                                                VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+                                                VK_IMAGE_LAYOUT_UNDEFINED,
+                                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                                VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+        //Set Layout transition for depth image
+        utils::ImageUtils::image_layout_transition(*command_buffer, render_targets.depth_stencil_image->image,
+                                                     VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+                                                     VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+                                                     0,
+                                                     VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                                                     VK_IMAGE_LAYOUT_UNDEFINED,
+                                                     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                                      VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 });
+
 
         begin_rendering();
 

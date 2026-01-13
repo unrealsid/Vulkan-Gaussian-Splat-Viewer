@@ -20,8 +20,6 @@ namespace utils
 
         static VkBool32 get_supported_depth_stencil_format(VkPhysicalDevice physical_device, VkFormat* depth_stencil_format);
 
-        static bool create_depth_stencil_image(const EngineContext& engine_context, VkExtent2D extents, VmaAllocator allocator, Vk_Image& depth_image);
-
         static VkRenderingInfoKHR rendering_info(VkRect2D render_area = {},
                                       uint32_t color_attachment_count = 0,
                                       const VkRenderingAttachmentInfoKHR *pColorAttachments = VK_NULL_HANDLE,

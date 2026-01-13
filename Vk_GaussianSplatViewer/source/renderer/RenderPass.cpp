@@ -16,15 +16,13 @@
 namespace core::rendering
 {
     RenderPass::RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight) :
-        engine_context(engine_context), common_scene_data(nullptr),
-        max_frames_in_flight(max_frames_in_flight)
+        engine_context(engine_context), max_frames_in_flight(max_frames_in_flight), engine_render_targets({})
     {
         swapchain_manager = engine_context.swapchain_manager.get();
         device_manager = engine_context.device_manager.get();
         buffer_container = engine_context.buffer_container.get();
         camera = engine_context.renderer->get_camera();
 
-        depth_stencil_image = nullptr;
         command_pool = nullptr;
         camera_data = {glm::mat4{}, glm::mat4{}};
     }
@@ -71,16 +69,12 @@ namespace core::rendering
             return;
         }
 
-        //Set Initial images to optimal layout so they can be written to
-        set_present_image_transition(image_index, *command_buffer, PresentationImageType::SwapChain);
-        set_present_image_transition(image_index, *command_buffer, PresentationImageType::DepthStencil);
-
         PushConstantBlock push_constant_block{};
 
         for (const auto & subpass : subpasses)
         {
             subpass->init_pass_new_frame(*command_buffer, current_frame);
-            subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects, *(engine_context.buffer_container), *depth_stencil_image);
+            subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects, *(engine_context.buffer_container), engine_render_targets);
         }
 
         //Allow the image to change to present mode so the presentation engine can use it
@@ -150,15 +144,19 @@ namespace core::rendering
             command_pool = VK_NULL_HANDLE;
         }
 
-        if (depth_stencil_image)
+        if (auto depth_stencil_image = engine_render_targets.depth_stencil_image.get())
         {
             if (depth_stencil_image->view != VK_NULL_HANDLE)
+            {
                 dispatch_table.destroyImageView(depth_stencil_image->view, nullptr);
+            }
 
             if (depth_stencil_image->image != VK_NULL_HANDLE)
+            {
                 vmaDestroyImage(device_manager->get_allocator(), depth_stencil_image->image, depth_stencil_image->allocation);
+            }
 
-            depth_stencil_image.reset();
+            engine_render_targets.depth_stencil_image.reset();
         }
 
         for (auto& subpass : subpasses)
@@ -177,7 +175,7 @@ namespace core::rendering
 
         for (const auto& subpass : subpasses)
         {
-            subpass->subpass_init(subpass_shader_objects, *(engine_context.buffer_container));
+            subpass->subpass_init(subpass_shader_objects, *(engine_context.buffer_container), engine_render_targets);
         }
     }
 
@@ -195,19 +193,19 @@ namespace core::rendering
             command_pool = VK_NULL_HANDLE;
         }
 
-        if (depth_stencil_image)
+        if (engine_render_targets.depth_stencil_image)
         {
-            if (depth_stencil_image->view != VK_NULL_HANDLE)
+            if (engine_render_targets.depth_stencil_image->view != VK_NULL_HANDLE)
             {
-                engine_context.dispatch_table.destroyImageView(depth_stencil_image->view, nullptr);
+                engine_context.dispatch_table.destroyImageView(engine_render_targets.depth_stencil_image->view, nullptr);
             }
 
-            if (depth_stencil_image->image != VK_NULL_HANDLE)
+            if (engine_render_targets.depth_stencil_image->image != VK_NULL_HANDLE)
             {
-                vmaDestroyImage(device_manager->get_allocator(), depth_stencil_image->image, depth_stencil_image->allocation);
+                vmaDestroyImage(device_manager->get_allocator(), engine_render_targets.depth_stencil_image->image, engine_render_targets.depth_stencil_image->allocation);
             }
 
-            depth_stencil_image.reset();
+            engine_render_targets.depth_stencil_image.reset();
         }
     }
 
@@ -231,12 +229,18 @@ namespace core::rendering
 
     void RenderPass::create_depth_stencil_image()
     {
-        depth_stencil_image = std::make_unique<Vk_Image>();
-        utils::RenderUtils::get_supported_depth_stencil_format(device_manager->get_physical_device(), &depth_stencil_image->format);
-        utils::RenderUtils::create_depth_stencil_image(engine_context,
-                                                       swapchain_manager->get_extent(),
-                                                        device_manager->get_allocator(),
-                                                       *depth_stencil_image);
+        VkFormat depth_stencil_format;
+
+        utils::RenderUtils::get_supported_depth_stencil_format(device_manager->get_physical_device(), &depth_stencil_format);
+
+        VmaAllocationCreateInfo alloc_create_info = {};
+        alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        engine_render_targets.depth_stencil_image = std::make_unique<Vk_Image>(utils::ImageUtils::create_image(engine_context,
+            swapchain_manager->get_extent().width,
+            swapchain_manager->get_extent().height,
+            depth_stencil_format,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            alloc_create_info ));
     }
 
     void RenderPass::reset_subpass_command_buffers()
@@ -396,47 +400,6 @@ namespace core::rendering
     void RenderPass::map_cpu_data()
     {
         map_camera_data();
-    }
-
-    void RenderPass::set_present_image_transition(uint32_t image_id, const VkCommandBuffer command_buffer, PresentationImageType presentation_image_type) const
-    {
-        switch (presentation_image_type)
-        {
-
-        case PresentationImageType::SwapChain:
-            {
-                auto swapchain_ref = engine_context.swapchain_manager.get();
-                auto image = swapchain_ref->get_images()[image_id];
-
-                utils::ImageUtils::image_layout_transition(command_buffer,
-                                                image.image,
-                                                VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
-                                                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                                0,
-                                                VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-                                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                                VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
-                break;
-            }
-
-        case PresentationImageType::DepthStencil:
-            {
-                utils::ImageUtils::image_layout_transition(command_buffer,
-                                              depth_stencil_image->image,
-                                             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-                                             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-                                             0,
-                                             VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-                                             VK_IMAGE_LAYOUT_UNDEFINED,
-                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                              VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 });
-
-                break;
-            }
-        default:
-            std::cout << "Unsupported presentation image type\n";
-        }
     }
 
     void RenderPass::finish_image_transition_recording(uint32_t image, VkCommandBuffer command_buffer) const

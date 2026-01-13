@@ -4,6 +4,7 @@
 #include "vulkanapp/DeviceManager.h"
 #include "structs/Vk_Image.h"
 #include "structs/EngineContext.h"
+#include "vulkanapp/utils/ImageUtils.h"
 
 bool utils::RenderUtils::create_command_pool(const EngineContext& engine_context, VkCommandPool& out_command_pool)
 {
@@ -73,54 +74,6 @@ VkBool32 utils::RenderUtils::get_supported_depth_stencil_format(VkPhysicalDevice
     }
 
     return false;
-}
-
-bool utils::RenderUtils::create_depth_stencil_image(const EngineContext& engine_context, VkExtent2D extents,
-    VmaAllocator allocator, Vk_Image& depth_image)
-{
-    VkImageCreateInfo imageCI{};
-    imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageCI.imageType = VK_IMAGE_TYPE_2D;
-    imageCI.format = depth_image.format;
-    imageCI.extent = { extents.width, extents.height, 1 };
-    imageCI.mipLevels = 1;
-    imageCI.arrayLayers = 1;
-    imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageCI.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
-    VmaAllocationCreateInfo allocInfo{};
-    allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-    if (vmaCreateImage(allocator, &imageCI, &allocInfo, &depth_image.image, &depth_image.allocation, nullptr) != VK_SUCCESS)
-    {
-        std::cerr << "failed to create depth stencil image!";
-        return true;
-    }
-
-    VkImageViewCreateInfo imageViewCI{};
-    imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    imageViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    imageViewCI.image = depth_image.image;
-    imageViewCI.format = depth_image.format;
-    imageViewCI.subresourceRange.baseMipLevel = 0;
-    imageViewCI.subresourceRange.levelCount = 1;
-    imageViewCI.subresourceRange.baseArrayLayer = 0;
-    imageViewCI.subresourceRange.layerCount = 1;
-    imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    
-    if (depth_image.format >= VK_FORMAT_D16_UNORM_S8_UINT)
-    {
-        imageViewCI.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-    }
-
-    if (engine_context.dispatch_table.createImageView(&imageViewCI, nullptr,  &depth_image.view) != VK_SUCCESS)
-    {
-        std::cerr << "failed to create depth stencil image view!";
-        return false;
-    }
-
-    return true;
 }
 
 VkRenderingInfoKHR utils::RenderUtils::rendering_info(VkRect2D render_area, uint32_t color_attachment_count,

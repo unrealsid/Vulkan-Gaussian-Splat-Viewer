@@ -43,5 +43,17 @@ namespace utils
                                     VkImageLayout old_layout,
                                     VkImageLayout new_layout,
                                     const VkImageSubresourceRange &subresource_range);
+
+        static Vk_Image create_image(
+           const EngineContext& engine_context,
+           uint32_t width,
+           uint32_t height,
+           VkFormat format,
+           VkImageUsageFlags usage_flags,
+           const VmaAllocationCreateInfo& alloc_info,
+           bool create_view = true,
+           bool create_sampler = false,
+           VkFilter filter = VK_FILTER_LINEAR
+       );
     };
 };

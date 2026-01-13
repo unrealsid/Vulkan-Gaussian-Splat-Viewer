@@ -1,6 +1,6 @@
 #include "vulkanapp/feature_activator/VulkanFeatureActivator.h"
 
-VkPhysicalDeviceDynamicRenderingFeaturesKHR vulkanapp::VulkanFeatureActivator::create_dynamic_Rendering_features()
+VkPhysicalDeviceDynamicRenderingFeaturesKHR vulkanapp::VulkanFeatureActivator::create_dynamic_rendering_features()
 {
     VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_features{};
     dynamic_rendering_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
@@ -62,6 +62,17 @@ VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT vulkanapp::VulkanFeatureActiv
     vertexInputDynamicStateFeatures.vertexInputDynamicState = VK_TRUE;
 
     return vertexInputDynamicStateFeatures;
+}
+
+VkPhysicalDeviceDynamicRenderingLocalReadFeatures vulkanapp::VulkanFeatureActivator::create_dynamic_rendering_local_read_features()
+{
+    VkPhysicalDeviceDynamicRenderingLocalReadFeatures dynamicRenderingFeatures{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR,
+        .pNext = nullptr,
+        .dynamicRenderingLocalRead = VK_TRUE
+    };
+
+    return dynamicRenderingFeatures;
 }
 
 

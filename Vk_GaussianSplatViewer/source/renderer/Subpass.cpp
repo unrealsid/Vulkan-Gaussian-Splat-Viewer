@@ -35,7 +35,6 @@ namespace core::rendering
 
     void Subpass::setup_color_attachment(uint32_t image, VkClearValue clear_value)
     {
-
         auto swapchain_ref = engine_context.swapchain_manager.get();
         color_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
 
@@ -50,7 +49,6 @@ namespace core::rendering
 
     void Subpass::setup_depth_attachment(const Vk_Image& depth_image, VkClearValue clear_value)
     {
-
         // Depth attachment
         depth_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
         depth_attachment_info.pNext       = VK_NULL_HANDLE;

@@ -72,12 +72,13 @@ bool vulkanapp::DeviceManager::device_init()
         .set_surface(surface)
         .select();
 
-    auto dynamic_rendering_features = VulkanFeatureActivator::create_dynamic_Rendering_features();
+    auto dynamic_rendering_features = VulkanFeatureActivator::create_dynamic_rendering_features();
     auto shader_object_features = VulkanFeatureActivator::create_shader_object_features();
     auto device_memory_features = VulkanFeatureActivator::create_physics_device_buffer_address();
     auto descriptorIndexingFeatures = VulkanFeatureActivator::create_physical_device_descriptor_indexing_features();
     auto synchronization2_features = VulkanFeatureActivator::create_synchronization2_features();
     auto vertex_input_dynamic_state_features = VulkanFeatureActivator::create_vertex_input_dynamic_state_features();
+    auto dynamic_local_read_state_features = VulkanFeatureActivator::create_dynamic_rendering_local_read_features();
     
     if (!phys_device_ret)
     {
@@ -94,6 +95,7 @@ bool vulkanapp::DeviceManager::device_init()
         .add_pNext(&descriptorIndexingFeatures)
         .add_pNext(&synchronization2_features)
         .add_pNext(&vertex_input_dynamic_state_features)
+        .add_pNext(&dynamic_local_read_state_features)
         .build();
     
     if (!device_ret)

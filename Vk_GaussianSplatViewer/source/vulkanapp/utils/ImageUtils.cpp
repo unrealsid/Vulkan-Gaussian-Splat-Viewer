@@ -347,3 +347,57 @@ void  utils::ImageUtils::image_layout_transition(VkCommandBuffer command_buffer,
         &dependencyInfo
     );
 }
+
+Vk_Image utils::ImageUtils::create_image(const EngineContext& engine_context, const uint32_t width, const uint32_t height,
+                                         const VkFormat format, const VkImageUsageFlags usage_flags, const VmaAllocationCreateInfo& alloc_info, bool create_view,
+                                         const bool create_sampler, const VkFilter filter)
+{
+    Vk_Image result_image;
+    result_image.format = format;
+
+    auto device_manager = engine_context.device_manager.get();
+
+    // Set up image extent
+    VkExtent3D imageExtent;
+    imageExtent.width = width;
+    imageExtent.height = height;
+    imageExtent.depth = 1;
+
+    // Create image info
+    VkImageCreateInfo imgInfo = image_create_info(format, usage_flags, imageExtent);
+
+    // Use the provided allocation info
+    VkResult result = vmaCreateImage(
+        device_manager->get_allocator(),
+        &imgInfo,
+        &alloc_info,
+        &result_image.image,
+        &result_image.allocation,
+        &result_image.allocation_info
+    );
+
+    if (result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create image: " << width << "x" << height
+                  << ", format: " << format << std::endl;
+        return {};
+    }
+
+    // Optionally create image view
+    if (create_view)
+    {
+        create_image_view(engine_context.dispatch_table, result_image, format);
+    }
+
+    // Optionally create sampler
+    if (create_sampler)
+    {
+        create_image_sampler(engine_context.dispatch_table, result_image, filter);
+    }
+
+    std::cout << "Created image: " << width << "x" << height
+              << " (" << (create_view ? "with view" : "no view")
+              << ", " << (create_sampler ? "with sampler" : "no sampler") << ")" << std::endl;
+
+    return result_image;
+}

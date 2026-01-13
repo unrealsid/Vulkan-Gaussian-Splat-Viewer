@@ -9,6 +9,7 @@
 #include "common/Types.h"
 #include "structs/Vk_Image.h"
 
+struct EngineRenderTargets;
 struct PushConstantBlock;
 struct EngineContext;
 struct WindowCreateParams;
@@ -31,7 +32,8 @@ namespace core::rendering
 
         //Initializes the subpass and the associated material for the subpass if necessary
         virtual void subpass_init(SubpassShaderList& subpass_shaders,
-                                  GPU_BufferContainer& buffer_container) = 0;
+                                  GPU_BufferContainer& buffer_container,
+                                  EngineRenderTargets& render_targets) = 0;
 
         //Called before a frame is recorded
         virtual void frame_pre_recording() = 0;
@@ -42,7 +44,7 @@ namespace core::rendering
                                      PushConstantBlock& push_constants,
                                      SubpassShaderList& subpass_shaders,
                                      GPU_BufferContainer& buffer_container,
-                                     Vk_Image& depth_image) = 0;
+                                     EngineRenderTargets& render_targets) = 0;
 
         //Cleanup pass
         virtual void cleanup();
