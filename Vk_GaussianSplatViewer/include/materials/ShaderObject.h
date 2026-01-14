@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <vulkan/vulkan_core.h>
+#include <array>
 
 #include "VkBootstrapDispatch.h"
 
@@ -84,10 +85,11 @@ namespace material
 
 		template<size_t N>
 		static void set_initial_state(vkb::DispatchTable& disp, VkExtent2D viewport_extent, VkCommandBuffer cmd_buffer,
-									const std::array<VkVertexInputBindingDescription2EXT, N>& vertex_input_binding,
-									const std::array<VkVertexInputAttributeDescription2EXT, N>& input_attribute_description,
-		                            VkExtent2D scissor_extents,
-		                            VkOffset2D scissor_offset);
+		                              const std::array<VkVertexInputBindingDescription2EXT, N>& vertex_input_binding,
+		                              const std::array<VkVertexInputAttributeDescription2EXT, N>& input_attribute_description,
+		                              VkExtent2D scissor_extents, VkOffset2D scissor_offset,
+		                              const std::vector<VkColorComponentFlags>& color_component_flags,
+		                              const std::vector<VkBool32>& color_blend_enables);
 
 	private:
 		static void build_linked_shaders(const vkb::DispatchTable& disp, ShaderObject::Shader* vert, ShaderObject::Shader* frag);
@@ -98,9 +100,11 @@ namespace material
 
 	template <size_t N>
 	void ShaderObject::set_initial_state(vkb::DispatchTable& disp, VkExtent2D viewport_extent, VkCommandBuffer cmd_buffer,
-										 const std::array<VkVertexInputBindingDescription2EXT, N>& vertex_input_binding,
+	                                     const std::array<VkVertexInputBindingDescription2EXT, N>& vertex_input_binding,
 	                                     const std::array<VkVertexInputAttributeDescription2EXT, N>& input_attribute_description,
-	                                     VkExtent2D scissor_extents, VkOffset2D scissor_offset)
+	                                     VkExtent2D scissor_extents, VkOffset2D scissor_offset,
+	                                     const std::vector<VkColorComponentFlags>& color_component_flags,
+	                                     const std::vector<VkBool32>& color_blend_enables)
 	{
 		{
 			// Set viewport and scissor
@@ -139,12 +143,12 @@ namespace material
 			disp.cmdSetSampleMaskEXT(cmd_buffer, VK_SAMPLE_COUNT_1_BIT, &sample_mask);
 
 			// Disable color blending
-			VkBool32 color_blend_enables= VK_FALSE;
-			disp.cmdSetColorBlendEnableEXT(cmd_buffer, 0, 1, &color_blend_enables);
+			//VkBool32 color_blend_enables= VK_FALSE;
+			disp.cmdSetColorBlendEnableEXT(cmd_buffer, 0, color_blend_enables.size(), color_blend_enables.data());
 
 			// Use RGBA color write mask
-			VkColorComponentFlags color_component_flags = 0xF;
-			disp.cmdSetColorWriteMaskEXT(cmd_buffer, 0, 1, &color_component_flags);
+			//VkColorComponentFlags color_component_flags = 0xF;
+			disp.cmdSetColorWriteMaskEXT(cmd_buffer, 0, color_component_flags.size(), color_component_flags.data());
 		}
 
 		//Vertex input

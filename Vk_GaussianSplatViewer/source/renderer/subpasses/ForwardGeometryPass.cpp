@@ -135,13 +135,18 @@ namespace core::rendering
 
         begin_rendering(color_attachments);
 
+        std::vector<VkColorComponentFlags> color_component_flags = {0xF};
+        std::vector<VkBool32> color_blend_enables = {VK_FALSE};
+
         //Set initial state of render pass
         material::ShaderObject::set_initial_state(engine_context.dispatch_table, swapchain_manager->get_extent(),
-                                                                            *command_buffer,
-                                                                            GaussianSurfaceDescriptor::get_binding_descriptions(),
-                                                                            GaussianSurfaceDescriptor::get_attribute_descriptions(),
-                                                                            swapchain_manager->get_extent(),
-                                                                            {0, 0});
+                                                  *command_buffer,
+                                                  GaussianSurfaceDescriptor::get_binding_descriptions(),
+                                                  GaussianSurfaceDescriptor::get_attribute_descriptions(),
+                                                  swapchain_manager->get_extent(),
+                                                  {0, 0},
+                                                  color_component_flags,
+                                                  color_blend_enables);
 
         subpass_shaders[ShaderObjectType::OpaquePass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
