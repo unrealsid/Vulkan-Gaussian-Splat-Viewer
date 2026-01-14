@@ -14,6 +14,8 @@ namespace core::rendering
         void record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class
                              GPU_BufferContainer& buffer_container, EngineRenderTargets& render_targets) override ;
 
+        bool is_pass_active() const override { return true; }
+
         void setup_descriptor_layout();
         void push_descriptors(
             VkCommandBuffer cmd,

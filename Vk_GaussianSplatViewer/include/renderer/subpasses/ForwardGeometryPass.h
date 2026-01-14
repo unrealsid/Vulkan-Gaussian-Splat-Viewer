@@ -24,6 +24,8 @@ namespace core::rendering
                              GPU_BufferContainer& buffer_container,
                              EngineRenderTargets& render_targets) override;
 
+        bool is_pass_active() const override { return true; }
+
         void cleanup() override;
 
     private:

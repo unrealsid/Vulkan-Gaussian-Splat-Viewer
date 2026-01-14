@@ -21,6 +21,8 @@ namespace core::rendering
                              GPU_BufferContainer& buffer_container, EngineRenderTargets& render_targets) override;
         void cleanup() override;
 
+        bool is_pass_active() const override { return false; }
+
     private:
         void init_imgui();
         VkDescriptorPool imgui_pool{};

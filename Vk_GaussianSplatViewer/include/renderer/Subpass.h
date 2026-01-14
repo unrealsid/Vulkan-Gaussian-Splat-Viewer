@@ -44,6 +44,8 @@ namespace core::rendering
                                      GPU_BufferContainer& buffer_container,
                                      EngineRenderTargets& render_targets) = 0;
 
+        virtual bool is_pass_active() const = 0;
+
         //Cleanup pass
         virtual void cleanup();
 

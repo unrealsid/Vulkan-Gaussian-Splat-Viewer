@@ -53,9 +53,26 @@ namespace core::rendering
             }
         });//vector
 
-        setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
+        utils::ImageUtils::image_layout_transition(*command_buffer, render_targets.accumulation_image->image,
+                                                VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+                                                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                                0,
+                                                VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+                                                VK_IMAGE_LAYOUT_UNDEFINED,
+                                                VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ,
+                                                VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
-        auto image = render_targets.swapchain_images[image_index];
+        //Set Layout transition for depth image
+        utils::ImageUtils::image_layout_transition(*command_buffer,  render_targets.revealage_image->image,
+                                                     VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+                                                     VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+                                                     0,
+                                                     VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                                                     VK_IMAGE_LAYOUT_UNDEFINED,
+                                                     VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ,
+                                                      VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+
+        setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
 
         begin_rendering(color_attachments);
 
@@ -69,7 +86,7 @@ namespace core::rendering
                 VK_COLOR_COMPONENT_R_BIT   // outReveal
             };
 
-        std::vector<VkBool32> color_blend_enables = {VK_FALSE, VK_FALSE};
+        std::vector color_blend_enables = {VK_FALSE, VK_FALSE};
 
         //Set initial state of render pass
         material::ShaderObject::set_initial_state(engine_context.dispatch_table, swapchain_manager->get_extent(),

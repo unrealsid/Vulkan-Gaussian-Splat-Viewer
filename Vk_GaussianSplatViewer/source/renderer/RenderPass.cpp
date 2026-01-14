@@ -74,7 +74,11 @@ namespace core::rendering
         for (const auto & subpass : subpasses)
         {
             subpass->init_pass_new_frame(*command_buffer, current_frame);
-            subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects, *(engine_context.buffer_container), engine_render_targets);
+
+            if (subpass->is_pass_active())
+            {
+                subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects, *(engine_context.buffer_container), engine_render_targets);
+            }
         }
 
         if (engine_context.dispatch_table.endCommandBuffer(*command_buffer) != VK_SUCCESS)
