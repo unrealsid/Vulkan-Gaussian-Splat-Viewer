@@ -77,9 +77,6 @@ namespace core::rendering
             subpass->record_commands(command_buffer, image_index, push_constant_block, subpass_shader_objects, *(engine_context.buffer_container), engine_render_targets);
         }
 
-        //Allow the image to change to present mode so the presentation engine can use it
-        finish_image_transition_recording(image_index, *command_buffer);
-
         if (engine_context.dispatch_table.endCommandBuffer(*command_buffer) != VK_SUCCESS)
         {
             std::cout << "failed to record command buffer\n";
@@ -175,7 +172,8 @@ namespace core::rendering
 
         for (const auto& subpass : subpasses)
         {
-            subpass->subpass_init(subpass_shader_objects, *(engine_context.buffer_container), engine_render_targets);
+            subpass->subpass_init(subpass_shader_objects, *(engine_context.buffer_container));
+            subpass->render_target_init(engine_render_targets);
         }
     }
 
@@ -404,16 +402,5 @@ namespace core::rendering
 
     void RenderPass::finish_image_transition_recording(uint32_t image, VkCommandBuffer command_buffer) const
     {
-        utils::ImageUtils::image_layout_transition
-        (
-             command_buffer,                            // Command buffer
-             engine_context.swapchain_manager->get_images()[image].image,    // Swapchain image
-             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
-             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
-             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
-             0,                                        // Destination access mask
-             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
-             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
-              VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
     }
 }

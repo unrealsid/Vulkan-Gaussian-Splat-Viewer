@@ -76,8 +76,30 @@ VkBool32 utils::RenderUtils::get_supported_depth_stencil_format(VkPhysicalDevice
     return false;
 }
 
+std::vector<VkRenderingAttachmentInfoKHR> utils::RenderUtils::create_color_attachments(const std::vector<RenderingAttachmentInfoData>& rendering_attachment_info_data)
+{
+    std::vector<VkRenderingAttachmentInfoKHR> color_attachments;
+
+    for (const auto& data : rendering_attachment_info_data)
+    {
+        VkRenderingAttachmentInfoKHR color_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
+
+        color_attachment_info.pNext        = VK_NULL_HANDLE;
+        color_attachment_info.imageView    = data.image_view;
+        color_attachment_info.imageLayout  = data.image_layout;
+        color_attachment_info.resolveMode  = VK_RESOLVE_MODE_NONE;
+        color_attachment_info.loadOp       = data.load_op;
+        color_attachment_info.storeOp      = data.store_op;
+        color_attachment_info.clearValue   = data.surface_clear_value;
+
+        color_attachments.push_back(color_attachment_info);
+    }
+
+    return color_attachments;
+}
+
 VkRenderingInfoKHR utils::RenderUtils::rendering_info(VkRect2D render_area, uint32_t color_attachment_count,
-    const VkRenderingAttachmentInfoKHR* pColorAttachments, VkRenderingFlagsKHR flags)
+                                                      const VkRenderingAttachmentInfoKHR* pColorAttachments, VkRenderingFlagsKHR flags)
 {
     VkRenderingInfoKHR rendering_info   = {};
     rendering_info.sType                = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;

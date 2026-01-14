@@ -12,12 +12,20 @@
 #include "renderer/GPU_BufferContainer.h"
 #include "common/Types.h"
 #include "vulkanapp/utils/ImageUtils.h"
+#include "vulkanapp/utils/RenderUtils.h"
 
 namespace core::rendering
 {
     ForwardGeometryPass::ForwardGeometryPass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight){}
 
-    void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container, EngineRenderTargets& render_targets)
+    void ForwardGeometryPass::render_target_init(EngineRenderTargets& render_targets)
+    {
+        //Assign images to the render target
+        render_targets.swapchain_images = swapchain_manager->get_images();
+        render_targets.swapchain_extent = extents;
+    }
+
+    void ForwardGeometryPass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container)
     {
         //Assign a material for this subpass and shaders
         material::MaterialUtils material_utils(engine_context);
@@ -26,9 +34,6 @@ namespace core::rendering
             shader_root_path + "/opaque/opaque.frag.spv");
 
         extents = swapchain_manager->get_extent();
-
-        //Assign images to the render target
-        render_targets.swapchain_images = swapchain_manager->get_images();
 
         load_cube_model(engine_context);
 
@@ -93,7 +98,16 @@ namespace core::rendering
         const auto* quaternions = buffer_container.get_buffer("quaternions");
         const auto* alphas = buffer_container.get_buffer("alpha");
 
-        setup_color_attachment(image_index, { {0.0f, 0.0f, 0.0f, 1.0f} });
+        //Create the color attachments for this pass -- decides what gets rendered
+        auto color_attachments = utils::RenderUtils::create_color_attachments(
+        {
+            {
+                render_targets.swapchain_images[image_index].image_view,
+                {0.0f, 0.0f, 0.0f, 1.0f},
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            }
+        });//vector
+
         setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
 
         auto image = render_targets.swapchain_images[image_index];
@@ -119,7 +133,7 @@ namespace core::rendering
                                                       VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 });
 
 
-        begin_rendering();
+        begin_rendering(color_attachments);
 
         //Set initial state of render pass
         material::ShaderObject::set_initial_state(engine_context.dispatch_table, swapchain_manager->get_extent(),
@@ -147,6 +161,18 @@ namespace core::rendering
         engine_context.dispatch_table.cmdDraw(*command_buffer, cube_vertex_count, buffer_container.gaussian_count, 0, 0);
 
         end_rendering();
+
+        utils::ImageUtils::image_layout_transition
+       (
+            *command_buffer,                            // Command buffer
+            image.image,    // Swapchain image
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
+            VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
+            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
+            0,                                        // Destination access mask
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
+             VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
     }
 
     void ForwardGeometryPass::cleanup()

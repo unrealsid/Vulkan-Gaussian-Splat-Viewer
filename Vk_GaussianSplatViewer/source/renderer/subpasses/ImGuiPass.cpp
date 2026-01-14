@@ -6,6 +6,8 @@
 #include "../../../include/common/Types.h"
 #include <iostream>
 
+#include "vulkanapp/utils/RenderUtils.h"
+
 
 namespace core::rendering
 {
@@ -25,9 +27,14 @@ namespace core::rendering
 
     }
 
-    void ImGuiPass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container, EngineRenderTargets& render_targets)
+    void ImGuiPass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container)
     {
         init_imgui();
+    }
+
+    void ImGuiPass::render_target_init(EngineRenderTargets& render_targets)
+    {
+
     }
 
     void ImGuiPass::init_imgui()
@@ -97,13 +104,21 @@ namespace core::rendering
     void ImGuiPass::record_commands(VkCommandBuffer* command_buffer, uint32_t image_index, PushConstantBlock& push_constant_block, SubpassShaderList& subpass_shaders, class
                                     GPU_BufferContainer& buffer_container, EngineRenderTargets& render_targets)
     {
-        setup_color_attachment(image_index, { {0.0f, 0.0f, 0.0f, 1.0f} });
-        color_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; // Don't clear what GeometryPass did
+        //Create the color attachments for this pass -- decides what gets rendered
+        auto color_attachments = utils::RenderUtils::create_color_attachments(
+        {
+            {
+                render_targets.swapchain_images[image_index].image_view,
+                {0.0f, 0.0f, 0.0f, 1.0f},
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Don't clear what GeometryPass did
+                VK_ATTACHMENT_LOAD_OP_LOAD
+            }
+        });//vector
         
         depth_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
         depth_attachment_info.imageView = VK_NULL_HANDLE;
 
-        begin_rendering();
+        begin_rendering(color_attachments);
 
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplSDL3_NewFrame();

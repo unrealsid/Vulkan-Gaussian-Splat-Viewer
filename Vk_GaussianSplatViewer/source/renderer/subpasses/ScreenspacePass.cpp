@@ -13,7 +13,7 @@ namespace core::rendering
 {
     ScreenspacePass::ScreenspacePass(EngineContext& engine_context, uint32_t max_frames_in_flight) : Subpass(engine_context, max_frames_in_flight){ }
 
-    void ScreenspacePass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container, EngineRenderTargets& render_targets)
+    void ScreenspacePass::subpass_init(SubpassShaderList& subpass_shaders, GPU_BufferContainer& buffer_container)
     {
         //Assign a material for this subpass and shaders
         material::MaterialUtils material_utils(engine_context);
@@ -22,6 +22,10 @@ namespace core::rendering
             shader_root_path + "/translucency/composite/oit_weighted_composite.frag.spv");
 
         std::cout << subpass_shaders[ShaderObjectType::ScreenspacePass] << std::endl;
+    }
+
+    void ScreenspacePass::render_target_init(EngineRenderTargets& render_targets)
+    {
     }
 
     void ScreenspacePass::frame_pre_recording()
