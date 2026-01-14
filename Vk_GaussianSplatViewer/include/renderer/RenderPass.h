@@ -94,7 +94,5 @@ namespace core::rendering
 
         //Maps cpu -> gpu data
         void map_cpu_data();
-
-        void finish_image_transition_recording(uint32_t image, VkCommandBuffer command_buffer) const;
     };
 }

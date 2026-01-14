@@ -399,8 +399,4 @@ namespace core::rendering
     {
         map_camera_data();
     }
-
-    void RenderPass::finish_image_transition_recording(uint32_t image, VkCommandBuffer command_buffer) const
-    {
-    }
 }

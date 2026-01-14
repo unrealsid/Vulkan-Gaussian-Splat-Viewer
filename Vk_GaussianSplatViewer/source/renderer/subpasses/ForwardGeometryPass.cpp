@@ -31,7 +31,7 @@ namespace core::rendering
         material::MaterialUtils material_utils(engine_context);
         subpass_shaders[ShaderObjectType::OpaquePass] = material_utils.create_material("opaque_pass",
             shader_root_path + "/opaque/object.vert.spv",
-            shader_root_path + "/opaque/opaque.frag.spv");
+            shader_root_path + "/opaque/opaque.frag.spv", nullptr, 0);
 
         extents = swapchain_manager->get_extent();
 
@@ -161,18 +161,6 @@ namespace core::rendering
         engine_context.dispatch_table.cmdDraw(*command_buffer, cube_vertex_count, buffer_container.gaussian_count, 0, 0);
 
         end_rendering();
-
-        utils::ImageUtils::image_layout_transition
-       (
-            *command_buffer,                            // Command buffer
-            image.image,    // Swapchain image
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
-            VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
-            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
-            0,                                        // Destination access mask
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
-            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
-             VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
     }
 
     void ForwardGeometryPass::cleanup()

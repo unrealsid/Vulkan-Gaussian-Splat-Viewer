@@ -18,7 +18,7 @@ namespace core::rendering
     {
         material::MaterialUtils material_utils(engine_context);
         subpass_shaders[ShaderObjectType::TranslucentPass] = material_utils.create_material("translucent_pass",
-            shader_root_path + "/opaque/object.vert.spv", shader_root_path + "/translucency/color/oit_weighted_color.frag.spv");
+            shader_root_path + "/opaque/object.vert.spv", shader_root_path + "/translucency/color/oit_weighted_color.frag.spv", nullptr, 0);
 
         std::cout << subpass_shaders[ShaderObjectType::TranslucentPass] << std::endl;
     }

@@ -6,6 +6,7 @@
 #include "../../../include/common/Types.h"
 #include <iostream>
 
+#include "vulkanapp/utils/ImageUtils.h"
 #include "vulkanapp/utils/RenderUtils.h"
 
 
@@ -171,6 +172,18 @@ namespace core::rendering
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *command_buffer);
 
         end_rendering();
+
+        utils::ImageUtils::image_layout_transition
+       (
+            *command_buffer,                            // Command buffer
+            render_targets.swapchain_images[image_index].image,    // Swapchain image
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // Source pipeline stage
+            VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,     // Destination pipeline stage
+            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,     // Source access mask
+            0,                                        // Destination access mask
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // Old layout
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,          // New layout
+             VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
     }
 
     void ImGuiPass::cleanup()

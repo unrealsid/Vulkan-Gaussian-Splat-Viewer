@@ -7,7 +7,8 @@
 
 namespace material
 {
-    std::shared_ptr<Material> MaterialUtils::create_material(const std::string& name, const std::string& vertex_shader_path, const std::string& fragment_shader_path) const
+    std::shared_ptr<Material> MaterialUtils::create_material(const std::string& name, const std::string& vertex_shader_path, const std::string& fragment_shader_path,
+                                                             VkDescriptorSetLayout* descriptor_layout, uint32_t descriptor_set_count) const
     {
         //Setup push constants
         VkPushConstantRange push_constant_range{};
@@ -23,14 +24,14 @@ namespace material
 
         auto shader_object = std::make_unique<ShaderObject>();
         shader_object->create_shaders(engine_context.dispatch_table, shaderCodes[0], shaderCodeSizes[0], shaderCodes[1], shaderCodeSizes[1],
-            nullptr, 0,
+            descriptor_layout, descriptor_set_count,
             &push_constant_range, 1);
 
         VkPipelineLayout pipeline_layout;
 
         //Create the pipeline layout
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo = utils::DescriptorUtils::pipeline_layout_create_info(nullptr,  0, &push_constant_range, 1);
-        engine_context.dispatch_table.createPipelineLayout(&pipelineLayoutInfo, VK_NULL_HANDLE, &pipeline_layout);
+        VkPipelineLayoutCreateInfo pipeline_layout_info = utils::DescriptorUtils::pipeline_layout_create_info(nullptr,  0, &push_constant_range, 1);
+        engine_context.dispatch_table.createPipelineLayout(&pipeline_layout_info, VK_NULL_HANDLE, &pipeline_layout);
 
         //Create material
         auto material = make_shared<Material>(name, engine_context);
