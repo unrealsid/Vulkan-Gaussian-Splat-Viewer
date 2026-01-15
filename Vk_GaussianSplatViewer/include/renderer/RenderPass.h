@@ -22,7 +22,7 @@ namespace core::rendering
     {
     public:
         RenderPass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
-        void allocate_and_record_command_buffers();
+        void allocate_command_buffers();
         void renderpass_init();
 
         void init_subpasses();
@@ -42,7 +42,7 @@ namespace core::rendering
 
         void reset_subpass_command_buffers();
         void recreate_swapchain();
-        void create_renderpass_resources(bool is_init);
+        void create_renderpass_resources();
 
         bool draw_frame(uint32_t image_index);
 

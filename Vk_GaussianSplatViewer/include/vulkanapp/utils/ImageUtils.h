@@ -32,7 +32,7 @@ namespace utils
 
         static void create_image_sampler(const vkb::DispatchTable& disp, Vk_Image& image, VkFilter filter);
 
-        static void create_image_view(const vkb::DispatchTable& disp, Vk_Image& image, VkFormat format);
+        static void create_image_view(const vkb::DispatchTable& disp, Vk_Image& image, VkFormat format, VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT);
 
         static void image_layout_transition(VkCommandBuffer command_buffer,
                                     VkImage image,
@@ -53,7 +53,8 @@ namespace utils
            const VmaAllocationCreateInfo& alloc_info,
            bool create_view = true,
            bool create_sampler = false,
-           VkFilter filter = VK_FILTER_LINEAR
+           VkFilter filter = VK_FILTER_LINEAR,
+           VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT
        );
     };
 };

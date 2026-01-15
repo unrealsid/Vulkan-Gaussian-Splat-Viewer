@@ -48,6 +48,32 @@ namespace entity_3d
         return cube;
     }
 
+    std::vector<glm::vec4> ModelUtils::load_tetrahedron()
+    {
+        // Regular tetrahedron vertices
+        constexpr glm::vec4 v0 = {  1.f,  1.f,  1.f, 1.f };
+        constexpr glm::vec4 v1 = { -1.f, -1.f,  1.f, 1.f };
+        constexpr glm::vec4 v2 = { -1.f,  1.f, -1.f, 1.f };
+        constexpr glm::vec4 v3 = {  1.f, -1.f, -1.f, 1.f };
+
+        std::vector tetrahedron =
+        {
+            // Face 0
+            v0, v1, v2,
+
+            // Face 1
+            v0, v3, v1,
+
+            // Face 2
+            v0, v2, v3,
+
+            // Face 3 (base)
+            v1, v3, v2,
+        };
+
+        return tetrahedron;
+    }
+
     splat_loader::GaussianSplatPlyLoader ModelUtils::load_placeholder_gaussian_model()
     {
         splat_loader::GaussianSplatPlyLoader ply;

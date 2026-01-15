@@ -13,6 +13,8 @@ namespace entity_3d
 
         static std::vector<glm::vec4> load_gaussian_bounding_box();
 
+        static std::vector<glm::vec4> load_tetrahedron();
+
         static splat_loader::GaussianSplatPlyLoader load_placeholder_gaussian_model();
 
         static splat_loader::GaussianSplatPlyLoader load_gaussian_surfaces(const std::string& file_path);

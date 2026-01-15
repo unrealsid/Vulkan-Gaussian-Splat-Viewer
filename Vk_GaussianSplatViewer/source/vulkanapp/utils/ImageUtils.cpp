@@ -303,14 +303,14 @@ void utils::ImageUtils::create_image_sampler(const vkb::DispatchTable& disp, Vk_
     disp.createSampler(&samplerCreateInfo, nullptr, &image.sampler);
 }
 
-void utils::ImageUtils::create_image_view(const vkb::DispatchTable& disp, Vk_Image& image, VkFormat format)
+void utils::ImageUtils::create_image_view(const vkb::DispatchTable& disp, Vk_Image& image, VkFormat format, VkImageAspectFlags aspect_flags)
 {
     VkImageViewCreateInfo viewCreateInfo = {};
     viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewCreateInfo.pNext = nullptr;
     viewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewCreateInfo.format = format;
-    viewCreateInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    viewCreateInfo.subresourceRange = { aspect_flags, 0, 1, 0, 1 };
     viewCreateInfo.subresourceRange.levelCount = 1;
     viewCreateInfo.image = image.image;
     disp.createImageView(&viewCreateInfo, nullptr, &image.view);
@@ -350,7 +350,7 @@ void  utils::ImageUtils::image_layout_transition(VkCommandBuffer command_buffer,
 
 Vk_Image utils::ImageUtils::create_image(const EngineContext& engine_context, const uint32_t width, const uint32_t height,
                                          const VkFormat format, const VkImageUsageFlags usage_flags, const VmaAllocationCreateInfo& alloc_info, bool create_view,
-                                         const bool create_sampler, const VkFilter filter)
+                                         const bool create_sampler, const VkFilter filter, VkImageAspectFlags aspect_flags)
 {
     Vk_Image result_image;
     result_image.format = format;
@@ -358,18 +358,18 @@ Vk_Image utils::ImageUtils::create_image(const EngineContext& engine_context, co
     auto device_manager = engine_context.device_manager.get();
 
     // Set up image extent
-    VkExtent3D imageExtent;
-    imageExtent.width = width;
-    imageExtent.height = height;
-    imageExtent.depth = 1;
+    VkExtent3D image_extent;
+    image_extent.width = width;
+    image_extent.height = height;
+    image_extent.depth = 1;
 
     // Create image info
-    VkImageCreateInfo imgInfo = image_create_info(format, usage_flags, imageExtent);
+    VkImageCreateInfo img_info = image_create_info(format, usage_flags, image_extent);
 
     // Use the provided allocation info
     VkResult result = vmaCreateImage(
         device_manager->get_allocator(),
-        &imgInfo,
+        &img_info,
         &alloc_info,
         &result_image.image,
         &result_image.allocation,
@@ -386,10 +386,10 @@ Vk_Image utils::ImageUtils::create_image(const EngineContext& engine_context, co
     // Optionally create image view
     if (create_view)
     {
-        create_image_view(engine_context.dispatch_table, result_image, format);
+        create_image_view(engine_context.dispatch_table, result_image, format, aspect_flags);
     }
 
-    // Optionally create sampler
+    // Optionally create a sampler
     if (create_sampler)
     {
         create_image_sampler(engine_context.dispatch_table, result_image, filter);

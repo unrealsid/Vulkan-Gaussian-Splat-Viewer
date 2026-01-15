@@ -27,7 +27,7 @@ namespace core::rendering
         camera_data = {glm::mat4{}, glm::mat4{}};
     }
 
-    void RenderPass::allocate_and_record_command_buffers()
+    void RenderPass::allocate_command_buffers()
     {
         command_buffers.assign(max_frames_in_flight, VK_NULL_HANDLE);
 
@@ -40,7 +40,8 @@ namespace core::rendering
     void RenderPass::renderpass_init()
     {
         create_sync_objects();
-        create_renderpass_resources(true);
+        create_renderpass_resources();
+        init_subpasses();
     }
 
     void RenderPass::record_subpasses(uint32_t image_index)
@@ -131,52 +132,8 @@ namespace core::rendering
 
         reset_subpass_command_buffers();
         recreate_swapchain();
-        create_renderpass_resources(false);
+        create_renderpass_resources();
         set_new_camera_aspect_ratio();
-    }
-
-    void RenderPass::cleanup()
-    {
-        auto dispatch_table = engine_context.dispatch_table;
-        auto device = device_manager->get_device();
-
-        dispatch_table.deviceWaitIdle();
-
-        for (size_t i = 0; i < max_frames_in_flight; i++)
-        {
-            if (available_semaphores[i] != VK_NULL_HANDLE)
-                dispatch_table.destroySemaphore(available_semaphores[i], nullptr);
-            if (finished_semaphores[i] != VK_NULL_HANDLE)
-                dispatch_table.destroySemaphore(finished_semaphores[i], nullptr);
-            if (in_flight_fences[i] != VK_NULL_HANDLE)
-                dispatch_table.destroyFence(in_flight_fences[i], nullptr);
-        }
-
-        if (command_pool != VK_NULL_HANDLE)
-        {
-            dispatch_table.destroyCommandPool(command_pool, nullptr);
-            command_pool = VK_NULL_HANDLE;
-        }
-
-        if (auto depth_stencil_image = engine_render_targets.depth_stencil_image.get())
-        {
-            if (depth_stencil_image->view != VK_NULL_HANDLE)
-            {
-                dispatch_table.destroyImageView(depth_stencil_image->view, nullptr);
-            }
-
-            if (depth_stencil_image->image != VK_NULL_HANDLE)
-            {
-                vmaDestroyImage(device_manager->get_allocator(), depth_stencil_image->image, depth_stencil_image->allocation);
-            }
-
-            engine_render_targets.depth_stencil_image.reset();
-        }
-
-        for (auto& subpass : subpasses)
-        {
-            subpass->cleanup();
-        }
     }
 
     void RenderPass::init_subpasses()
@@ -251,11 +208,15 @@ namespace core::rendering
         VmaAllocationCreateInfo alloc_create_info = {};
         alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         engine_render_targets.depth_stencil_image = std::make_unique<Vk_Image>(utils::ImageUtils::create_image(engine_context,
-            swapchain_manager->get_extent().width,
-            swapchain_manager->get_extent().height,
-            depth_stencil_format,
-            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-            alloc_create_info ));
+                                                                                                                swapchain_manager->get_extent().width,
+                                                                                                                swapchain_manager->get_extent().height,
+                                                                                                                depth_stencil_format,
+                                                                                                                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                                                                                                alloc_create_info,
+                                                                                                                true,
+                                                                                                                false,
+                                                                                                                VK_FILTER_LINEAR,
+                                                                                                                VK_IMAGE_ASPECT_DEPTH_BIT));
     }
 
     void RenderPass::reset_subpass_command_buffers()
@@ -265,7 +226,8 @@ namespace core::rendering
         // {
         //     subpass->cleanup();
         // }
-        // subpasses.clear();
+
+        //subpasses.clear();
     }
 
     void RenderPass::recreate_swapchain()
@@ -277,18 +239,13 @@ namespace core::rendering
         swapchain_manager->recreate_swapchain(window_width, window_height);
     }
 
-    void RenderPass::create_renderpass_resources(bool is_init)
+    void RenderPass::create_renderpass_resources()
     {
         create_command_pool();
 
-        if (is_init)
-        {
-            init_subpasses();
-        }
-
         create_depth_stencil_image();
 
-        allocate_and_record_command_buffers();
+        allocate_command_buffers();
     }
 
     bool RenderPass::draw_frame(uint32_t image_index)
@@ -415,5 +372,49 @@ namespace core::rendering
     void RenderPass::map_cpu_data()
     {
         map_camera_data();
+    }
+
+    void RenderPass::cleanup()
+    {
+        auto dispatch_table = engine_context.dispatch_table;
+        auto device = device_manager->get_device();
+
+        dispatch_table.deviceWaitIdle();
+
+        for (size_t i = 0; i < max_frames_in_flight; i++)
+        {
+            if (available_semaphores[i] != VK_NULL_HANDLE)
+                dispatch_table.destroySemaphore(available_semaphores[i], nullptr);
+            if (finished_semaphores[i] != VK_NULL_HANDLE)
+                dispatch_table.destroySemaphore(finished_semaphores[i], nullptr);
+            if (in_flight_fences[i] != VK_NULL_HANDLE)
+                dispatch_table.destroyFence(in_flight_fences[i], nullptr);
+        }
+
+        if (command_pool != VK_NULL_HANDLE)
+        {
+            dispatch_table.destroyCommandPool(command_pool, nullptr);
+            command_pool = VK_NULL_HANDLE;
+        }
+
+        if (auto depth_stencil_image = engine_render_targets.depth_stencil_image.get())
+        {
+            if (depth_stencil_image->view != VK_NULL_HANDLE)
+            {
+                dispatch_table.destroyImageView(depth_stencil_image->view, nullptr);
+            }
+
+            if (depth_stencil_image->image != VK_NULL_HANDLE)
+            {
+                vmaDestroyImage(device_manager->get_allocator(), depth_stencil_image->image, depth_stencil_image->allocation);
+            }
+
+            engine_render_targets.depth_stencil_image.reset();
+        }
+
+        for (auto& subpass : subpasses)
+        {
+            subpass->cleanup();
+        }
     }
 }
