@@ -4,7 +4,7 @@
 #include "../../common/shader_common.glsl"
 
 layout(input_attachment_index = 0, binding = 0) uniform subpassInput texColor;
-layout(input_attachment_index = 1, binding = 0) uniform subpassInput texWeights;
+layout(input_attachment_index = 1, binding = 1) uniform subpassInput texWeights;
 
 layout(location = 0) out vec4 outColor;
 

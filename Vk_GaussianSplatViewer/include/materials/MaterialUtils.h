@@ -14,7 +14,7 @@ namespace material
         MaterialUtils(EngineContext& engine_context) : engine_context(engine_context){}
 
         [[nodiscard]] std::shared_ptr<Material> create_material(const std::string& name, const std::string& vertex_shader_path, const std::string& fragment_shader_path,
-                                                                VkDescriptorSetLayout* descriptor_layout, uint32_t descriptor_set_count) const;
+                                                                const VkDescriptorSetLayout* descriptor_layout, uint32_t descriptor_set_count) const;
 
     private:
         EngineContext& engine_context;

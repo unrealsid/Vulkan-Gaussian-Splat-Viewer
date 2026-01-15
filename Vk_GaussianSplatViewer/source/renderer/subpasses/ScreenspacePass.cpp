@@ -9,6 +9,7 @@
 #include "config/Config.inl"
 #include "materials/MaterialUtils.h"
 #include "structs/EngineContext.h"
+#include "vulkanapp/utils/RenderUtils.h"
 
 namespace core::rendering
 {
@@ -36,12 +37,95 @@ namespace core::rendering
                                           GPU_BufferContainer& buffer_container,
                                           EngineRenderTargets& render_targets)
     {
+        // Create a color attachment for the swapchain (final output)
+        auto color_attachments = utils::RenderUtils::create_color_attachments(
+{
+            {
+                render_targets.swapchain_images[image_index].image_view,
+                {0.0f, 0.0f, 0.0f, 1.0f},
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                VK_ATTACHMENT_LOAD_OP_LOAD  // Load existing content from previous passes
+            }
+        });
 
+        // Use the depth attachment (read-only in this pass)
+        setup_depth_attachment(*render_targets.depth_stencil_image,{ {1.0f, 0} });  // Load existing depth
+
+        // Begin rendering
+        begin_rendering(color_attachments);
+
+        // Set color write mask (all components)
+        std::vector<VkColorComponentFlags> color_component_flags =
+        {
+            VK_COLOR_COMPONENT_R_BIT |
+            VK_COLOR_COMPONENT_G_BIT |
+            VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT
+        };
+
+        // Enable blending for proper compositing
+        std::vector<VkBool32> color_blend_enables = {VK_TRUE};
+
+        // Set pipeline state (no vertex input needed for fullscreen triangle)
+        material::ShaderObject::set_initial_state<0>
+        (
+            engine_context.dispatch_table,
+            swapchain_manager->get_extent(),
+            *command_buffer,
+            {},  // No vertex bindings
+            {},  // No vertex attributes
+            swapchain_manager->get_extent(),
+            {0, 0},
+            color_component_flags,
+            color_blend_enables
+        );
+
+        // Set blend equation AFTER binding shader (required when blending is enabled)
+        VkColorBlendEquationEXT blendEquation{};
+        blendEquation.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendEquation.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        blendEquation.colorBlendOp = VK_BLEND_OP_ADD;
+        blendEquation.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        blendEquation.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        blendEquation.alphaBlendOp = VK_BLEND_OP_ADD;
+        engine_context.dispatch_table.cmdSetColorBlendEquationEXT(*command_buffer, 0, 1, &blendEquation);
+
+
+        // Bind the screenspace shader
+        subpass_shaders[ShaderObjectType::ScreenspacePass]->get_shader_object()->bind_material_shader
+        (
+            engine_context.dispatch_table,
+            *command_buffer
+        );
+
+        // Push descriptors for input attachments (accumulation and revealage)
+        VkImageView input_attachment_views[2] =
+        {
+            render_targets.accumulation_image->view,   // binding 0, input_attachment_index 0
+            render_targets.revealage_image->view       // binding 1, input_attachment_index 1
+        };
+
+        push_descriptors
+        (
+            *command_buffer,
+            subpass_shaders[ShaderObjectType::ScreenspacePass]->get_pipeline_layout(),
+            VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
+            0,  // Set number
+            input_attachment_views,
+            2,  // Number of attachments
+            VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR,
+            0   // First binding
+        );
+
+        engine_context.dispatch_table.cmdDraw(*command_buffer, 3, 1, 0, 0);
+
+        end_rendering();
     }
 
     void ScreenspacePass::setup_descriptor_layout()
     {
-        VkDescriptorSetLayoutBinding bindings[] = {
+        VkDescriptorSetLayoutBinding bindings[] =
+        {
             // Binding 0: Input attachment (accumulation)
             {
                 .binding = 0,
@@ -72,7 +156,6 @@ namespace core::rendering
     void ScreenspacePass::push_descriptors(VkCommandBuffer cmd, VkPipelineLayout pipeline_layout,
         VkDescriptorType descriptor_type, uint32_t set_number, const VkImageView* image_views, uint32_t image_count, VkImageLayout image_layout, uint32_t first_binding) const
     {
-        // Stack allocation for typical use cases (up to 8 descriptors)
         constexpr uint32_t MAX_DESCRIPTORS = 8;
         VkDescriptorImageInfo image_infos[MAX_DESCRIPTORS];
         VkWriteDescriptorSet writes[MAX_DESCRIPTORS];

@@ -8,7 +8,7 @@
 namespace material
 {
     std::shared_ptr<Material> MaterialUtils::create_material(const std::string& name, const std::string& vertex_shader_path, const std::string& fragment_shader_path,
-                                                             VkDescriptorSetLayout* descriptor_layout, uint32_t descriptor_set_count) const
+                                                             const VkDescriptorSetLayout* descriptor_layout, uint32_t descriptor_set_count) const
     {
         //Setup push constants
         VkPushConstantRange push_constant_range{};
@@ -30,7 +30,7 @@ namespace material
         VkPipelineLayout pipeline_layout;
 
         //Create the pipeline layout
-        VkPipelineLayoutCreateInfo pipeline_layout_info = utils::DescriptorUtils::pipeline_layout_create_info(nullptr,  0, &push_constant_range, 1);
+        VkPipelineLayoutCreateInfo pipeline_layout_info = utils::DescriptorUtils::pipeline_layout_create_info(descriptor_layout,  descriptor_set_count, &push_constant_range, 1);
         engine_context.dispatch_table.createPipelineLayout(&pipeline_layout_info, VK_NULL_HANDLE, &pipeline_layout);
 
         //Create material
