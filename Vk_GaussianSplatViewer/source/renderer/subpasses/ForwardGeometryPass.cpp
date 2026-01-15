@@ -98,19 +98,19 @@ namespace core::rendering
         const auto* quaternions = buffer_container.get_buffer("quaternions");
         const auto* alphas = buffer_container.get_buffer("alpha");
 
+        auto image = render_targets.swapchain_images[image_index];
+
         //Create the color attachments for this pass -- decides what gets rendered
         auto color_attachments = utils::RenderUtils::create_color_attachments(
         {
             {
-                render_targets.swapchain_images[image_index].image_view,
+                image.image_view,
                 {0.0f, 0.0f, 0.0f, 1.0f},
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             }
         });//vector
 
         setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
-
-        auto image = render_targets.swapchain_images[image_index];
 
         //Set layout transition for swapchain image
         utils::ImageUtils::image_layout_transition(*command_buffer, image.image,
