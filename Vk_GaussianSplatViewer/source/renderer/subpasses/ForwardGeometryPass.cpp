@@ -36,6 +36,7 @@ namespace core::rendering
         extents = swapchain_manager->get_extent();
 
         load_cube_model(engine_context);
+        load_tetrahedron(engine_context);
 
         //Placeholder scene initialization
         auto gaussian_surfaces = std::vector<glm::vec4>{ {0.0, 0.0, 0.0, 1.0} };
@@ -82,6 +83,19 @@ namespace core::rendering
         buffer_container->allocate_gaussian_buffer("cube_buffer", cube);
     }
 
+    void ForwardGeometryPass::load_tetrahedron(const EngineContext& engine_context)
+    {
+        auto buffer_container = engine_context.buffer_container.get();
+
+        std::vector<glm::vec4> tetrahedron =  entity_3d::ModelUtils::load_tetrahedron();
+        tetrahedron_vertex_count = tetrahedron.size();
+        buffer_container->allocate_gaussian_buffer("tetrahedron_buffer", tetrahedron);
+
+        //Colors
+        std::vector<glm::vec4> colors = entity_3d::ModelUtils::load_tetrahedron_colors(true);
+        buffer_container->allocate_gaussian_buffer("tetrahedron_color_buffer", colors);
+    }
+
 
     void ForwardGeometryPass::frame_pre_recording(){ }
 
@@ -92,6 +106,9 @@ namespace core::rendering
                                               EngineRenderTargets& render_targets)
     {
         const auto* cube_buffer = buffer_container.get_buffer("cube_buffer");
+        const auto* tetrahedron_buffer = buffer_container.get_buffer("tetrahedron_buffer");
+        const auto* tetrahedron_color_buffer = buffer_container.get_buffer("tetrahedron_color_buffer");
+
         const auto* positions = buffer_container.get_buffer("positions");
         const auto* scales = buffer_container.get_buffer("scales");
         const auto* colors = buffer_container.get_buffer("colors");
@@ -151,9 +168,9 @@ namespace core::rendering
         subpass_shaders[ShaderObjectType::OpaquePass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
         //Vertices
-        VkBuffer vertex_buffers[] = { cube_buffer->buffer};
-        VkDeviceSize offsets[] = {0};
-        engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 1, vertex_buffers, offsets);
+        VkBuffer vertex_buffers[] = { tetrahedron_buffer->buffer, tetrahedron_color_buffer->buffer};
+        VkDeviceSize offsets[] = {0, 0};
+        engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 2, vertex_buffers, offsets);
 
         //Push Constants
         push_constant_block = {
@@ -163,7 +180,7 @@ namespace core::rendering
                                                                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                                                 0, sizeof(PushConstantBlock), &push_constant_block);
 
-        engine_context.dispatch_table.cmdDraw(*command_buffer, cube_vertex_count, buffer_container.gaussian_count, 0, 0);
+        engine_context.dispatch_table.cmdDraw(*command_buffer, tetrahedron_vertex_count, buffer_container.gaussian_count, 0, 0);
 
         end_rendering();
     }

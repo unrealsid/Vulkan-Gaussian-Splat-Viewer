@@ -99,11 +99,12 @@ namespace core::rendering
         subpass_shaders[ShaderObjectType::OpaquePass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
         const auto* cube_buffer = buffer_container.get_buffer("cube_buffer");
+        const auto* tetrahedron_buffer = buffer_container.get_buffer("tetrahedron_buffer");
 
         //Vertices
-        VkBuffer vertex_buffers[] = { cube_buffer->buffer};
+        VkBuffer vertex_buffers[] = { cube_buffer->buffer, tetrahedron_buffer->buffer};
         VkDeviceSize offsets[] = {0};
-        engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 1, vertex_buffers, offsets);
+        engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 2, vertex_buffers, offsets);
 
         //Push Constants
         push_constant_block = {
@@ -113,7 +114,7 @@ namespace core::rendering
                                                                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                                                 0, sizeof(PushConstantBlock), &push_constant_block);
 
-        engine_context.dispatch_table.cmdDraw(*command_buffer, 36, buffer_container.gaussian_count, 0, 0);
+        engine_context.dispatch_table.cmdDraw(*command_buffer, 36 + 12, buffer_container.gaussian_count, 0, 0);
 
         //Add a barrier so the next stage can read the pass
         VkMemoryBarrier2KHR memoryBarrier{};

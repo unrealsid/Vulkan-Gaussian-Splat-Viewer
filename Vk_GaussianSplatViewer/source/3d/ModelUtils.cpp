@@ -1,8 +1,9 @@
 ﻿#include "3d/ModelUtils.h"
 
 #include <iostream>
+#include <random>
 #include <vector>
-#include "../../include/structs/geometry/Vertex2D.h"
+#include "structs/geometry/Vertex2D.h"
 #include "3d/GaussianSplatPlyLoader.h"
 
 namespace entity_3d
@@ -72,6 +73,37 @@ namespace entity_3d
         };
 
         return tetrahedron;
+    }
+
+
+    std::vector<glm::vec4> ModelUtils::load_tetrahedron_colors(bool randomize, const glm::vec4& single_color)
+    {
+        constexpr uint32_t vertex_count = 12; // 4 faces * 3 vertices
+
+        std::vector<glm::vec4> colors;
+        colors.reserve(vertex_count);
+
+        if (!randomize)
+        {
+            colors.assign(vertex_count, single_color);
+            return colors;
+        }
+
+        // Random per-vertex color
+        std::mt19937 rng{ std::random_device{}() };
+        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+
+        for (uint32_t i = 0; i < vertex_count; ++i)
+        {
+            colors.emplace_back(
+                dist(rng),
+                dist(rng),
+                dist(rng),
+                1.0f
+            );
+        }
+
+        return colors;
     }
 
     splat_loader::GaussianSplatPlyLoader ModelUtils::load_placeholder_gaussian_model()

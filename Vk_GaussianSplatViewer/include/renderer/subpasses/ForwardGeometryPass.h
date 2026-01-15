@@ -34,7 +34,9 @@ namespace core::rendering
         std::vector<glm::vec4> cube;
 
         uint32_t cube_vertex_count = 0;
+        uint32_t tetrahedron_vertex_count = 0;
 
         void load_cube_model(const EngineContext& engine_context);
+        void load_tetrahedron(const EngineContext& engine_context);
     };
 }

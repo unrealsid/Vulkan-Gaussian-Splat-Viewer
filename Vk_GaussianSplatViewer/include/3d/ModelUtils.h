@@ -14,6 +14,7 @@ namespace entity_3d
         static std::vector<glm::vec4> load_gaussian_bounding_box();
 
         static std::vector<glm::vec4> load_tetrahedron();
+        static std::vector<glm::vec4> load_tetrahedron_colors(bool randomize, const glm::vec4& single_color = { 1.f, 1.f, 1.f, 1.f });
 
         static splat_loader::GaussianSplatPlyLoader load_placeholder_gaussian_model();
 

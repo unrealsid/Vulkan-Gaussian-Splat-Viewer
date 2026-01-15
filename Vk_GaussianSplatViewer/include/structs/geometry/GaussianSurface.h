@@ -5,8 +5,8 @@
 
 struct GaussianSurfaceDescriptor
 {
-    static std::array<VkVertexInputBindingDescription2EXT, 1> get_binding_descriptions();
+    static std::array<VkVertexInputBindingDescription2EXT, 2> get_binding_descriptions();
 
-    static std::array<VkVertexInputAttributeDescription2EXT, 1> get_attribute_descriptions();
+    static std::array<VkVertexInputAttributeDescription2EXT, 2> get_attribute_descriptions();
 };
 
