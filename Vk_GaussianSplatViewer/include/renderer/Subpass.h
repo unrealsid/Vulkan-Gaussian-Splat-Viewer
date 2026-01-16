@@ -4,6 +4,7 @@
 #include "platform/WindowManager.h"
 #include "common/Types.h"
 #include "structs/Vk_Image.h"
+#include "renderer/DrawState.h"
 
 struct EngineRenderTargets;
 struct PushConstantBlock;
@@ -23,8 +24,8 @@ namespace core::rendering
     class Subpass
     {
     public:
-        virtual ~Subpass() = default;
         explicit Subpass(EngineContext& engine_context, uint32_t max_frames_in_flight = 2);
+        virtual ~Subpass() = default;
 
         //Initializes the subpass render targets
         virtual void render_target_init(EngineRenderTargets& render_targets) = 0;
@@ -73,5 +74,7 @@ namespace core::rendering
 
         //Stores depth attachment used during command recording
         VkRenderingAttachmentInfoKHR depth_attachment_info;
+
+        std::unique_ptr<renderer::DrawState> draw_state;
     };
 }

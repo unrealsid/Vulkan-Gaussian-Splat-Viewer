@@ -83,15 +83,14 @@ namespace core::rendering
 
         std::vector color_blend_enables = {VK_FALSE, VK_FALSE};
 
-        //Set initial state of render pass
-        material::ShaderObject::set_initial_state(engine_context.dispatch_table, swapchain_manager->get_extent(),
-                                                  *command_buffer,
-                                                  GaussianSurfaceDescriptor::get_binding_descriptions(),
-                                                  GaussianSurfaceDescriptor::get_attribute_descriptions(),
-                                                  swapchain_manager->get_extent(),
-                                                  {0, 0},
-                                                  color_component_flags,
-                                                  color_blend_enables );
+        draw_state->set_and_apply_viewport_scissor(*command_buffer, swapchain_manager->get_extent(), swapchain_manager->get_extent(), {0, 0});
+        draw_state->set_and_apply_color_blend(*command_buffer, color_component_flags, color_blend_enables);
+        //draw_state->set_and_apply_blend_equation(*command_buffer, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD);
+
+        draw_state->apply_rasterization_state(*command_buffer);
+        draw_state->apply_depth_stencil_state(*command_buffer);
+
+        draw_state->set_and_apply_vertex_input(*command_buffer, GaussianSurfaceDescriptor::get_binding_descriptions(), GaussianSurfaceDescriptor::get_attribute_descriptions());
 
         subpass_shaders[ShaderObjectType::OpaquePass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
@@ -100,7 +99,7 @@ namespace core::rendering
 
         //Vertices
         VkBuffer vertex_buffers[] = { cube_buffer->buffer, tetrahedron_buffer->buffer};
-        VkDeviceSize offsets[] = {0};
+        VkDeviceSize offsets[] = {0, 0};
         engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 2, vertex_buffers, offsets);
 
         //Push Constants

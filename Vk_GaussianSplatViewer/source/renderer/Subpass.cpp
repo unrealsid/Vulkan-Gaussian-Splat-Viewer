@@ -13,6 +13,7 @@ namespace core::rendering
     {
         swapchain_manager = engine_context.swapchain_manager.get();
         device_manager = engine_context.device_manager.get();
+        draw_state = std::make_unique<renderer::DrawState>(engine_context);
     }
 
     void Subpass::init_pass_new_frame(VkCommandBuffer p_command_buffer, uint32_t p_frame)

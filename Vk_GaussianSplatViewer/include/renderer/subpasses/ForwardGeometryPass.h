@@ -31,8 +31,6 @@ namespace core::rendering
     private:
         VkExtent2D extents{};
 
-        std::vector<glm::vec4> cube;
-
         uint32_t cube_vertex_count = 0;
         uint32_t tetrahedron_vertex_count = 0;
 

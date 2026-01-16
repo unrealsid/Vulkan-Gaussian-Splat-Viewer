@@ -36,6 +36,7 @@
 	"include/renderer/subpasses/ImGuiPass.h"
 	"include/renderer/subpasses/TranslucencyPass.h"
 	"include/renderer/subpasses/ScreenspacePass.h"
+	"include/renderer/DrawState.h"
 
 	"include/renderer/Renderer.h"
 	"include/renderer/RenderPass.h"
@@ -83,6 +84,7 @@ set(
 	"source/renderer/subpasses/ImGuiPass.cpp"
 	"source/renderer/subpasses/TranslucencyPass.cpp"
 	"source/renderer/subpasses/ScreenspacePass.cpp"
+	"source/renderer/DrawState.cpp"
 
 	"source/renderer/Renderer.cpp"
 	"source/renderer/Subpass.cpp"
@@ -92,6 +94,7 @@ set(
 
 	"source/main.cpp"
 	"source/camera/FirstPersonCamera.cpp"
+
 )
 
 source_group(

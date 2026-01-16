@@ -66,30 +66,15 @@ namespace core::rendering
         // Enable blending for proper compositing
         std::vector<VkBool32> color_blend_enables = {VK_TRUE};
 
-        // Set pipeline state (no vertex input needed for fullscreen triangle)
-        material::ShaderObject::set_initial_state
-        (
-            engine_context.dispatch_table,
-            swapchain_manager->get_extent(),
-            *command_buffer,
-            {},  // No vertex bindings
-            {},  // No vertex attributes
-            swapchain_manager->get_extent(),
-            {0, 0},
-            color_component_flags,
-            color_blend_enables
-        );
+        // Set Draw state params
+        draw_state->set_and_apply_viewport_scissor(*command_buffer, swapchain_manager->get_extent(), swapchain_manager->get_extent(), {0, 0});
+        draw_state->set_and_apply_color_blend(*command_buffer, color_component_flags, color_blend_enables);
+        draw_state->set_and_apply_blend_equation(*command_buffer, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD);
 
-        // Set blend equation AFTER binding shader (required when blending is enabled)
-        VkColorBlendEquationEXT blendEquation{};
-        blendEquation.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-        blendEquation.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        blendEquation.colorBlendOp = VK_BLEND_OP_ADD;
-        blendEquation.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        blendEquation.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        blendEquation.alphaBlendOp = VK_BLEND_OP_ADD;
-        engine_context.dispatch_table.cmdSetColorBlendEquationEXT(*command_buffer, 0, 1, &blendEquation);
+        draw_state->apply_rasterization_state(*command_buffer);
+        draw_state->apply_depth_stencil_state(*command_buffer);
 
+        draw_state->set_and_apply_vertex_input(*command_buffer, {}, {});
 
         // Bind the screenspace shader
         subpass_shaders[ShaderObjectType::ScreenspacePass]->get_shader_object()->bind_material_shader

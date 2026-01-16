@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <iostream>
 #include <memory>
 #include "renderer/RenderPass.h"
 
