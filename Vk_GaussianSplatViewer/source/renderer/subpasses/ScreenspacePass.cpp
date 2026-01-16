@@ -67,7 +67,7 @@ namespace core::rendering
         std::vector<VkBool32> color_blend_enables = {VK_TRUE};
 
         // Set pipeline state (no vertex input needed for fullscreen triangle)
-        material::ShaderObject::set_initial_state<0>
+        material::ShaderObject::set_initial_state
         (
             engine_context.dispatch_table,
             swapchain_manager->get_extent(),

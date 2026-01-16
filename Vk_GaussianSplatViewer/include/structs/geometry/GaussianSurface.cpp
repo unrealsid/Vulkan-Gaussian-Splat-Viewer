@@ -1,9 +1,10 @@
 #include "GaussianSurface.h"
 #include <glm/glm.hpp>
 
-std::array<VkVertexInputBindingDescription2EXT, 2> GaussianSurfaceDescriptor::get_binding_descriptions()
+std::vector<VkVertexInputBindingDescription2EXT> GaussianSurfaceDescriptor::get_binding_descriptions()
 {
-    std::array<VkVertexInputBindingDescription2EXT, 2> bindings{};
+    std::vector<VkVertexInputBindingDescription2EXT> bindings{};
+    bindings.resize(2);
 
     // Binding 0: positions (vec3)
     bindings[0].sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT;
@@ -24,9 +25,10 @@ std::array<VkVertexInputBindingDescription2EXT, 2> GaussianSurfaceDescriptor::ge
     return bindings;
 }
 
-std::array<VkVertexInputAttributeDescription2EXT, 2> GaussianSurfaceDescriptor::get_attribute_descriptions()
+std::vector<VkVertexInputAttributeDescription2EXT> GaussianSurfaceDescriptor::get_attribute_descriptions()
 {
-    std::array<VkVertexInputAttributeDescription2EXT, 2> attributes{};
+    std::vector<VkVertexInputAttributeDescription2EXT> attributes{};
+    attributes.resize(2);
 
     // Location 0: position (vec4 from binding 0)
     attributes[0].sType = VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT;

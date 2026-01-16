@@ -1,8 +1,5 @@
 #include "renderer/subpasses/TranslucencyPass.h"
 
-#include <iostream>
-#include <ostream>
-
 #include "config/Config.inl"
 #include "materials/MaterialUtils.h"
 #include "structs/scene/PushConstantBlock.h"

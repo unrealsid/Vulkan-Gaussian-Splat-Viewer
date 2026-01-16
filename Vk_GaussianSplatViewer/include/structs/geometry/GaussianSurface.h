@@ -1,12 +1,12 @@
 #pragma once
 
-#include <array>
+#include <vector>
 #include <vulkan/vulkan.h>
 
 struct GaussianSurfaceDescriptor
 {
-    static std::array<VkVertexInputBindingDescription2EXT, 2> get_binding_descriptions();
+    static std::vector<VkVertexInputBindingDescription2EXT> get_binding_descriptions();
 
-    static std::array<VkVertexInputAttributeDescription2EXT, 2> get_attribute_descriptions();
+    static std::vector<VkVertexInputAttributeDescription2EXT> get_attribute_descriptions();
 };
 

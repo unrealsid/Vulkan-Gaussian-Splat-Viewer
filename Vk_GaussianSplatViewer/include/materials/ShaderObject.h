@@ -83,10 +83,9 @@ namespace material
 		static void bind_shader(const vkb::DispatchTable& disp, VkCommandBuffer cmd_buffer, const ShaderObject::Shader *shader);
 		void bind_material_shader(const vkb::DispatchTable& disp, VkCommandBuffer cmd_buffer) const;
 
-		template<size_t N>
 		static void set_initial_state(vkb::DispatchTable& disp, VkExtent2D viewport_extent, VkCommandBuffer cmd_buffer,
-		                              const std::array<VkVertexInputBindingDescription2EXT, N>& vertex_input_binding,
-		                              const std::array<VkVertexInputAttributeDescription2EXT, N>& input_attribute_description,
+									  const std::vector<VkVertexInputBindingDescription2EXT>& vertex_input_binding,
+									  const std::vector<VkVertexInputAttributeDescription2EXT>& input_attribute_description,
 		                              VkExtent2D scissor_extents, VkOffset2D scissor_offset,
 		                              const std::vector<VkColorComponentFlags>& color_component_flags,
 		                              const std::vector<VkBool32>& color_blend_enables);
@@ -96,76 +95,5 @@ namespace material
     
 		std::unique_ptr<Shader> vert_shader;
 		std::unique_ptr<Shader> frag_shader;
-	};
-
-	template <size_t N>
-	void ShaderObject::set_initial_state(vkb::DispatchTable& disp, VkExtent2D viewport_extent, VkCommandBuffer cmd_buffer,
-	                                     const std::array<VkVertexInputBindingDescription2EXT, N>& vertex_input_binding,
-	                                     const std::array<VkVertexInputAttributeDescription2EXT, N>& input_attribute_description,
-	                                     VkExtent2D scissor_extents, VkOffset2D scissor_offset,
-	                                     const std::vector<VkColorComponentFlags>& color_component_flags,
-	                                     const std::vector<VkBool32>& color_blend_enables)
-	{
-		{
-			// Set viewport and scissor
-			VkViewport viewport = {};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.width = static_cast<float>(viewport_extent.width);
-			viewport.height = static_cast<float>(viewport_extent.height);
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-
-			VkRect2D scissor = {};
-			scissor.offset = scissor_offset;
-			scissor.extent = scissor_extents;
-    	
-			disp.cmdSetViewportWithCountEXT(cmd_buffer, 1, &viewport);
-			disp.cmdSetScissorWithCountEXT(cmd_buffer, 1, &scissor);
-
-			disp.cmdSetScissor(cmd_buffer, 0, 1, &scissor);
-			
-			disp.cmdSetCullModeEXT(cmd_buffer, VK_CULL_MODE_NONE);
-			disp.cmdSetFrontFaceEXT(cmd_buffer, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-			disp.cmdSetDepthTestEnableEXT(cmd_buffer, VK_TRUE);
-			disp.cmdSetDepthWriteEnableEXT(cmd_buffer, VK_TRUE);
-			disp.cmdSetDepthCompareOpEXT(cmd_buffer, VK_COMPARE_OP_LESS);
-			disp.cmdSetPrimitiveTopologyEXT(cmd_buffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN); //VK_PRIMITIVE_TOPOLOGY_POINT_LIST for point
-			disp.cmdSetRasterizerDiscardEnableEXT(cmd_buffer, VK_FALSE);
-			disp.cmdSetPolygonModeEXT(cmd_buffer, VK_POLYGON_MODE_FILL); //VK_POLYGON_MODE_POINT for point
-			disp.cmdSetRasterizationSamplesEXT(cmd_buffer, VK_SAMPLE_COUNT_1_BIT);
-			disp.cmdSetAlphaToCoverageEnableEXT(cmd_buffer, VK_FALSE);
-			disp.cmdSetDepthBiasEnableEXT(cmd_buffer, VK_FALSE);
-			disp.cmdSetStencilTestEnableEXT(cmd_buffer, VK_FALSE);
-			disp.cmdSetPrimitiveRestartEnableEXT(cmd_buffer, VK_FALSE);
-
-			const VkSampleMask sample_mask = 0xFF;
-			disp.cmdSetSampleMaskEXT(cmd_buffer, VK_SAMPLE_COUNT_1_BIT, &sample_mask);
-
-			// Disable color blending
-			//VkBool32 color_blend_enables= VK_FALSE;
-			disp.cmdSetColorBlendEnableEXT(cmd_buffer, 0, color_blend_enables.size(), color_blend_enables.data());
-
-			// Use RGBA color write mask
-			//VkColorComponentFlags color_component_flags = 0xF;
-			disp.cmdSetColorWriteMaskEXT(cmd_buffer, 0, color_component_flags.size(), color_component_flags.data());
-		}
-
-		//Vertex input
-		{
-			// Get the vertex binding and attribute descriptions
-			// auto bindingDescription = vertex_input_binding;  //Vertex::get_binding_description();
-			// auto attributeDescriptions = input_attribute_description; //Vertex::get_attribute_descriptions();
-
-			// Set the vertex input state using the descriptions
-			disp.cmdSetVertexInputEXT
-			(
-				cmd_buffer,
-				vertex_input_binding.size(),                                                          // bindingCount = 1 (we have one vertex buffer binding)
-				vertex_input_binding.data(),                                        // pVertexBindingDescriptions
-				input_attribute_description.size(),								// attributeCount
-				input_attribute_description.data()                                // pVertexAttributeDescriptions
-			);
-		}
 	};
 }
