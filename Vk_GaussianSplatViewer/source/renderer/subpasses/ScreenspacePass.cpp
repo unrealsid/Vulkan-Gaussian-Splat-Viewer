@@ -64,15 +64,24 @@ namespace core::rendering
         };
 
         // Enable blending for proper compositing
-        std::vector<VkBool32> color_blend_enables = {VK_TRUE};
+        std::vector color_blend_enables = {VK_TRUE};
 
         // Set Draw state params
         draw_state->set_and_apply_viewport_scissor(*command_buffer, swapchain_manager->get_extent(), swapchain_manager->get_extent(), {0, 0});
         draw_state->set_and_apply_color_blend(*command_buffer, color_component_flags, color_blend_enables);
-        draw_state->set_and_apply_blend_equation(*command_buffer, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD);
+        draw_state->set_blend_equation(
+           VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // srcColorBlend (1 - transparent.a)
+           VK_BLEND_FACTOR_SRC_ALPHA,            // dstColorBlend (transparent.a)
+           VK_BLEND_OP_ADD,                      // colorBlendOp
+           VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // srcAlphaBlend
+           VK_BLEND_FACTOR_SRC_ALPHA,            // dstAlphaBlend
+           VK_BLEND_OP_ADD                       // alphaBlendOp
+       );
+
+        draw_state->apply_blend_equation(*command_buffer);
 
         draw_state->apply_rasterization_state(*command_buffer);
-        draw_state->apply_depth_stencil_state(*command_buffer);
+        draw_state->apply_depth_stencil_state(*command_buffer, VK_TRUE, VK_FALSE);
 
         draw_state->set_and_apply_vertex_input(*command_buffer, {}, {});
 

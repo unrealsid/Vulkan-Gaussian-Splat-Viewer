@@ -65,15 +65,11 @@ namespace renderer
         engine_context.dispatch_table.cmdSetColorWriteMaskEXT(cmd_buffer, 0, color_component_flags.size(), color_component_flags.data());
     }
 
-    void DrawState::set_and_apply_blend_equation(VkCommandBuffer cmd_buffer,
-                                                  VkBlendFactor src_color_blend_factor,
-                                                  VkBlendFactor dst_color_blend_factor,
-                                                  VkBlendOp color_blend_op,
-                                                  VkBlendFactor src_alpha_blend_factor,
-                                                  VkBlendFactor dst_alpha_blend_factor,
-                                                  VkBlendOp alpha_blend_op)
+    void DrawState::set_blend_equation(VkBlendFactor src_color_blend_factor, VkBlendFactor dst_color_blend_factor,
+        VkBlendOp color_blend_op, VkBlendFactor src_alpha_blend_factor, VkBlendFactor dst_alpha_blend_factor,
+        VkBlendOp alpha_blend_op)
     {
-        // Store state
+        VkColorBlendEquationEXT color_blend_equation = {};
         color_blend_equation.srcColorBlendFactor = src_color_blend_factor;
         color_blend_equation.dstColorBlendFactor = dst_color_blend_factor;
         color_blend_equation.colorBlendOp = color_blend_op;
@@ -81,8 +77,12 @@ namespace renderer
         color_blend_equation.dstAlphaBlendFactor = dst_alpha_blend_factor;
         color_blend_equation.alphaBlendOp = alpha_blend_op;
 
-        // Apply immediately
-        engine_context.dispatch_table.cmdSetColorBlendEquationEXT(cmd_buffer, 0, 1, &color_blend_equation);
+        color_blend_equations.push_back(color_blend_equation);
+    }
+
+    void DrawState::apply_blend_equation(VkCommandBuffer cmd_buffer) const
+    {
+        engine_context.dispatch_table.cmdSetColorBlendEquationEXT(cmd_buffer, 0, color_blend_equations.size(), color_blend_equations.data());
     }
 
     void DrawState::apply_rasterization_state(VkCommandBuffer cmd_buffer) const
@@ -101,11 +101,11 @@ namespace renderer
         engine_context.dispatch_table.cmdSetSampleMaskEXT(cmd_buffer, VK_SAMPLE_COUNT_1_BIT, &sample_mask);
     }
 
-    void DrawState::apply_depth_stencil_state(VkCommandBuffer cmd_buffer) const
+    void DrawState::apply_depth_stencil_state(VkCommandBuffer cmd_buffer, VkBool32 depth_test_enabled, VkBool32 depth_write_enabled, VkCompareOp depth_compare_op) const
     {
-        engine_context.dispatch_table.cmdSetDepthTestEnableEXT(cmd_buffer, VK_TRUE);
-        engine_context.dispatch_table.cmdSetDepthWriteEnableEXT(cmd_buffer, VK_TRUE);
-        engine_context.dispatch_table.cmdSetDepthCompareOpEXT(cmd_buffer, VK_COMPARE_OP_LESS);
+        engine_context.dispatch_table.cmdSetDepthTestEnableEXT(cmd_buffer, depth_test_enabled);
+        engine_context.dispatch_table.cmdSetDepthWriteEnableEXT(cmd_buffer, depth_test_enabled);
+        engine_context.dispatch_table.cmdSetDepthCompareOpEXT(cmd_buffer, depth_compare_op); //VK_COMPARE_OP_LESS
         engine_context.dispatch_table.cmdSetStencilTestEnableEXT(cmd_buffer, VK_FALSE);
     }
 

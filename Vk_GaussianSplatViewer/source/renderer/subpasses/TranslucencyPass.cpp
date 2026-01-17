@@ -24,8 +24,8 @@ namespace core::rendering
     {
         auto extents = render_targets.swapchain_extent;
         constexpr VmaAllocationCreateInfo alloc_info{};
-        render_targets.accumulation_image = std::make_unique<Vk_Image>(utils::ImageUtils::create_image(engine_context, extents.width, extents.height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,  alloc_info));
-        render_targets.revealage_image = std::make_unique<Vk_Image>(utils::ImageUtils::create_image(engine_context, extents.width, extents.height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,  alloc_info));
+        render_targets.accumulation_image = std::make_unique<Vk_Image>(utils::ImageUtils::create_image(engine_context, extents.width, extents.height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,  alloc_info));
+        render_targets.revealage_image = std::make_unique<Vk_Image>(utils::ImageUtils::create_image(engine_context, extents.width, extents.height, VK_FORMAT_R16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,  alloc_info));
     }
 
     void TranslucencyPass::frame_pre_recording(){}
@@ -37,13 +37,13 @@ namespace core::rendering
         {
             {
                 render_targets.accumulation_image->view,
-                {0.0f, 0.0f, 0.0f, 1.0f},
+                {0.0f, 0.0f, 0.0f, 0.0f},
                 VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR
             },
 
             {
                 render_targets.revealage_image->view,
-                {0.0f, 0.0f, 0.0f, 1.0f},
+                {1.0f},
                 VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR
             }
         });//vector
@@ -59,10 +59,10 @@ namespace core::rendering
 
         //Set Layout transition for depth image
         utils::ImageUtils::image_layout_transition(*command_buffer,  render_targets.revealage_image->image,
-                                                     VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-                                                     VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+                                                     VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+                                                     VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
                                                      0,
-                                                     VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                                                     VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
                                                      VK_IMAGE_LAYOUT_UNDEFINED,
                                                      VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ,
                                                       VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
@@ -81,18 +81,41 @@ namespace core::rendering
                 VK_COLOR_COMPONENT_R_BIT   // outReveal
             };
 
-        std::vector color_blend_enables = {VK_FALSE, VK_FALSE};
+        std::vector color_blend_enables = {VK_TRUE, VK_TRUE};
 
         draw_state->set_and_apply_viewport_scissor(*command_buffer, swapchain_manager->get_extent(), swapchain_manager->get_extent(), {0, 0});
         draw_state->set_and_apply_color_blend(*command_buffer, color_component_flags, color_blend_enables);
-        //draw_state->set_and_apply_blend_equation(*command_buffer, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD);
+
+        //Set blend equation for attachment 0
+        draw_state->set_blend_equation(
+            // Color blend factors (for accumulation attachment 0)
+            VK_BLEND_FACTOR_ONE,              // srcColorBlend
+            VK_BLEND_FACTOR_ONE,              // dstColorBlend
+            VK_BLEND_OP_ADD,                  // colorBlendOp
+            // Alpha blend factors (for accumulation attachment 0)
+            VK_BLEND_FACTOR_ONE,              // srcAlphaBlend
+            VK_BLEND_FACTOR_ONE,              // dstAlphaBlend
+            VK_BLEND_OP_ADD                   // alphaBlendOp
+        );
+
+        //Set blend equation for attachment 1
+        draw_state->set_blend_equation(
+        VK_BLEND_FACTOR_ZERO,
+         VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+         VK_BLEND_OP_ADD,
+         VK_BLEND_FACTOR_ZERO,
+         VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+         VK_BLEND_OP_ADD
+         );
+
+        draw_state->apply_blend_equation(*command_buffer);
 
         draw_state->apply_rasterization_state(*command_buffer);
-        draw_state->apply_depth_stencil_state(*command_buffer);
+        draw_state->apply_depth_stencil_state(*command_buffer, VK_TRUE, VK_FALSE);
 
         draw_state->set_and_apply_vertex_input(*command_buffer, GaussianSurfaceDescriptor::get_binding_descriptions(), GaussianSurfaceDescriptor::get_attribute_descriptions());
 
-        subpass_shaders[ShaderObjectType::OpaquePass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
+        subpass_shaders[ShaderObjectType::TranslucentPass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
         const auto* cube_buffer = buffer_container.get_buffer("cube_buffer");
         const auto* tetrahedron_buffer = buffer_container.get_buffer("tetrahedron_buffer");
@@ -106,7 +129,7 @@ namespace core::rendering
         push_constant_block = {
             .scene_buffer_address = buffer_container.camera_data_buffer.buffer_address,
         };
-        engine_context.dispatch_table.cmdPushConstants(*command_buffer, subpass_shaders[ShaderObjectType::OpaquePass]->get_pipeline_layout(),
+        engine_context.dispatch_table.cmdPushConstants(*command_buffer, subpass_shaders[ShaderObjectType::TranslucentPass]->get_pipeline_layout(),
                                                                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                                                 0, sizeof(PushConstantBlock), &push_constant_block);
 

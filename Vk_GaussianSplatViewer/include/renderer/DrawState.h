@@ -26,17 +26,17 @@ namespace renderer
                                        const std::vector<VkColorComponentFlags>& flags,
                                        const std::vector<VkBool32>& enables);
 
-        void set_and_apply_blend_equation(VkCommandBuffer cmd_buffer,
-                                          VkBlendFactor src_color_blend_factor,
-                                          VkBlendFactor dst_color_blend_factor,
-                                          VkBlendOp color_blend_op,
-                                          VkBlendFactor src_alpha_blend_factor,
-                                          VkBlendFactor dst_alpha_blend_factor,
-                                          VkBlendOp alpha_blend_op);
+        void set_blend_equation(VkBlendFactor src_color_blend_factor,
+                                VkBlendFactor dst_color_blend_factor,
+                                VkBlendOp color_blend_op,
+                                VkBlendFactor src_alpha_blend_factor,
+                                VkBlendFactor dst_alpha_blend_factor,
+                                VkBlendOp alpha_blend_op);
 
-        // Static state application (doesn't need setting)
+       void apply_blend_equation(VkCommandBuffer cmd_buffer) const;
+
         void apply_rasterization_state(VkCommandBuffer cmd_buffer) const;
-        void apply_depth_stencil_state(VkCommandBuffer cmd_buffer) const;
+        void apply_depth_stencil_state(VkCommandBuffer cmd_buffer, VkBool32 depth_test_enabled = VK_TRUE, VkBool32 depth_write_enabled = VK_FALSE, VkCompareOp depth_compare_op = VK_COMPARE_OP_LESS) const;
 
         // Apply all states at once
         void apply_all_draw_states(VkCommandBuffer cmd_buffer) const;
@@ -48,8 +48,9 @@ namespace renderer
         std::vector<VkVertexInputBindingDescription2EXT> vertex_input_binding;
         std::vector<VkVertexInputAttributeDescription2EXT> input_attribute_description;
         std::vector<VkColorComponentFlags> color_component_flags;
+
         std::vector<VkBool32> color_blend_enables;
-        VkColorBlendEquationEXT color_blend_equation{};
+        std::vector<VkColorBlendEquationEXT> color_blend_equations;
 
         EngineContext& engine_context;
     };
