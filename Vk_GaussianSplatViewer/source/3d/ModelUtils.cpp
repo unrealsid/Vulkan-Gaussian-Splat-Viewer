@@ -1,10 +1,13 @@
 ﻿#include "3d/ModelUtils.h"
 
+#include <complex.h>
 #include <iostream>
 #include <random>
 #include <vector>
 #include "structs/geometry/Vertex2D.h"
 #include "3d/GaussianSplatPlyLoader.h"
+#include "structs/scene/CameraData.h"
+#include "structs/scene/CameraData.h"
 
 namespace entity_3d
 {
@@ -76,9 +79,9 @@ namespace entity_3d
     }
 
 
-    std::vector<glm::vec4> ModelUtils::load_tetrahedron_colors(bool randomize, const glm::vec4& single_color)
+    std::vector<glm::vec4> ModelUtils::generate_vertex_colors(unsigned int vertex_count, bool randomize, const glm::vec4& single_color)
     {
-        constexpr uint32_t vertex_count = 12; // 4 faces * 3 vertices
+        //constexpr uint32_t vertex_count = 12; // 4 faces * 3 vertices
 
         std::vector<glm::vec4> colors;
         colors.reserve(vertex_count);

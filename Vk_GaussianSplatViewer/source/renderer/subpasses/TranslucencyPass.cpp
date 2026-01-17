@@ -43,7 +43,7 @@ namespace core::rendering
 
             {
                 render_targets.revealage_image->view,
-                {1.0f},
+                {1.0f, 0.0f, 0.0f, 0.0f},
                 VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR
             }
         });//vector
@@ -67,89 +67,90 @@ namespace core::rendering
                                                      VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ,
                                                       VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
-        setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
+         setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
 
-        begin_rendering(color_attachments);
+         begin_rendering(color_attachments);
 
-        std::vector<VkColorComponentFlags> color_component_flags =
-            {
-                VK_COLOR_COMPONENT_R_BIT |
-                VK_COLOR_COMPONENT_G_BIT |
-                VK_COLOR_COMPONENT_B_BIT |
-                VK_COLOR_COMPONENT_A_BIT,  // outColor
+         std::vector<VkColorComponentFlags> color_component_flags =
+             {
+                 VK_COLOR_COMPONENT_R_BIT |
+                 VK_COLOR_COMPONENT_G_BIT |
+                 VK_COLOR_COMPONENT_B_BIT |
+                 VK_COLOR_COMPONENT_A_BIT,  // outColor
 
-                VK_COLOR_COMPONENT_R_BIT   // outReveal
-            };
+                VK_COLOR_COMPONENT_R_BIT
+             };
 
-        std::vector color_blend_enables = {VK_TRUE, VK_TRUE};
+         std::vector color_blend_enables = {VK_TRUE, VK_TRUE};
 
-        draw_state->set_and_apply_viewport_scissor(*command_buffer, swapchain_manager->get_extent(), swapchain_manager->get_extent(), {0, 0});
-        draw_state->set_and_apply_color_blend(*command_buffer, color_component_flags, color_blend_enables);
+         draw_state->set_and_apply_viewport_scissor(*command_buffer, swapchain_manager->get_extent(), swapchain_manager->get_extent(), {0, 0});
+         draw_state->set_and_apply_color_blend(*command_buffer, color_component_flags, color_blend_enables);
 
-        //Set blend equation for attachment 0
-        draw_state->set_blend_equation(
-            // Color blend factors (for accumulation attachment 0)
-            VK_BLEND_FACTOR_ONE,              // srcColorBlend
-            VK_BLEND_FACTOR_ONE,              // dstColorBlend
-            VK_BLEND_OP_ADD,                  // colorBlendOp
-            // Alpha blend factors (for accumulation attachment 0)
-            VK_BLEND_FACTOR_ONE,              // srcAlphaBlend
-            VK_BLEND_FACTOR_ONE,              // dstAlphaBlend
-            VK_BLEND_OP_ADD                   // alphaBlendOp
-        );
-
-        //Set blend equation for attachment 1
-        draw_state->set_blend_equation(
-        VK_BLEND_FACTOR_ZERO,
-         VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
-         VK_BLEND_OP_ADD,
-         VK_BLEND_FACTOR_ZERO,
-         VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
-         VK_BLEND_OP_ADD
+         //Set blend equation for attachment 0
+         draw_state->set_blend_equation(
+             0,              // srcColorBlend
+             // Color blend factors (for accumulation attachment 0)
+             VK_BLEND_FACTOR_ONE,              // dstColorBlend
+             VK_BLEND_FACTOR_ONE,                  // colorBlendOp
+             VK_BLEND_OP_ADD,              // srcAlphaBlend
+             // Alpha blend factors (for accumulation attachment 0)
+             VK_BLEND_FACTOR_ONE,              // dstAlphaBlend
+             VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD // alphaBlendOp
          );
 
-        draw_state->apply_blend_equation(*command_buffer);
+         //Set blend equation for attachment 1
+         draw_state->set_blend_equation(
+             1,
+             VK_BLEND_FACTOR_ZERO,
+             VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+             VK_BLEND_OP_ADD,
+             VK_BLEND_FACTOR_ZERO,
+             VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_OP_ADD
+         );
 
-        draw_state->apply_rasterization_state(*command_buffer);
-        draw_state->apply_depth_stencil_state(*command_buffer, VK_TRUE, VK_FALSE);
+         draw_state->apply_blend_equation(*command_buffer);
 
-        draw_state->set_and_apply_vertex_input(*command_buffer, GaussianSurfaceDescriptor::get_binding_descriptions(), GaussianSurfaceDescriptor::get_attribute_descriptions());
 
-        subpass_shaders[ShaderObjectType::TranslucentPass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
+         draw_state->apply_rasterization_state(*command_buffer);
+         draw_state->apply_depth_stencil_state(*command_buffer, VK_TRUE, VK_FALSE);
 
-        const auto* cube_buffer = buffer_container.get_buffer("cube_buffer");
-        const auto* tetrahedron_buffer = buffer_container.get_buffer("tetrahedron_buffer");
+         draw_state->set_and_apply_vertex_input(*command_buffer, GaussianSurfaceDescriptor::get_binding_descriptions(), GaussianSurfaceDescriptor::get_attribute_descriptions());
 
-        //Vertices
-        VkBuffer vertex_buffers[] = { cube_buffer->buffer, tetrahedron_buffer->buffer};
-        VkDeviceSize offsets[] = {0, 0};
-        engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 2, vertex_buffers, offsets);
+         subpass_shaders[ShaderObjectType::TranslucentPass]->get_shader_object()->bind_material_shader(engine_context.dispatch_table, *command_buffer);
 
-        //Push Constants
-        push_constant_block = {
-            .scene_buffer_address = buffer_container.camera_data_buffer.buffer_address,
-        };
-        engine_context.dispatch_table.cmdPushConstants(*command_buffer, subpass_shaders[ShaderObjectType::TranslucentPass]->get_pipeline_layout(),
-                                                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                                                                0, sizeof(PushConstantBlock), &push_constant_block);
+          const auto* cube_buffer = buffer_container.get_buffer("cube_buffer");
+          const auto* cube_color_buffer = buffer_container.get_buffer("cube_color_buffer");
 
-        engine_context.dispatch_table.cmdDraw(*command_buffer, 36 + 12, buffer_container.gaussian_count, 0, 0);
+          //Vertices
+          VkBuffer vertex_buffers[] = { cube_buffer->buffer, cube_color_buffer->buffer};
+          VkDeviceSize offsets[] = {0, 0};
+          engine_context.dispatch_table.cmdBindVertexBuffers(*command_buffer, 0, 2, vertex_buffers, offsets);
 
-        //Add a barrier so the next stage can read the pass
-        VkMemoryBarrier2KHR memoryBarrier{};
-        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
-        memoryBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-        memoryBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-        memoryBarrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
-        memoryBarrier.dstAccessMask = VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT;
+          //Push Constants
+          push_constant_block = {
+              .scene_buffer_address = buffer_container.camera_data_buffer.buffer_address,
+          };
+          engine_context.dispatch_table.cmdPushConstants(*command_buffer, subpass_shaders[ShaderObjectType::TranslucentPass]->get_pipeline_layout(),
+                                                                  VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                                                                  0, sizeof(PushConstantBlock), &push_constant_block);
 
-        VkDependencyInfoKHR dependencyInfo{};
-        dependencyInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
-        dependencyInfo.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-        dependencyInfo.memoryBarrierCount = 1;
-        dependencyInfo.pMemoryBarriers = &memoryBarrier;
+          engine_context.dispatch_table.cmdDraw(*command_buffer, 36, buffer_container.gaussian_count, 0, 0);
 
-        engine_context.dispatch_table.cmdPipelineBarrier2(*command_buffer, &dependencyInfo);
+         //Add a barrier so the next stage can read the pass
+          VkMemoryBarrier2KHR memoryBarrier{};
+          memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR;
+          memoryBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+          memoryBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+          memoryBarrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+          memoryBarrier.dstAccessMask = VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT;
+
+          VkDependencyInfoKHR dependencyInfo{};
+          dependencyInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR;
+          dependencyInfo.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+          dependencyInfo.memoryBarrierCount = 1;
+          dependencyInfo.pMemoryBarriers = &memoryBarrier;
+
+         engine_context.dispatch_table.cmdPipelineBarrier2(*command_buffer, &dependencyInfo);
 
         end_rendering();
     }

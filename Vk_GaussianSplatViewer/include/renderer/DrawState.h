@@ -26,12 +26,12 @@ namespace renderer
                                        const std::vector<VkColorComponentFlags>& flags,
                                        const std::vector<VkBool32>& enables);
 
-        void set_blend_equation(VkBlendFactor src_color_blend_factor,
+        void set_blend_equation(uint32_t attachment_id,
+                                VkBlendFactor src_color_blend_factor,
                                 VkBlendFactor dst_color_blend_factor,
                                 VkBlendOp color_blend_op,
                                 VkBlendFactor src_alpha_blend_factor,
-                                VkBlendFactor dst_alpha_blend_factor,
-                                VkBlendOp alpha_blend_op);
+                                VkBlendFactor dst_alpha_blend_factor, VkBlendOp alpha_blend_op);
 
        void apply_blend_equation(VkCommandBuffer cmd_buffer) const;
 

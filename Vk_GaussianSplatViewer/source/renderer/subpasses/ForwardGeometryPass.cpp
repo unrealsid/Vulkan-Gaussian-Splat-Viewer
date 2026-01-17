@@ -81,6 +81,11 @@ namespace core::rendering
         auto cube =  entity_3d::ModelUtils::load_gaussian_bounding_box();
         cube_vertex_count = cube.size();
         buffer_container->allocate_gaussian_buffer("cube_buffer", cube);
+
+        //Colors
+        auto color = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+        std::vector<glm::vec4> colors = entity_3d::ModelUtils::generate_vertex_colors(36, false, color);
+        buffer_container->allocate_gaussian_buffer("cube_color_buffer", colors);
     }
 
     void ForwardGeometryPass::load_tetrahedron(const EngineContext& engine_context)
@@ -92,7 +97,8 @@ namespace core::rendering
         buffer_container->allocate_gaussian_buffer("tetrahedron_buffer", tetrahedron);
 
         //Colors
-        std::vector<glm::vec4> colors = entity_3d::ModelUtils::load_tetrahedron_colors(true);
+        auto color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+        std::vector<glm::vec4> colors = entity_3d::ModelUtils::generate_vertex_colors(12, false, color);
         buffer_container->allocate_gaussian_buffer("tetrahedron_color_buffer", colors);
     }
 

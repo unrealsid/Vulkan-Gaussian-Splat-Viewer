@@ -70,13 +70,13 @@ namespace core::rendering
         draw_state->set_and_apply_viewport_scissor(*command_buffer, swapchain_manager->get_extent(), swapchain_manager->get_extent(), {0, 0});
         draw_state->set_and_apply_color_blend(*command_buffer, color_component_flags, color_blend_enables);
         draw_state->set_blend_equation(
-           VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // srcColorBlend (1 - transparent.a)
-           VK_BLEND_FACTOR_SRC_ALPHA,            // dstColorBlend (transparent.a)
-           VK_BLEND_OP_ADD,                      // colorBlendOp
-           VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,  // srcAlphaBlend
-           VK_BLEND_FACTOR_SRC_ALPHA,            // dstAlphaBlend
-           VK_BLEND_OP_ADD                       // alphaBlendOp
-       );
+            0,  // srcColorBlend (1 - transparent.a)
+            VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,            // dstColorBlend (transparent.a)
+            VK_BLEND_FACTOR_SRC_ALPHA,                      // colorBlendOp
+            VK_BLEND_OP_ADD,  // srcAlphaBlend
+            VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,            // dstAlphaBlend
+            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_OP_ADD // alphaBlendOp
+        );
 
         draw_state->apply_blend_equation(*command_buffer);
 

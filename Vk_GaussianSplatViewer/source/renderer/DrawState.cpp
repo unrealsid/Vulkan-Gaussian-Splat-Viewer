@@ -6,6 +6,7 @@ namespace renderer
 {
     DrawState::DrawState(EngineContext& context) : engine_context(context)
     {
+        color_blend_equations.resize(2);
     }
 
     void DrawState::set_and_apply_viewport_scissor(VkCommandBuffer cmd_buffer, VkExtent2D vp_extent,
@@ -65,10 +66,12 @@ namespace renderer
         engine_context.dispatch_table.cmdSetColorWriteMaskEXT(cmd_buffer, 0, color_component_flags.size(), color_component_flags.data());
     }
 
-    void DrawState::set_blend_equation(VkBlendFactor src_color_blend_factor, VkBlendFactor dst_color_blend_factor,
-        VkBlendOp color_blend_op, VkBlendFactor src_alpha_blend_factor, VkBlendFactor dst_alpha_blend_factor,
-        VkBlendOp alpha_blend_op)
+    void DrawState::set_blend_equation(uint32_t attachment_id, VkBlendFactor src_color_blend_factor,
+                                       VkBlendFactor dst_color_blend_factor, VkBlendOp color_blend_op, VkBlendFactor src_alpha_blend_factor,
+                                       VkBlendFactor dst_alpha_blend_factor, VkBlendOp alpha_blend_op)
     {
+        assert(attachment_id < 10);
+
         VkColorBlendEquationEXT color_blend_equation = {};
         color_blend_equation.srcColorBlendFactor = src_color_blend_factor;
         color_blend_equation.dstColorBlendFactor = dst_color_blend_factor;
@@ -77,7 +80,7 @@ namespace renderer
         color_blend_equation.dstAlphaBlendFactor = dst_alpha_blend_factor;
         color_blend_equation.alphaBlendOp = alpha_blend_op;
 
-        color_blend_equations.push_back(color_blend_equation);
+        color_blend_equations[attachment_id] = (color_blend_equation);
     }
 
     void DrawState::apply_blend_equation(VkCommandBuffer cmd_buffer) const
