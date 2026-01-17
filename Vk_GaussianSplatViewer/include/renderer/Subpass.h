@@ -5,6 +5,7 @@
 #include "common/Types.h"
 #include "structs/Vk_Image.h"
 #include "renderer/DrawState.h"
+#include "structs/RenderingAttachmentInfoData.h"
 
 struct EngineRenderTargets;
 struct PushConstantBlock;
@@ -56,7 +57,7 @@ namespace core::rendering
         //Start recording buffer commands
         void begin_command_buffer_recording() const;
 
-        void setup_depth_attachment(const Vk_Image& depth_image, VkClearValue clear_value);
+        void setup_depth_attachment(const RenderingAttachmentInfoData& depth_stencil_attachment_info);
         void begin_rendering(const std::vector<VkRenderingAttachmentInfo>& attachment_infos) const;
         void end_rendering() const;
 

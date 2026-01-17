@@ -83,7 +83,7 @@ namespace core::rendering
         buffer_container->allocate_gaussian_buffer("cube_buffer", cube);
 
         //Colors
-        auto color = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+        auto color = glm::vec4(1.0f, 1.0f, 1.0f, 0.3f);
         std::vector<glm::vec4> colors = entity_3d::ModelUtils::generate_vertex_colors(36, false, color);
         buffer_container->allocate_gaussian_buffer("cube_color_buffer", colors);
     }
@@ -98,7 +98,7 @@ namespace core::rendering
 
         //Colors
         auto color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-        std::vector<glm::vec4> colors = entity_3d::ModelUtils::generate_vertex_colors(12, false, color);
+        std::vector<glm::vec4> colors = entity_3d::ModelUtils::generate_vertex_colors(12, true, color);
         buffer_container->allocate_gaussian_buffer("tetrahedron_color_buffer", colors);
     }
 
@@ -133,7 +133,12 @@ namespace core::rendering
             }
         });//vector
 
-        setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
+        setup_depth_attachment(
+        {
+            render_targets.depth_stencil_image->view,
+            {1.0f},
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+        });
 
         //Set layout transition for swapchain image
         utils::ImageUtils::image_layout_transition(*command_buffer, image.image,
@@ -166,7 +171,7 @@ namespace core::rendering
         draw_state->set_and_apply_color_blend(*command_buffer, color_component_flags, color_blend_enables);
 
         draw_state->apply_rasterization_state(*command_buffer);
-        draw_state->apply_depth_stencil_state(*command_buffer);
+        draw_state->apply_depth_stencil_state(*command_buffer, VK_TRUE, VK_TRUE);
 
         draw_state->set_and_apply_vertex_input(*command_buffer, GaussianSurfaceDescriptor::get_binding_descriptions(), GaussianSurfaceDescriptor::get_attribute_descriptions());
 

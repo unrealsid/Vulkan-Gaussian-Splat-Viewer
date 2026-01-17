@@ -92,7 +92,7 @@ namespace renderer
     {
         engine_context.dispatch_table.cmdSetCullModeEXT(cmd_buffer, VK_CULL_MODE_NONE);
         engine_context.dispatch_table.cmdSetFrontFaceEXT(cmd_buffer, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-        engine_context.dispatch_table.cmdSetPrimitiveTopologyEXT(cmd_buffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN);
+        engine_context.dispatch_table.cmdSetPrimitiveTopologyEXT(cmd_buffer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         engine_context.dispatch_table.cmdSetRasterizerDiscardEnableEXT(cmd_buffer, VK_FALSE);
         engine_context.dispatch_table.cmdSetPolygonModeEXT(cmd_buffer, VK_POLYGON_MODE_FILL);
         engine_context.dispatch_table.cmdSetRasterizationSamplesEXT(cmd_buffer, VK_SAMPLE_COUNT_1_BIT);
@@ -107,7 +107,7 @@ namespace renderer
     void DrawState::apply_depth_stencil_state(VkCommandBuffer cmd_buffer, VkBool32 depth_test_enabled, VkBool32 depth_write_enabled, VkCompareOp depth_compare_op) const
     {
         engine_context.dispatch_table.cmdSetDepthTestEnableEXT(cmd_buffer, depth_test_enabled);
-        engine_context.dispatch_table.cmdSetDepthWriteEnableEXT(cmd_buffer, depth_test_enabled);
+        engine_context.dispatch_table.cmdSetDepthWriteEnableEXT(cmd_buffer, depth_write_enabled);
         engine_context.dispatch_table.cmdSetDepthCompareOpEXT(cmd_buffer, depth_compare_op); //VK_COMPARE_OP_LESS
         engine_context.dispatch_table.cmdSetStencilTestEnableEXT(cmd_buffer, VK_FALSE);
     }

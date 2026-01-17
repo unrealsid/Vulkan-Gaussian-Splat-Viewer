@@ -34,17 +34,17 @@ namespace core::rendering
         }
     }
 
-    void Subpass::setup_depth_attachment(const Vk_Image& depth_image, VkClearValue clear_value)
+    void Subpass::setup_depth_attachment(const RenderingAttachmentInfoData& depth_stencil_attachment_info)
     {
         // Depth attachment
         depth_attachment_info = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
         depth_attachment_info.pNext       = VK_NULL_HANDLE;
-        depth_attachment_info.imageView   = depth_image.view;
+        depth_attachment_info.imageView   = depth_stencil_attachment_info.image_view;
         depth_attachment_info.imageLayout =  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         depth_attachment_info.resolveMode = VK_RESOLVE_MODE_NONE;
-        depth_attachment_info.loadOp      = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depth_attachment_info.storeOp     = VK_ATTACHMENT_STORE_OP_STORE;
-        depth_attachment_info.clearValue  = clear_value; // depth=1, stencil=0
+        depth_attachment_info.loadOp      = depth_stencil_attachment_info.load_op;
+        depth_attachment_info.storeOp     = depth_stencil_attachment_info.store_op;
+        depth_attachment_info.clearValue  = depth_stencil_attachment_info.surface_clear_value; // depth=1, stencil=0
     }
 
     void Subpass::begin_rendering(const std::vector<VkRenderingAttachmentInfo>& attachment_infos) const

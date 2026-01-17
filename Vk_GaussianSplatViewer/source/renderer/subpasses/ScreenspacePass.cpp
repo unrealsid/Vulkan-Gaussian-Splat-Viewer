@@ -4,6 +4,7 @@
 #include <iostream>
 #include <ostream>
 
+#include "../../../../cmake-build-debug-visual-studio/_deps/sdl3-src/src/video/khronos/vulkan/vulkan_core.h"
 #include "structs/scene/PushConstantBlock.h"
 #include "common/Types.h"
 #include "config/Config.inl"
@@ -49,7 +50,17 @@ namespace core::rendering
         });
 
         // Use the depth attachment (read-only in this pass)
-        setup_depth_attachment(*render_targets.depth_stencil_image,{ {1.0f, 0} });  // Load existing depth
+        // Load existing depth
+        //We only need to use depth testing for comparision.
+        //Writing is already done in the opaque geometry pass
+        setup_depth_attachment(
+       {
+           render_targets.depth_stencil_image->view,
+           {0.0f},
+           VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+           VK_ATTACHMENT_LOAD_OP_LOAD,
+           VK_ATTACHMENT_STORE_OP_STORE
+       });
 
         // Begin rendering
         begin_rendering(color_attachments);
@@ -81,7 +92,7 @@ namespace core::rendering
         draw_state->apply_blend_equation(*command_buffer);
 
         draw_state->apply_rasterization_state(*command_buffer);
-        draw_state->apply_depth_stencil_state(*command_buffer, VK_TRUE, VK_FALSE);
+        draw_state->apply_depth_stencil_state(*command_buffer, VK_FALSE, VK_FALSE);
 
         draw_state->set_and_apply_vertex_input(*command_buffer, {}, {});
 

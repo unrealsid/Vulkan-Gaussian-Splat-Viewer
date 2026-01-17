@@ -67,7 +67,16 @@ namespace core::rendering
                                                      VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ,
                                                       VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
-         setup_depth_attachment(*render_targets.depth_stencil_image, { {1.0f, 0} }); //Clear depth
+        //We only need to use depth testing for comparision.
+        //Writing is already done in the opaque geometry pass
+        setup_depth_attachment(
+       {
+           render_targets.depth_stencil_image->view,
+           {0.0f},
+           VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+           VK_ATTACHMENT_LOAD_OP_LOAD,
+           VK_ATTACHMENT_STORE_OP_STORE
+       });
 
          begin_rendering(color_attachments);
 
@@ -112,7 +121,7 @@ namespace core::rendering
 
 
          draw_state->apply_rasterization_state(*command_buffer);
-         draw_state->apply_depth_stencil_state(*command_buffer, VK_TRUE, VK_FALSE);
+         draw_state->apply_depth_stencil_state(*command_buffer, VK_FALSE, VK_FALSE);
 
          draw_state->set_and_apply_vertex_input(*command_buffer, GaussianSurfaceDescriptor::get_binding_descriptions(), GaussianSurfaceDescriptor::get_attribute_descriptions());
 
