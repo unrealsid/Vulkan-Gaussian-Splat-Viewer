@@ -100,6 +100,8 @@ set(ENGINE_PROJECT_NAME "Vk_GaussianSplatViewer")
 
 add_executable( ${ENGINE_PROJECT_NAME} ${ALL_FILES})
 
+file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
+
 target_include_directories(
     ${ENGINE_PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include

@@ -1,5 +1,6 @@
 #include "3d/GaussianSplatPlyLoader.h"
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>

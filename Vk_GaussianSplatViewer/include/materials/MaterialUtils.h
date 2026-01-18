@@ -13,8 +13,12 @@ namespace material
 
         MaterialUtils(EngineContext& engine_context) : engine_context(engine_context)
         {
-            vertex_shader_path = R"(D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders\gaussian_surface\gaussian.vert.spv)";
-            fragment_shader_path = R"(D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders\gaussian_surface\gaussian.frag.spv)";
+            //vertex_shader_path = R"(D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders\gaussian_surface\gaussian.vert.spv)";
+            //fragment_shader_path = R"(D:\Projects\CPP\Vk_GaussianSplat\Vk_GaussianSplatViewer\shaders\gaussian_surface\gaussian.frag.spv)";
+            //vertex_shader_path = R"(/home/stefan/Programming/vulkan/Vulkan-Gaussian-Splat-Viewer/Vk_GaussianSplatViewer/shaders/gaussian_surface/gaussian.vert.spv)";
+            //fragment_shader_path = R"(/home/stefan/Programming/vulkan/Vulkan-Gaussian-Splat-Viewer/Vk_GaussianSplatViewer/shaders/gaussian_surface/gaussian.frag.spv)";
+            vertex_shader_path = "shaders/gaussian_surface/gaussian.vert.spv";
+            fragment_shader_path = "shaders/gaussian_surface/gaussian.frag.spv";
         }
 
         [[nodiscard]] std::shared_ptr<Material> create_material(const std::string& name) const;

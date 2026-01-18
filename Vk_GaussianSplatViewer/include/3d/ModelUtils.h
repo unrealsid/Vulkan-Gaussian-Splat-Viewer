@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <string>
+#include <vector>
 
 #include "structs/geometry/Vertex2D.h"
 #include "structs/geometry/GaussianSurface.h"
