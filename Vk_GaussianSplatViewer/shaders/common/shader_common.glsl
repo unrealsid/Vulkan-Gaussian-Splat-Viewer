@@ -16,7 +16,15 @@ layout(buffer_reference, std430) readonly buffer CameraData
     vec4 camera_position;
 };
 
+layout(buffer_reference, std430) readonly buffer ModelMatrixData
+{
+    mat4 model_matrices[];
+};
+
 layout(push_constant) uniform PushConstants
 {
     CameraData camera_data_adddress;
+    ModelMatrixData model_matrix_data_address;
 } pc;
+
+

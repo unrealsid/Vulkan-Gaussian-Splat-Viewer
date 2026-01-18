@@ -29,7 +29,11 @@ namespace core::rendering
 
         [[nodiscard]] RenderPass* get_render_pass() const;
 
+        //Creates a first-person camera and associated Vulkan resources
         void create_camera_and_buffer();
+
+        //Creates model matrices and related Vulkan buffer
+        void create_model_matrices_buffer() const;
 
     private:
         EngineContext& engine_context;

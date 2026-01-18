@@ -46,6 +46,8 @@
 
 	"include/platform/input/UIActionManager.h"
 	"include/common/Types.h"
+	"include/3d/Scene.h"
+	"include/enums/BufferAllocationType.h"
 )
 source_group(
 	TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" 
@@ -94,7 +96,7 @@ set(
 
 	"source/main.cpp"
 	"source/camera/FirstPersonCamera.cpp"
-
+	"source/3d/Scene.cpp"
 )
 
 source_group(

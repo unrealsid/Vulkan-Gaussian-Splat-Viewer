@@ -2,10 +2,12 @@
 
 #include <ranges>
 
+#include "enums/BufferAllocationType.h"
 #include "renderer/RenderPass.h"
 #include "structs/EngineContext.h"
 #include "structs/scene/CameraData.h"
 #include "vulkanapp/utils/MemoryUtils.h"
+#include "config/Config.inl"
 
 namespace core::rendering
 {
@@ -38,15 +40,21 @@ namespace core::rendering
         );
     }
 
+    void GPU_BufferContainer::allocate_model_matrices_buffer()
+    {
+        //Allocate a named mapped buffer that supports max_object count of objects for storing model matrices
+        allocate_named_buffer("model_matrix_buffer", std::vector<glm::mat4>(max_object_count), BufferAllocationType::MappedAllocation);
+    }
+
     void GPU_BufferContainer::set_buffer(const std::string& buffer_name, const GPU_Buffer& buffer)
     {
-        gaussian_buffers[buffer_name] = buffer;
+        buffers[buffer_name] = buffer;
     }
 
     GPU_Buffer* GPU_BufferContainer::get_buffer(const std::string& buffer_name)
     {
-        const auto it = gaussian_buffers.find(buffer_name);
-        if (it == gaussian_buffers.end())
+        const auto it = buffers.find(buffer_name);
+        if (it == buffers.end())
             return nullptr;
 
         return &it->second;
@@ -56,37 +64,55 @@ namespace core::rendering
     {
         utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), camera_data_buffer);
 
-        for (auto& val : gaussian_buffers | std::views::values)
+        for (auto& val : buffers | std::views::values)
         {
             utils::MemoryUtils::destroy_buffer(engine_context.device_manager->get_allocator(), val);
         }
     }
 
     template <typename N>
-    void GPU_BufferContainer::allocate_gaussian_buffer(const std::string& buffer_name, const std::vector<N>& gaussian_parameters)
+    void GPU_BufferContainer::allocate_named_buffer(const std::string& buffer_name, const std::vector<N>& data, BufferAllocationType allocation_type)
     {
+        //Wait for the device to be idle to avoid destroying any tasks that are ongoing
+        // ReSharper disable once CppExpressionWithoutSideEffects
         engine_context.dispatch_table.deviceWaitIdle();
 
         auto device_manager = engine_context.device_manager.get();
 
+        //Destroy the old buffer if we have a buffer with the same name
         if (auto buffer = get_buffer(buffer_name))
         {
             vmaDestroyBuffer(device_manager->get_allocator(), buffer->buffer, buffer->allocation);
             *buffer = { VK_NULL_HANDLE, VK_NULL_HANDLE, {}, {} };
-            gaussian_buffers.erase(buffer_name);
+            buffers.erase(buffer_name);
         }
 
+        //Recreate it
         GPU_Buffer new_buffer;
 
-        utils::MemoryUtils::create_vertex_buffer_with_staging(engine_context,
-                                                              gaussian_parameters,
-                                                              engine_context.renderer->get_render_pass()->get_command_pool(),
-                                                              new_buffer);
+        switch (allocation_type)
+        {
+        case BufferAllocationType::None:
+            break;
+        case BufferAllocationType::VertexAllocationWithStaging:
+            utils::MemoryUtils::create_vertex_buffer_with_staging(engine_context,
+                                                                  data,
+                                                                  engine_context.renderer->get_render_pass()->get_command_pool(),
+                                                                  new_buffer);
+            break;
+
+        case BufferAllocationType::MappedAllocation:
+            utils::MemoryUtils::allocate_buffer_with_mapped_access(engine_context.dispatch_table,
+                                                                   engine_context.device_manager->get_allocator(),
+                                                                   data.size() * sizeof(N),
+                                                                   new_buffer);
+            break;
+        }
 
         set_buffer(buffer_name, new_buffer);
     }
 
-    template void GPU_BufferContainer::allocate_gaussian_buffer(const std::string& buffer_name, const std::vector<glm::vec4>& gaussian_parameters);
-    template void GPU_BufferContainer::allocate_gaussian_buffer(const std::string& buffer_name, const std::vector<float>& gaussian_parameters);
+    template void GPU_BufferContainer::allocate_named_buffer(const std::string& buffer_name, const std::vector<glm::vec4>& gaussian_parameters, BufferAllocationType allocation_type);
+    template void GPU_BufferContainer::allocate_named_buffer(const std::string& buffer_name, const std::vector<float>& gaussian_parameters, BufferAllocationType allocation_type);
 
 }

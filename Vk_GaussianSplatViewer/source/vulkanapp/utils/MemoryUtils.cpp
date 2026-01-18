@@ -52,7 +52,7 @@ void utils::MemoryUtils::create_vma_allocator(vulkanapp::DeviceManager& device_m
     std::cout << "VMA allocator created successfully." << std::endl;
 }
 
-void utils::MemoryUtils::create_buffer(vkb::DispatchTable dispatch_table, VmaAllocator allocator, VkDeviceSize size,
+void utils::MemoryUtils::create_buffer(const vkb::DispatchTable& dispatch_table, VmaAllocator allocator, VkDeviceSize size,
                                        VkBufferUsageFlags usage, VmaMemoryUsage memory_usage, VmaAllocationCreateFlags vmaAllocationFlags,
                                        GPU_Buffer& out_buffer) 
 {
@@ -74,15 +74,14 @@ void utils::MemoryUtils::create_buffer(vkb::DispatchTable dispatch_table, VmaAll
     out_buffer.buffer_address = get_buffer_device_address(dispatch_table, out_buffer.buffer);
 }
 
-VkResult utils::MemoryUtils::map_persistent_data(VmaAllocator vmaAllocator, VmaAllocation allocation, const VmaAllocationInfo& allocationInfo, const void* data, VkDeviceSize
-                                                bufferSize, size_t buffer_offset)
+VkResult utils::MemoryUtils::map_persistent_data(VmaAllocator vmaAllocator, VmaAllocation allocation, const VmaAllocationInfo& allocationInfo, const void* data, VkDeviceSize bufferSize, size_t buffer_offset)
 {
     VkMemoryPropertyFlags memPropFlags;
     vmaGetAllocationMemoryProperties(vmaAllocator, allocation, &memPropFlags);
     
     if(memPropFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
     {
-        memcpy((char*) allocationInfo.pMappedData + buffer_offset, data, bufferSize);
+        memcpy(static_cast<char*>(allocationInfo.pMappedData) + buffer_offset, data, bufferSize);
         VkResult result = vmaFlushAllocation(vmaAllocator, allocation, 0, VK_WHOLE_SIZE);
         return result;
     }
@@ -185,7 +184,9 @@ void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine
 }
 
 //Specializations
+//TODO: Gotta remove this. Only adding this here since including the definition in the header causes massive number of include errors
 template void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine_context, const std::vector<glm::vec4>& vertices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer);
+template void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine_context, const std::vector<glm::mat4>& vertices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer);
 template void utils::MemoryUtils::create_vertex_buffer_with_staging(EngineContext& engine_context, const std::vector<float>& vertices, VkCommandPool command_pool, GPU_Buffer& out_vertex_buffer);
 
 template <typename V>

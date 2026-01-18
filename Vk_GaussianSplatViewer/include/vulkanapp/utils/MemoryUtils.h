@@ -21,7 +21,7 @@ namespace utils
     public: 
         static void create_vma_allocator(vulkanapp::DeviceManager& device_manager);
 
-        static void create_buffer(vkb::DispatchTable dispatch_table, VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags usage,
+        static void create_buffer(const vkb::DispatchTable& dispatch_table, VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags usage,
                                     VmaMemoryUsage memory_usage, VmaAllocationCreateFlags vmaAllocationFlags, GPU_Buffer& out_buffer);
 
         static VkResult map_persistent_data(VmaAllocator vmaAllocator, VmaAllocation allocation, const VmaAllocationInfo& allocationInfo, const void* data, VkDeviceSize bufferSize, size_t offset_in_buffer = 0);

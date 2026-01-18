@@ -77,6 +77,11 @@ namespace core::rendering
         engine_context.buffer_container->allocate_camera_buffer(*first_person_camera);
     }
 
+    void Renderer::create_model_matrices_buffer() const
+    {
+        engine_context.buffer_container->allocate_model_matrices_buffer();
+    }
+
     void Renderer::cleanup()
     {
         vulkanapp::VulkanCleanupQueue::flush();

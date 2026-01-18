@@ -42,11 +42,11 @@ namespace core::rendering
         auto gaussian_surfaces = std::vector<glm::vec4>{ {0.0, 0.0, 0.0, 1.0} };
         auto alphas = std::vector<float>{ 0.0 };
 
-        buffer_container.allocate_gaussian_buffer("positions", gaussian_surfaces);
-        buffer_container.allocate_gaussian_buffer("scales", gaussian_surfaces);
-        buffer_container.allocate_gaussian_buffer("colors", gaussian_surfaces);
-        buffer_container.allocate_gaussian_buffer("quaternions", gaussian_surfaces);
-        buffer_container.allocate_gaussian_buffer("alpha", alphas);
+        buffer_container.allocate_named_buffer("positions", gaussian_surfaces);
+        buffer_container.allocate_named_buffer("scales", gaussian_surfaces);
+        buffer_container.allocate_named_buffer("colors", gaussian_surfaces);
+        buffer_container.allocate_named_buffer("quaternions", gaussian_surfaces);
+        buffer_container.allocate_named_buffer("alpha", alphas);
         buffer_container.gaussian_count = 1;
 
         //Register a new event to allocate memory when a new model is loaded
@@ -65,11 +65,11 @@ namespace core::rendering
                  const auto& quaternions = gaussian_surfaces.get_quaternions();
                  const auto& alpha = gaussian_surfaces.get_alphas();
 
-                 buffer_container.allocate_gaussian_buffer("positions", positions);
-                 buffer_container.allocate_gaussian_buffer("scales", scales);
-                 buffer_container.allocate_gaussian_buffer("colors", colors);
-                 buffer_container.allocate_gaussian_buffer("quaternions", quaternions);
-                 buffer_container.allocate_gaussian_buffer("alpha", alpha);
+                 buffer_container.allocate_named_buffer("positions", positions);
+                 buffer_container.allocate_named_buffer("scales", scales);
+                 buffer_container.allocate_named_buffer("colors", colors);
+                 buffer_container.allocate_named_buffer("quaternions", quaternions);
+                 buffer_container.allocate_named_buffer("alpha", alpha);
 
                  buffer_container.gaussian_count = gaussian_surfaces.get_count();
              });
@@ -80,12 +80,12 @@ namespace core::rendering
         auto buffer_container = engine_context.buffer_container.get();
         auto cube =  entity_3d::ModelUtils::load_gaussian_bounding_box();
         cube_vertex_count = cube.size();
-        buffer_container->allocate_gaussian_buffer("cube_buffer", cube);
+        buffer_container->allocate_named_buffer("cube_buffer", cube);
 
         //Colors
-        auto color = glm::vec4(1.0f, 1.0f, 1.0f, 0.3f);
+        auto color = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
         std::vector<glm::vec4> colors = entity_3d::ModelUtils::generate_vertex_colors(36, false, color);
-        buffer_container->allocate_gaussian_buffer("cube_color_buffer", colors);
+        buffer_container->allocate_named_buffer("cube_color_buffer", colors);
     }
 
     void ForwardGeometryPass::load_tetrahedron(const EngineContext& engine_context)
@@ -94,12 +94,12 @@ namespace core::rendering
 
         std::vector<glm::vec4> tetrahedron =  entity_3d::ModelUtils::load_tetrahedron();
         tetrahedron_vertex_count = tetrahedron.size();
-        buffer_container->allocate_gaussian_buffer("tetrahedron_buffer", tetrahedron);
+        buffer_container->allocate_named_buffer("tetrahedron_buffer", tetrahedron);
 
         //Colors
-        auto color = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-        std::vector<glm::vec4> colors = entity_3d::ModelUtils::generate_vertex_colors(12, true, color);
-        buffer_container->allocate_gaussian_buffer("tetrahedron_color_buffer", colors);
+        auto color = glm::vec4(1.0f, 1.0f, 0.0f, 0.0f);
+        std::vector<glm::vec4> colors = entity_3d::ModelUtils::generate_vertex_colors(12, false, color);
+        buffer_container->allocate_named_buffer("tetrahedron_color_buffer", colors);
     }
 
 

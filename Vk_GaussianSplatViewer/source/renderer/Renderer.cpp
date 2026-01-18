@@ -27,6 +27,8 @@ namespace core::rendering
         init_vulkan();
         
         create_camera_and_buffer();
+        create_model_matrices_buffer();
+
         render_pass = std::make_unique<RenderPass>(engine_context, 2);
         render_pass->renderpass_init();
 
